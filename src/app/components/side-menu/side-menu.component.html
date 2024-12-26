@@ -2,14 +2,14 @@
 	<div class="base-container">
 		<div class="header">
 			<img src="assets/printer-01.svg" alt="logo" class="header-logo" />
-			<h1>Solicitação de Cópias CNAT</h1>
+			<h1>Solicitação de Cópias - CNAT</h1>
 		</div>
 
 		<h2>Solicitações</h2>
 
 		<ul class="options-list">
 			@for (option of options; track $index) {
-			<li class="option-item">
+			<li [routerLink]="option.routerLink" class="option-item">
 				<img [src]="option.image" alt="svg" class="option-icon" />
 				<span>{{ option.text }}</span>
 			</li>
