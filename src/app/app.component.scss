@@ -1,0 +1,10 @@
+.main-container {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+}
+
+app-side-menu {
+    width: 20%;
+    margin: 1rem;
+}
