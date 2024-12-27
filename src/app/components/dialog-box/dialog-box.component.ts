@@ -37,7 +37,7 @@ export interface DialogData {
 export class DialogBoxComponent {
 	readonly dialogRef = inject(MatDialogRef<DialogBoxComponent>);
 	readonly data = inject<DialogData>(MAT_DIALOG_DATA);
-	readonly animal = model(this.data.animal);
+	readonly animal = model('cavalo22');
 
 	onNoClick(): void {
 		this.dialogRef.close();

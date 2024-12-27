@@ -6,20 +6,13 @@ import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
-import {
-  ChangeDetectionStrategy,
-  inject,
-  model,
-  signal
-} from '@angular/core';
+import { ChangeDetectionStrategy, inject, model, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
-import {
-  MatDialog
-} from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
+import { DialogService } from '../../service/dialog.service';
 
 export interface PeriodicElement {
 	name: string;
@@ -59,6 +52,7 @@ export interface DialogData {
 		MatFormFieldModule,
 		FormsModule,
 		MatButtonModule,
+		MatTooltipModule,
 	],
 	templateUrl: './list-requests.component.html',
 	styleUrl: './list-requests.component.scss',
@@ -67,6 +61,7 @@ export interface DialogData {
 export class ListRequestsComponent implements AfterViewInit {
 	displayedColumns: string[] = ['position', 'name', 'weight', 'symbol'];
 	dataSource = new MatTableDataSource(ELEMENT_DATA);
+	dialogService = inject(DialogService);
 
 	@ViewChild(MatSort) sort!: MatSort;
 
@@ -76,18 +71,17 @@ export class ListRequestsComponent implements AfterViewInit {
 
 	readonly animal = signal('');
 	readonly name = model('');
-	readonly dialog = inject(MatDialog);
+	data: DialogData = { name: this.name(), animal: this.animal() };
 
-	openDialog(): void {
-		const dialogRef = this.dialog.open(DialogBoxComponent, {
-			data: { name: this.name(), animal: this.animal() },
-		});
-
-		dialogRef.afterClosed().subscribe((result) => {
-			console.log('The dialog was closed');
-			if (result !== undefined) {
-				this.animal.set(result);
-			}
-		});
+	openDialog() {
+		this.dialogService
+			.openDialog(this.data)
+			.afterClosed()
+			.subscribe((result) => {
+				console.log(result);
+				if (result !== undefined) {
+					this.animal.set(result);
+				}
+			});
 	}
 }

@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
+import {MatTooltipModule} from '@angular/material/tooltip';
 
 interface Option {
 	icon: string;
@@ -16,7 +17,7 @@ interface User {
 
 @Component({
 	selector: 'app-side-menu',
-	imports: [RouterLink, MatIconModule, MatButtonModule],
+	imports: [RouterLink, MatIconModule, MatButtonModule, MatTooltipModule],
 	templateUrl: './side-menu.component.html',
 	styleUrl: './side-menu.component.scss',
 })

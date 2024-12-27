@@ -1,7 +1,7 @@
 <div class="main-container">
 	<div class="base-container">
 		<div class="header">
-			<img src="assets/printer-01.svg" alt="logo" class="header-logo" />
+			<img routerLink="" src="assets/printer-01.svg" alt="logo" class="header-logo" />
 			<h1>Solicitação de Cópias - CNAT</h1>
 		</div>
 
@@ -23,12 +23,9 @@
 				<span>{{ user.name }}</span>
 				<span>{{ user.id }}</span>
 			</div>
-			<mat-icon
-				aria-hidden="false"
-				aria-label="Example home icon"
-				fontIcon="logout"
-				class="use-icon"
-			></mat-icon>
+			<button mat-icon-button matTooltip="Sair" aria-label="Download button">
+                <mat-icon>logout</mat-icon>
+            </button>
 		</div>
 	</div>
 </div>

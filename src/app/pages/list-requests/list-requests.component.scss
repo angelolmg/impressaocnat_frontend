@@ -9,6 +9,10 @@
 	display: flex;
 	justify-content: flex-end;
 	gap: 1rem;
+
+    button {
+        margin-top: 0.5rem;
+    }
 }
 
 .page-title {
@@ -19,7 +23,7 @@
 table {
 	width: 100%;
     height: 100%;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.322);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 	border-radius: 1rem;
     margin-bottom: 1rem;
 	// border: 2px solid rgb(139, 139, 139);

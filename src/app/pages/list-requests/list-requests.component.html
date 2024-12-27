@@ -5,7 +5,7 @@
     
         <form class="my-options">
 
-            <button mat-mini-fab aria-label="Download button">
+            <button mat-icon-button matTooltip="Baixar .csv" aria-label="Download button" (click)="openDialog()">
                 <mat-icon>download</mat-icon>
             </button>
             
@@ -95,27 +95,10 @@
         aria-label="Select page"
     >
     </mat-paginator>
-    
 
-
-        <!-- <button mat-fab extended>
-          <mat-icon>favorite</mat-icon>
-          Basic
-        </button> -->
-    <!-- <ol>
+    @if (animal()) {
         <li>
-          <mat-form-field>
-            <mat-label>What's your name?</mat-label>
-            <input matInput [(ngModel)]="name" />
-          </mat-form-field>
+          You chose: <em>{{animal()}}</em>
         </li>
-        <li>
-          <button mat-raised-button (click)="openDialog()">Pick one</button>
-        </li>
-        @if (animal()) {
-          <li>
-            You chose: <em>{{animal()}}</em>
-          </li>
-        }
-      </ol> -->
+      }
 </div>
