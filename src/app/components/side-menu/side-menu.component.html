@@ -10,7 +10,7 @@
 		<ul class="options-list">
 			@for (option of options; track $index) {
 			<li [routerLink]="option.routerLink" class="option-item">
-				<img [src]="option.image" alt="svg" class="option-icon" />
+				<mat-icon aria-hidden="false" aria-label="Example home icon" [fontIcon]="option.icon"></mat-icon>
 				<span>{{ option.text }}</span>
 			</li>
 			}
@@ -23,7 +23,7 @@
 				<span>{{ user.name }}</span>
 				<span>{{ user.id }}</span>
 			</div>
-			<img src="assets/exit-01.svg" alt="exit" class="exit-icon" />
+			<mat-icon aria-hidden="false" aria-label="Example home icon" fontIcon="logout" class="use-icon"></mat-icon>
 		</div>
 	</div>
 </div>

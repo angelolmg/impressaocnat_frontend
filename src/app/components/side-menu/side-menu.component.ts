@@ -1,45 +1,45 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
 
 interface Option {
-  image: string
-  text: string
-  routerLink: string
+	icon: string;
+	text: string;
+	routerLink: string;
 }
 
 interface User {
-  id: string
-  name: string
+	id: string;
+	name: string;
 }
 
 @Component({
-  selector: 'app-side-menu',
-  imports: [RouterLink],
-  templateUrl: './side-menu.component.html',
-  styleUrl: './side-menu.component.scss'
+	selector: 'app-side-menu',
+	imports: [RouterLink, MatIconModule],
+	templateUrl: './side-menu.component.html',
+	styleUrl: './side-menu.component.scss',
 })
 export class SideMenuComponent {
+	user: User = {
+		id: '123456',
+		name: 'Fulano de Tal',
+	};
 
-  user: User = {
-    'id': '123456',
-    'name': 'Fulano de Tal'
-  }
-
-  options: Option[] = [
-    {
-      'image': 'assets/upload-02.svg',
-      'text': 'Nova Solicitação',
-      'routerLink': 'formulario-solicitacao'
-    },
-    {
-      'image': 'assets/listing-02.svg',
-      'text': 'Minhas Solicitações',
-      'routerLink': 'listar-solicitacoes'
-    },
-    {
-      'image': 'assets/listing-02.svg',
-      'text': 'Todas as Solicitações',
-      'routerLink': 'listar-solicitacoes'
-    }
-  ]
+	options: Option[] = [
+		{
+			icon: 'add_circle',
+			text: 'Nova Solicitação',
+			routerLink: 'formulario-solicitacao',
+		},
+		{
+			icon: 'list',
+			text: 'Minhas Solicitações',
+			routerLink: 'listar-solicitacoes',
+		},
+		{
+			icon: 'list',
+			text: 'Todas as Solicitações',
+			routerLink: 'listar-solicitacoes',
+		},
+	];
 }
