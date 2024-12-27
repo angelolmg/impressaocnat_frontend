@@ -9,10 +9,10 @@
 
 		<ul class="options-list">
 			@for (option of options; track $index) {
-			<li [routerLink]="option.routerLink" class="option-item">
-				<mat-icon aria-hidden="false" aria-label="Example home icon" [fontIcon]="option.icon"></mat-icon>
-				<span>{{ option.text }}</span>
-			</li>
+			<button mat-fab extended [routerLink]="option.routerLink">
+				<mat-icon>{{ option.icon }}</mat-icon>
+				{{ option.text }}
+			</button>
 			}
 		</ul>
 	</div>
@@ -23,7 +23,12 @@
 				<span>{{ user.name }}</span>
 				<span>{{ user.id }}</span>
 			</div>
-			<mat-icon aria-hidden="false" aria-label="Example home icon" fontIcon="logout" class="use-icon"></mat-icon>
+			<mat-icon
+				aria-hidden="false"
+				aria-label="Example home icon"
+				fontIcon="logout"
+				class="use-icon"
+			></mat-icon>
 		</div>
 	</div>
 </div>

@@ -12,6 +12,14 @@
   @include mat.paginator-overrides((
     container-background-color: transparent,
   ));
+
+  @include mat.fab-overrides((
+    container-color: white,
+  ));
+
+  @include mat.button-overrides((
+    filled-container-shape: white,
+  ));
 }
 /* You can add global styles to this file, and also import other style files */
 * {

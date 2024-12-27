@@ -1,114 +1,121 @@
-<div class="top-shelf">
-	<h2 class="page-title">Todas as Solicitações</h2>
+<div class="content">
 
-	<form class="my-options">
-		<mat-icon
-			aria-hidden="false"
-			aria-label="Download icon"
-			fontIcon="download"
-			class="use-icon"
-		></mat-icon>
-        
+    <div class="top-shelf">
+        <h2 class="page-title">Todas as Solicitações</h2>
+    
+        <form class="my-options">
 
-		<mat-form-field>
-			<mat-label>Data de Criação</mat-label>
-			<mat-date-range-input [rangePicker]="picker">
-				<input matStartDate placeholder="Início" />
-				<input matEndDate placeholder="Fim" />
-			</mat-date-range-input>
+            <button mat-mini-fab aria-label="Download button">
+                <mat-icon>download</mat-icon>
+            </button>
+            
+    
+            <mat-form-field>
+                <mat-label>Data de Criação</mat-label>
+                <mat-date-range-input [rangePicker]="picker">
+                    <input matStartDate placeholder="Início" />
+                    <input matEndDate placeholder="Fim" />
+                </mat-date-range-input>
+    
+                <mat-datepicker-toggle
+                    matIconSuffix
+                    [for]="picker"
+                ></mat-datepicker-toggle>
+                <mat-date-range-picker #picker></mat-date-range-picker>
+            </mat-form-field>
+    
+            <mat-form-field class="example-full-width">
+                <mat-label>Filtrar</mat-label>
+                <input matInput placeholder="Nº, Matrícula, etc" value="" />
+            </mat-form-field>
+        </form>
+    </div>
+    
+    <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
+        <!-- Position Column -->
+        <ng-container matColumnDef="position">
+            <th
+                mat-header-cell
+                *matHeaderCellDef
+                mat-sort-header
+                sortActionDescription="Sort by number"
+            >
+                No.
+            </th>
+            <td mat-cell *matCellDef="let element">{{ element.position }}</td>
+        </ng-container>
+    
+        <!-- Name Column -->
+        <ng-container matColumnDef="name">
+            <th
+                mat-header-cell
+                *matHeaderCellDef
+                mat-sort-header
+                sortActionDescription="Sort by name"
+            >
+                Name
+            </th>
+            <td mat-cell *matCellDef="let element">{{ element.name }}</td>
+        </ng-container>
+    
+        <!-- Weight Column -->
+        <ng-container matColumnDef="weight">
+            <th
+                mat-header-cell
+                *matHeaderCellDef
+                mat-sort-header
+                sortActionDescription="Sort by weight"
+            >
+                Weight
+            </th>
+            <td mat-cell *matCellDef="let element">{{ element.weight }}</td>
+        </ng-container>
+    
+        <!-- Symbol Column -->
+        <ng-container matColumnDef="symbol">
+            <th
+                mat-header-cell
+                *matHeaderCellDef
+                mat-sort-header
+                sortActionDescription="Sort by symbol"
+            >
+                Symbol
+            </th>
+            <td mat-cell *matCellDef="let element">{{ element.symbol }}</td>
+        </ng-container>
+    
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+    
+    <mat-paginator
+        [length]="100"
+        [pageSize]="10"
+        [pageSizeOptions]="[5, 10, 25, 100]"
+        aria-label="Select page"
+    >
+    </mat-paginator>
+    
 
-			<mat-datepicker-toggle
-				matIconSuffix
-				[for]="picker"
-			></mat-datepicker-toggle>
-			<mat-date-range-picker #picker></mat-date-range-picker>
-		</mat-form-field>
 
-		<mat-form-field class="example-full-width">
-			<mat-label>Filtro</mat-label>
-			<input matInput placeholder="Nº, Matrícula, etc" value="" />
-		</mat-form-field>
-	</form>
+        <!-- <button mat-fab extended>
+          <mat-icon>favorite</mat-icon>
+          Basic
+        </button> -->
+    <!-- <ol>
+        <li>
+          <mat-form-field>
+            <mat-label>What's your name?</mat-label>
+            <input matInput [(ngModel)]="name" />
+          </mat-form-field>
+        </li>
+        <li>
+          <button mat-raised-button (click)="openDialog()">Pick one</button>
+        </li>
+        @if (animal()) {
+          <li>
+            You chose: <em>{{animal()}}</em>
+          </li>
+        }
+      </ol> -->
 </div>
-
-<table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
-	<!-- Position Column -->
-	<ng-container matColumnDef="position">
-		<th
-			mat-header-cell
-			*matHeaderCellDef
-			mat-sort-header
-			sortActionDescription="Sort by number"
-		>
-			No.
-		</th>
-		<td mat-cell *matCellDef="let element">{{ element.position }}</td>
-	</ng-container>
-
-	<!-- Name Column -->
-	<ng-container matColumnDef="name">
-		<th
-			mat-header-cell
-			*matHeaderCellDef
-			mat-sort-header
-			sortActionDescription="Sort by name"
-		>
-			Name
-		</th>
-		<td mat-cell *matCellDef="let element">{{ element.name }}</td>
-	</ng-container>
-
-	<!-- Weight Column -->
-	<ng-container matColumnDef="weight">
-		<th
-			mat-header-cell
-			*matHeaderCellDef
-			mat-sort-header
-			sortActionDescription="Sort by weight"
-		>
-			Weight
-		</th>
-		<td mat-cell *matCellDef="let element">{{ element.weight }}</td>
-	</ng-container>
-
-	<!-- Symbol Column -->
-	<ng-container matColumnDef="symbol">
-		<th
-			mat-header-cell
-			*matHeaderCellDef
-			mat-sort-header
-			sortActionDescription="Sort by symbol"
-		>
-			Symbol
-		</th>
-		<td mat-cell *matCellDef="let element">{{ element.symbol }}</td>
-	</ng-container>
-
-	<tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-	<tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-</table>
-
-<mat-paginator
-	[length]="100"
-	[pageSize]="10"
-	[pageSizeOptions]="[5, 10, 25, 100]"
-	aria-label="Select page"
->
-</mat-paginator>
-
-<ol>
-    <li>
-      <mat-form-field>
-        <mat-label>What's your name?</mat-label>
-        <input matInput [(ngModel)]="name" />
-      </mat-form-field>
-    </li>
-    <li>
-      <button mat-raised-button (click)="openDialog()">Pick one</button>
-    </li>
-    @if (animal()) {
-      <li>
-        You chose: <em>{{animal()}}</em>
-      </li>
-    }
-  </ol>
