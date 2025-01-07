@@ -3,12 +3,12 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
-import { ChangeDetectionStrategy, inject} from '@angular/core';
+import { ChangeDetectionStrategy, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -58,19 +58,20 @@ export class ListRequestsComponent implements AfterViewInit {
 		// 'Download',
 	];
 
-	dataSource = new MatTableDataSource(REQUEST_DATA);
 	dialogService = inject(DialogService);
-
-	@ViewChild(MatSort) sort!: MatSort;
-
-	ngAfterViewInit() {
-		this.dataSource.sort = this.sort;
-	}
-
+	dataSource = new MatTableDataSource<RequestInterface>(REQUEST_DATA);
 	data: DialogData = {
 		title: 'Excluir Solicitação',
 		message: 'Deseja realmente excluir N°00011?',
 	};
+
+	@ViewChild(MatSort) sort!: MatSort;
+	@ViewChild(MatPaginator) paginator!: MatPaginator;
+
+	ngAfterViewInit() {
+		this.dataSource.sort = this.sort;
+		this.dataSource.paginator = this.paginator;
+	}
 
 	openDialog() {
 		this.dialogService
@@ -83,11 +84,10 @@ export class ListRequestsComponent implements AfterViewInit {
 
 	checkDisabled(action: string, element: RequestInterface) {
 		if (element.conclusion_date) {
-			if(action == 'Concluir' || action == 'Editar') {
+			if (action == 'Concluir' || action == 'Editar') {
 				return true;
 			}
 		}
-
 		return false;
 	}
 }

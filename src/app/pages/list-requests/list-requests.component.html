@@ -1,120 +1,165 @@
 <div class="content">
+	<div class="top-shelf">
+		<h2 class="page-title">Todas as Solicitações</h2>
 
-    <div class="top-shelf">
-        <h2 class="page-title">Todas as Solicitações</h2>
-    
-        <form class="my-options">
+		<form class="my-options">
+			<button
+				mat-icon-button
+				matTooltip="Baixar .csv"
+				aria-label="Download button"
+				(click)="openDialog()"
+			>
+				<mat-icon>download</mat-icon>
+			</button>
 
-            <button mat-icon-button matTooltip="Baixar .csv" aria-label="Download button" (click)="openDialog()">
-                <mat-icon>download</mat-icon>
-            </button>
-            
-    
-            <mat-form-field>
-                <mat-label>Data de Criação</mat-label>
-                <mat-date-range-input [rangePicker]="picker">
-                    <input matStartDate placeholder="Início" />
-                    <input matEndDate placeholder="Fim" />
-                </mat-date-range-input>
-    
-                <mat-datepicker-toggle
-                    matIconSuffix
-                    [for]="picker"
-                ></mat-datepicker-toggle>
-                <mat-date-range-picker #picker></mat-date-range-picker>
-            </mat-form-field>
-    
-            <mat-form-field class="example-full-width">
-                <mat-label>Filtrar</mat-label>
-                <input matInput placeholder="Nº, Matrícula, etc" value="" />
-            </mat-form-field>
-        </form>
-    </div>
-    
-    <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
+			<mat-form-field>
+				<mat-label>Data de Criação</mat-label>
+				<mat-date-range-input [rangePicker]="picker">
+					<input matStartDate placeholder="Início" />
+					<input matEndDate placeholder="Fim" />
+				</mat-date-range-input>
 
-        <ng-container matColumnDef="id">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Ordenar por ID">
-            Id
-          </th>
-          <td mat-cell *matCellDef="let element">{{ element.id }}</td>
-        </ng-container>
-      
-        <ng-container matColumnDef="creation_date">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Ordenar por data de criação">
-            Data de Criação
-          </th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.creation_date | date:'M/d/yy, h:mm a' }} </td>
-        </ng-container>
-      
-        <ng-container matColumnDef="term">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Ordenar por prazo">
-            Prazo (dias)
-          </th>
-          <td mat-cell *matCellDef="let element">{{ element.term }}</td>
-        </ng-container>
-      
-        <ng-container matColumnDef="username">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Ordenar por nome do usuário">
-            Nome do Usuário
-          </th>
-          <td mat-cell *matCellDef="let element">{{ element.username }}</td>
-        </ng-container>
-      
-        <ng-container matColumnDef="registration">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Ordenar por matrícula">
-            Matrícula
-          </th>
-          <td mat-cell *matCellDef="let element">{{ element.registration }}</td>
-        </ng-container>
-      
-        <ng-container matColumnDef="status">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Ordenar por situação">
-            Situação
-          </th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.status ? 'Pendente' : 'Fechado' }}
-          </td>
-        </ng-container>
-      
-        <ng-container matColumnDef="conclusion_date">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header sortActionDescription="Ordenar por data de conclusão">
-            Data de Conclusão
-          </th>
-          <td mat-cell *matCellDef="let element">
-            {{ element.conclusion_date ? (element.conclusion_date | date:'short') : 'Pendente' }}
-          </td>
-        </ng-container>
-        
-        <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef>
-              Ações
-            </th>
-            <td mat-cell *matCellDef="let element">
-                
-              @for (action of allowedActions; track $index) {
-                <button [disabled]="checkDisabled(action, element)" mat-icon-button matTooltip="{{action}}" aria-label="Action button">
-                    <mat-icon>{{action | icon}}</mat-icon>
-                </button>
-              }
+				<mat-datepicker-toggle
+					matIconSuffix
+					[for]="picker"
+				></mat-datepicker-toggle>
+				<mat-date-range-picker #picker></mat-date-range-picker>
+			</mat-form-field>
 
-            </td>
-          </ng-container>
-      
-        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-        <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-      </table>
-    
-    <mat-paginator
-        [length]="100"
-        [pageSize]="10"
-        [pageSizeOptions]="[5, 10, 25, 100]"
-        aria-label="Select page"
-    >
-    </mat-paginator>
+			<mat-form-field class="example-full-width">
+				<mat-label>Filtrar</mat-label>
+				<input matInput placeholder="Nº, Matrícula, etc" value="" />
+			</mat-form-field>
+		</form>
+	</div>
 
-    <!-- @if (animal()) {
+	<table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
+		<ng-container matColumnDef="id">
+			<th
+				mat-header-cell
+				*matHeaderCellDef
+				mat-sort-header
+				sortActionDescription="Ordenar por ID"
+			>
+				Id
+			</th>
+			<td mat-cell *matCellDef="let element">{{ element.id }}</td>
+		</ng-container>
+
+		<ng-container matColumnDef="creation_date">
+			<th
+				mat-header-cell
+				*matHeaderCellDef
+				mat-sort-header
+				sortActionDescription="Ordenar por data de criação"
+			>
+				Data de Criação
+			</th>
+			<td mat-cell *matCellDef="let element">
+				{{ element.creation_date | date : "M/d/yy, h:mm a" }}
+			</td>
+		</ng-container>
+
+		<ng-container matColumnDef="term">
+			<th
+				mat-header-cell
+				*matHeaderCellDef
+				mat-sort-header
+				sortActionDescription="Ordenar por prazo"
+			>
+				Prazo (dias)
+			</th>
+			<td mat-cell *matCellDef="let element">{{ element.term }}</td>
+		</ng-container>
+
+		<ng-container matColumnDef="username">
+			<th
+				mat-header-cell
+				*matHeaderCellDef
+				mat-sort-header
+				sortActionDescription="Ordenar por nome do usuário"
+			>
+				Nome do Usuário
+			</th>
+			<td mat-cell *matCellDef="let element">{{ element.username }}</td>
+		</ng-container>
+
+		<ng-container matColumnDef="registration">
+			<th
+				mat-header-cell
+				*matHeaderCellDef
+				mat-sort-header
+				sortActionDescription="Ordenar por matrícula"
+			>
+				Matrícula
+			</th>
+			<td mat-cell *matCellDef="let element">
+				{{ element.registration }}
+			</td>
+		</ng-container>
+
+		<ng-container matColumnDef="status">
+			<th
+				mat-header-cell
+				*matHeaderCellDef
+				mat-sort-header
+				sortActionDescription="Ordenar por situação"
+			>
+				Situação
+			</th>
+			<td mat-cell *matCellDef="let element">
+				{{ element.status ? "Pendente" : "Fechado" }}
+			</td>
+		</ng-container>
+
+		<ng-container matColumnDef="conclusion_date">
+			<th
+				mat-header-cell
+				*matHeaderCellDef
+				mat-sort-header
+				sortActionDescription="Ordenar por data de conclusão"
+			>
+				Data de Conclusão
+			</th>
+			<td mat-cell *matCellDef="let element">
+				{{
+					element.conclusion_date
+						? (element.conclusion_date | date : "short")
+						: "Pendente"
+				}}
+			</td>
+		</ng-container>
+
+		<ng-container matColumnDef="actions">
+			<th mat-header-cell *matHeaderCellDef>Ações</th>
+			<td mat-cell *matCellDef="let element">
+				@for (action of allowedActions; track $index) {
+				<button
+					[disabled]="checkDisabled(action, element)"
+					mat-icon-button
+					matTooltip="{{ action }}"
+					aria-label="Action button"
+				>
+					<mat-icon>{{ action | icon }}</mat-icon>
+				</button>
+				}
+			</td>
+		</ng-container>
+
+		<tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+		<tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+	</table>
+
+	<mat-paginator
+		showFirstLastButtons
+		[length]="100"
+		[pageSize]="10"
+		[pageSizeOptions]="[10]"
+		aria-label="Select page"
+	>
+	</mat-paginator>
+
+	<!-- @if (animal()) {
         <li>
           You chose: <em>{{animal()}}</em>
         </li>
