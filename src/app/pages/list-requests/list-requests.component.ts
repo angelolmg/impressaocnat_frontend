@@ -8,36 +8,15 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
-import { ChangeDetectionStrategy, inject, model, signal } from '@angular/core';
+import { ChangeDetectionStrategy, inject} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { DialogService } from '../../service/dialog.service';
-
-export interface PeriodicElement {
-	name: string;
-	position: number;
-	weight: number;
-	symbol: string;
-}
-
-const ELEMENT_DATA: PeriodicElement[] = [
-	{ position: 1, name: 'Hydrogen', weight: 1.0079, symbol: 'H' },
-	{ position: 2, name: 'Helium', weight: 4.0026, symbol: 'He' },
-	{ position: 3, name: 'Lithium', weight: 6.941, symbol: 'Li' },
-	{ position: 4, name: 'Beryllium', weight: 9.0122, symbol: 'Be' },
-	{ position: 5, name: 'Boron', weight: 10.811, symbol: 'B' },
-	{ position: 6, name: 'Carbon', weight: 12.0107, symbol: 'C' },
-	{ position: 7, name: 'Nitrogen', weight: 14.0067, symbol: 'N' },
-	{ position: 8, name: 'Oxygen', weight: 15.9994, symbol: 'O' },
-	{ position: 9, name: 'Fluorine', weight: 18.9984, symbol: 'F' },
-	{ position: 10, name: 'Neon', weight: 20.1797, symbol: 'Ne' },
-];
-
-export interface DialogData {
-	animal: string;
-	name: string;
-}
+import { DialogData } from '../../models/dialogData.interface';
+import { REQUEST_DATA, RequestInterface } from '../../models/request.interface';
+import { DatePipe } from '@angular/common';
+import { IconPipe } from '../../pipes/icon.pipe';
 
 @Component({
 	selector: 'app-list-requests',
@@ -53,14 +32,33 @@ export interface DialogData {
 		FormsModule,
 		MatButtonModule,
 		MatTooltipModule,
+		DatePipe,
+		IconPipe,
 	],
 	templateUrl: './list-requests.component.html',
 	styleUrl: './list-requests.component.scss',
 	changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListRequestsComponent implements AfterViewInit {
-	displayedColumns: string[] = ['position', 'name', 'weight', 'symbol'];
-	dataSource = new MatTableDataSource(ELEMENT_DATA);
+	displayedColumns: string[] = [
+		'registration',
+		'username',
+		'creation_date',
+		'term',
+		'conclusion_date',
+		'actions',
+	];
+
+	allowedActions: string[] = [
+		'Visualizar',
+		'Concluir',
+		'Editar',
+		'Excluir',
+		// 'Abrir',
+		// 'Download',
+	];
+
+	dataSource = new MatTableDataSource(REQUEST_DATA);
 	dialogService = inject(DialogService);
 
 	@ViewChild(MatSort) sort!: MatSort;
@@ -69,9 +67,10 @@ export class ListRequestsComponent implements AfterViewInit {
 		this.dataSource.sort = this.sort;
 	}
 
-	readonly animal = signal('');
-	readonly name = model('');
-	data: DialogData = { name: this.name(), animal: this.animal() };
+	data: DialogData = {
+		title: 'Excluir Solicitação',
+		message: 'Deseja realmente excluir N°00011?',
+	};
 
 	openDialog() {
 		this.dialogService
@@ -79,9 +78,16 @@ export class ListRequestsComponent implements AfterViewInit {
 			.afterClosed()
 			.subscribe((result) => {
 				console.log(result);
-				if (result !== undefined) {
-					this.animal.set(result);
-				}
 			});
+	}
+
+	checkDisabled(action: string, element: RequestInterface) {
+		if (element.conclusion_date) {
+			if(action == 'Concluir' || action == 'Editar') {
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

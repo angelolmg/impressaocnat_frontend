@@ -12,11 +12,7 @@ import {
 } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-
-export interface DialogData {
-  animal: string;
-  name: string;
-}
+import { DialogData } from '../../models/dialogData.interface';
 
 @Component({
 	selector: 'app-dialog-box',
@@ -37,7 +33,6 @@ export interface DialogData {
 export class DialogBoxComponent {
 	readonly dialogRef = inject(MatDialogRef<DialogBoxComponent>);
 	readonly data = inject<DialogData>(MAT_DIALOG_DATA);
-	readonly animal = model('cavalo22');
 
 	onNoClick(): void {
 		this.dialogRef.close();
