@@ -1,1 +1,51 @@
-<p>request-form works!</p>
+<div class="content">
+	<h2 class="page-title">Nova Solicitação</h2>
+
+	<form class="my-steps">
+		<p>1. Escolha seu arquivo (.pdf)</p>
+
+		<div class="file-input">
+			<button
+				type="button"
+				mat-stroked-button
+				(click)="fileInput.click()"
+			>
+				Escolher arquivo...
+			</button>
+			<input
+				hidden
+				(change)="onFileSelected($event)"
+				#fileInput
+				type="file"
+				accept="application/pdf"
+			/>
+			<span class="file-name">{{ selectedFile?.name }}</span>
+		</div>
+
+		<p>2. Defina o número de cópias</p>
+
+		<mat-form-field>
+			<mat-label>Número de cópias</mat-label>
+			<input
+				matInput
+				type="number"
+				class="copy-number-input"
+				[formControl]="copyNumFormControl"
+				[errorStateMatcher]="matcher"
+				placeholder="Ex. 10"
+			/>
+			<!-- <mat-hint>Errors appear instantly!</mat-hint> -->
+			@if (copyNumFormControl.hasError('min') &&
+			!copyNumFormControl.hasError('required')) {
+			<mat-error>Insira um valor positivo</mat-error>
+			} @if (copyNumFormControl.hasError('required')) {
+			<mat-error>Campo <strong>obrigatório</strong></mat-error>
+			}
+		</mat-form-field>
+
+        <div class="btn-selection">
+            <button type="button" mat-flat-button>Adicionar arquivo</button>
+            <button type="button" mat-button>Limpar</button>
+        </div>
+	</form>
+</div>

@@ -39,7 +39,7 @@ export class SideMenuComponent {
 			routerLink: 'listar-solicitacoes',
 		},
 		{
-			icon: 'list',
+			icon: 'receipt_long',
 			text: 'Todas as Solicitações',
 			routerLink: 'listar-solicitacoes',
 		},

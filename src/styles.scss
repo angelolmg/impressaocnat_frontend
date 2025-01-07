@@ -17,8 +17,8 @@
     container-color: white,
   ));
 
-  @include mat.button-overrides((
-    filled-container-shape: white,
+  @include mat.form-field-overrides((
+    filled-container-color: white,
   ));
 }
 /* You can add global styles to this file, and also import other style files */

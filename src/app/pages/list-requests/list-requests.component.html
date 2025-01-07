@@ -29,6 +29,7 @@
 			<mat-form-field class="example-full-width">
 				<mat-label>Filtrar por Atributo</mat-label>
 				<input matInput placeholder="Nº, Matrícula, etc" value="" />
+                <mat-icon matSuffix>search</mat-icon>
 			</mat-form-field>
 		</form>
 	</div>
@@ -41,9 +42,9 @@
 				mat-sort-header
 				sortActionDescription="Ordenar por ID"
 			>
-				Id
+				ID
 			</th>
-			<td mat-cell *matCellDef="let element">{{ element.id }}</td>
+			<td mat-cell *matCellDef="let element">{{ element.id.toString().padStart(6, '0') }}</td>
 		</ng-container>
 
 		<ng-container matColumnDef="creation_date">
@@ -79,7 +80,7 @@
 				mat-sort-header
 				sortActionDescription="Ordenar por nome do usuário"
 			>
-				Nome do Usuário
+				Solicitante
 			</th>
 			<td mat-cell *matCellDef="let element">{{ element.username }}</td>
 		</ng-container>

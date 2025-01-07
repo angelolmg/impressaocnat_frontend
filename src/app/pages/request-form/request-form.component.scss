@@ -1,0 +1,47 @@
+.content {
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
+	height: 100%;
+}
+
+.page-title {
+	margin-bottom: 2rem;
+}
+
+.my-steps {
+	p,
+	.file-input {
+		margin-bottom: 1rem;
+	}
+}
+
+h2,
+h3 {
+	font-size: 1.1rem;
+	color: #555;
+}
+
+.file-name {
+	margin-left: 1rem; /* or whatever margin you require */
+	width: 5rem;
+}
+
+.file-input button {
+	height: 3.5rem;
+	border-radius: 0.5rem;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+	background-color: white;
+}
+
+.copy-number-input {
+	background-color: white;
+}
+
+.btn-selection {
+	margin-top: 1rem;
+
+	button:last-child {
+		margin-left: 1rem;
+	}
+}

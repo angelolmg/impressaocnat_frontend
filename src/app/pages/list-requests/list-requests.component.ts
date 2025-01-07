@@ -8,6 +8,8 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
+import {MatBadgeModule} from '@angular/material/badge';
+
 import { ChangeDetectionStrategy, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -34,6 +36,7 @@ import { IconPipe } from '../../pipes/icon.pipe';
 		MatTooltipModule,
 		DatePipe,
 		IconPipe,
+		MatBadgeModule
 	],
 	templateUrl: './list-requests.component.html',
 	styleUrl: './list-requests.component.scss',
@@ -41,6 +44,7 @@ import { IconPipe } from '../../pipes/icon.pipe';
 })
 export class ListRequestsComponent implements AfterViewInit {
 	displayedColumns: string[] = [
+		'id',
 		'registration',
 		'username',
 		'creation_date',
@@ -64,6 +68,8 @@ export class ListRequestsComponent implements AfterViewInit {
 		title: 'Excluir Solicitação',
 		message: 'Deseja realmente excluir N°00011?',
 	};
+
+
 
 	@ViewChild(MatSort) sort!: MatSort;
 	@ViewChild(MatPaginator) paginator!: MatPaginator;
