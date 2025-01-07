@@ -1,8 +1,8 @@
 .content {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 100%;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	height: 100%;
 }
 
 .my-options {
@@ -10,9 +10,9 @@
 	justify-content: flex-end;
 	gap: 1rem;
 
-    button {
-        margin-top: 0.5rem;
-    }
+	button {
+		margin-top: 0.5rem;
+	}
 }
 
 .page-title {
@@ -22,10 +22,10 @@
 
 table {
 	width: 100%;
-    height: 100%;
+	height: 100%;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 	border-radius: 1rem;
-    margin-bottom: 1rem;
+	margin-bottom: 1rem;
 	// border: 2px solid rgb(139, 139, 139);
 
 	th {
@@ -50,4 +50,17 @@ table {
 	th:last-child {
 		border-top-right-radius: 1rem;
 	}
+}
+
+th, td {
+    padding-inline: 4rem;
+}
+
+th {
+    padding-block: 1.5rem;
+    text-align: center;
+}
+
+td:last-child {
+    text-align: center;
 }
