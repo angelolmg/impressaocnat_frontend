@@ -1,14 +1,7 @@
-.content {
-	height: 100%;
-}
-
 form {
+	height: 100%;
 	display: flex;
 	flex-direction: column;
-}
-
-mat-form-field {
-	margin-bottom: 1rem;
 }
 
 .page-title {
@@ -17,9 +10,16 @@ mat-form-field {
 
 .my-steps {
 	height: 100%;
-	p,
-	.file-input {
+	div {
 		margin-bottom: 1rem;
+
+		p:first-child {
+			margin-bottom: 1rem;
+		}
+
+		&:last-child {
+			margin: 0;
+		}
 	}
 }
 
@@ -30,7 +30,7 @@ h3 {
 }
 
 .file-name {
-	margin-left: 1rem; /* or whatever margin you require */
+	margin-left: 1rem;
 	width: 5rem;
 }
 
@@ -46,18 +46,17 @@ h3 {
 }
 
 .btn-selection {
-	margin-bottom: 1.5rem;
-
 	button:last-child {
 		margin-left: 1rem;
 	}
 }
 
-.my-table {
-
-	padding-right: .5rem;
+.file-table {
+	border-radius: 0.5rem;
+	padding-right: 0.1rem;
 	overflow-y: scroll;
-	margin-bottom: 1rem;
+	height: 100%;
+	background-color: #e0f2f7;
 
 	&::-webkit-scrollbar-track {
 		background-color: #e0f2f7;
@@ -81,10 +80,10 @@ table {
 	width: 100%;
 	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 	border-radius: $border-radius;
-	margin-bottom: 1rem;
 
 	th {
 		background-color: #e0f2f7;
+		padding-block: 1rem;
 	}
 	tr {
 		background-color: white;
@@ -94,29 +93,20 @@ table {
 		border-bottom-left-radius: $border-radius;
 	}
 
-	tr:last-child td:last-child {
-		border-bottom-right-radius: $border-radius;
-	}
 
 	th:first-child {
 		border-top-left-radius: $border-radius;
 	}
 
-	th:last-child {
-		border-top-right-radius: $border-radius;
+
+
+	th,
+	td {
+		padding-inline: 3rem;
 	}
-}
 
-th,
-td {
-	padding-inline: 3rem;
-}
-
-th {
-	padding-block: 1rem;
-}
-
-td:last-child,
-th:last-child {
-	text-align: center;
+	td:last-child,
+	th:last-child {
+		text-align: center;
+	}
 }

@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component } from '@angular/core';
+import { AfterContentChecked, AfterViewInit, Component, OnInit } from '@angular/core';
 import {
 	FormControl,
 	FormGroupDirective,
@@ -46,16 +46,20 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
 		MatTableModule,
 		MatIconModule,
 		MatTooltipModule,
-		IconPipe,
 		MatButtonModule,
 		MatSelectModule,
 	],
 	templateUrl: './request-form.component.html',
 	styleUrl: './request-form.component.scss',
 })
-export class RequestFormComponent {
+export class RequestFormComponent implements AfterViewInit{
+  ngAfterViewInit(): void {
+    console.log(this.dataSource);
+  }
+  
 	selectedFile: any = null;
-	dataSource = new MatTableDataSource<CopyInterface>(COPY_DATA);
+  resources: CopyInterface[] = COPY_DATA
+	dataSource = new MatTableDataSource<CopyInterface>(this.resources);
 
 	times: number[] = [48, 24, 12, 4, 2, 1];
 
@@ -65,8 +69,6 @@ export class RequestFormComponent {
 		'copy_count',
 		'actions',
 	];
-
-	allowedActions: string[] = ['Excluir'];
 
 	copyNumFormControl = new FormControl('', [
 		Validators.required,
@@ -88,4 +90,9 @@ export class RequestFormComponent {
 		}
 		return false;
 	}
+
+  removeCopy(index: CopyInterface){
+    this.resources = this.resources.filter(item => item != index);
+    this.dataSource.data = this.resources
+  }
 }
