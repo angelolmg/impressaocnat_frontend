@@ -58,8 +58,10 @@
 			</ng-container>
 
 			<ng-container matColumnDef="file_name">
-				<th mat-header-cell *matHeaderCellDef style="width: 50%;">Arquivo</th>
-				<td mat-cell *matCellDef="let element" style="width: 50%;">
+				<th mat-header-cell *matHeaderCellDef style="width: 50%">
+					Arquivo
+				</th>
+				<td mat-cell *matCellDef="let element" style="width: 50%">
 					{{ element.file_name }}.{{ element.file_extension }}
 				</td>
 			</ng-container>
@@ -83,8 +85,8 @@
 				<td mat-cell *matCellDef="let element">
 					<button
 						mat-icon-button
-						matTooltip="Excluir"
-						aria-label="Excluir cópia"
+						matTooltip="Remover"
+						aria-label="Remover cópia"
 						(click)="removeCopy(element)"
 					>
 						<mat-icon>delete</mat-icon>
@@ -97,9 +99,11 @@
 		</table>
 	</div>
 
-	<div class="copy-summary">
-		<p>Arquivos selecionados: 1</p>
-		<p style="margin-bottom: 1rem">Contagem de folhas: 123</p>
+	<div class="copy-summary" style="margin-bottom: 2rem;">
+		<mat-chip-set aria-label="Sumário de cópias">
+			<mat-chip>Arquivos adicionados: 1</mat-chip>
+			<mat-chip>Contagem de folhas: 123</mat-chip>
+		</mat-chip-set>
 	</div>
 
 	<div class="term-input">

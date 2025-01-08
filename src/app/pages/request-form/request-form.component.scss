@@ -75,6 +75,13 @@ h3 {
 	}
 }
 
+.copy-summary {
+	margin-bottom: 2rem;
+	mat-chip {
+		background-color: white;
+	}
+}
+
 $border-radius: 0.5rem;
 table {
 	width: 100%;

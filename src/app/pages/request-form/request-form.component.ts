@@ -1,24 +1,23 @@
-import { DatePipe } from '@angular/common';
-import { AfterContentChecked, AfterViewInit, Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component } from '@angular/core';
 import {
-	FormControl,
-	FormGroupDirective,
-	FormsModule,
-	NgForm,
-	ReactiveFormsModule,
-	Validators,
+  FormControl,
+  FormGroupDirective,
+  FormsModule,
+  NgForm,
+  ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { MatButton, MatButtonModule } from '@angular/material/button';
+import { MatChipsModule } from '@angular/material/chips';
 import { ErrorStateMatcher } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { COPY_DATA, CopyInterface } from '../../models/copy.interface';
 import { RequestInterface } from '../../models/request.interface';
-import { IconPipe } from '../../pipes/icon.pipe';
-import { MatSelectModule } from '@angular/material/select';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class MyErrorStateMatcher implements ErrorStateMatcher {
@@ -48,6 +47,7 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
 		MatTooltipModule,
 		MatButtonModule,
 		MatSelectModule,
+    MatChipsModule
 	],
 	templateUrl: './request-form.component.html',
 	styleUrl: './request-form.component.scss',
@@ -58,8 +58,7 @@ export class RequestFormComponent implements AfterViewInit{
   }
   
 	selectedFile: any = null;
-  resources: CopyInterface[] = COPY_DATA
-	dataSource = new MatTableDataSource<CopyInterface>(this.resources);
+	dataSource = new MatTableDataSource<CopyInterface>(COPY_DATA);
 
 	times: number[] = [48, 24, 12, 4, 2, 1];
 
@@ -92,7 +91,6 @@ export class RequestFormComponent implements AfterViewInit{
 	}
 
   removeCopy(index: CopyInterface){
-    this.resources = this.resources.filter(item => item != index);
-    this.dataSource.data = this.resources
+    this.dataSource.data = this.dataSource.data.filter(item => item != index);
   }
 }
