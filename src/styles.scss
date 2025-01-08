@@ -20,8 +20,12 @@
   @include mat.form-field-overrides((
     filled-container-color: white,
   ));
+
+  @include mat.select-overrides((
+    panel-background-color: white,
+  ));
 }
-/* You can add global styles to this file, and also import other style files */
+
 * {
 	margin: 0;
 	padding: 0;
