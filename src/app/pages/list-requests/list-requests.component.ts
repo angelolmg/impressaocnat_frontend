@@ -8,7 +8,7 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
-import {MatBadgeModule} from '@angular/material/badge';
+import { MatBadgeModule } from '@angular/material/badge';
 
 import { ChangeDetectionStrategy, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -19,6 +19,7 @@ import { DialogData } from '../../models/dialogData.interface';
 import { REQUEST_DATA, RequestInterface } from '../../models/request.interface';
 import { DatePipe } from '@angular/common';
 import { IconPipe } from '../../pipes/icon.pipe';
+import { ActionService } from '../../service/action.service';
 
 @Component({
 	selector: 'app-list-requests',
@@ -36,7 +37,7 @@ import { IconPipe } from '../../pipes/icon.pipe';
 		MatTooltipModule,
 		DatePipe,
 		IconPipe,
-		MatBadgeModule
+		MatBadgeModule,
 	],
 	templateUrl: './list-requests.component.html',
 	styleUrl: './list-requests.component.scss',
@@ -63,13 +64,15 @@ export class ListRequestsComponent implements AfterViewInit {
 	];
 
 	dialogService = inject(DialogService);
+	actionService = inject(ActionService);
+
 	dataSource = new MatTableDataSource<RequestInterface>(REQUEST_DATA);
 	data: DialogData = {
 		title: 'Excluir Solicitação',
 		message: 'Deseja realmente excluir N°00011?',
+		positive_label: 'Sim',
+		negative_label: 'Não'
 	};
-
-
 
 	@ViewChild(MatSort) sort!: MatSort;
 	@ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -88,12 +91,4 @@ export class ListRequestsComponent implements AfterViewInit {
 			});
 	}
 
-	checkDisabled(action: string, element: RequestInterface) {
-		if (element.conclusion_date) {
-			if (action == 'Concluir' || action == 'Editar') {
-				return true;
-			}
-		}
-		return false;
-	}
 }

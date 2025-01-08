@@ -1,11 +1,11 @@
-import { AfterViewInit, Component } from '@angular/core';
+import { AfterViewInit, Component, inject } from '@angular/core';
 import {
-  FormControl,
-  FormGroupDirective,
-  FormsModule,
-  NgForm,
-  ReactiveFormsModule,
-  Validators,
+    FormControl,
+    FormGroupDirective,
+    FormsModule,
+    NgForm,
+    ReactiveFormsModule,
+    Validators,
 } from '@angular/forms';
 import { MatButton, MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
@@ -17,7 +17,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { COPY_DATA, CopyInterface } from '../../models/copy.interface';
-import { RequestInterface } from '../../models/request.interface';
+import { ActionService } from '../../service/action.service';
+import { DialogService } from '../../service/dialog.service';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class MyErrorStateMatcher implements ErrorStateMatcher {
@@ -47,20 +48,26 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
 		MatTooltipModule,
 		MatButtonModule,
 		MatSelectModule,
-    MatChipsModule
+		MatChipsModule,
 	],
 	templateUrl: './request-form.component.html',
 	styleUrl: './request-form.component.scss',
 })
-export class RequestFormComponent implements AfterViewInit{
-  ngAfterViewInit(): void {
-    console.log(this.dataSource);
-  }
-  
+export class RequestFormComponent implements AfterViewInit {
+	ngAfterViewInit(): void {
+		console.log(this.dataSource);
+	}
+	pageStates: string[] = ['Nova Solicitação', 'Editar Solicitação'];
+	pageState: string = this.pageStates[1];
+
 	selectedFile: any = null;
 	dataSource = new MatTableDataSource<CopyInterface>(COPY_DATA);
+	actionService = inject(ActionService);
+	dialogService = inject(DialogService);
 
 	times: number[] = [48, 24, 12, 4, 2, 1];
+
+	allowedActions: string[] = ['Editar', 'Excluir'];
 
 	displayedColumns: string[] = [
 		'file_name',
@@ -69,7 +76,7 @@ export class RequestFormComponent implements AfterViewInit{
 		'actions',
 	];
 
-	copyNumFormControl = new FormControl('', [
+	copyNumFormControl = new FormControl('10', [
 		Validators.required,
 		Validators.min(1),
 	]);
@@ -81,16 +88,35 @@ export class RequestFormComponent implements AfterViewInit{
 		console.log(this.selectedFile);
 	}
 
-	checkDisabled(action: string, element: RequestInterface) {
-		if (element.conclusion_date) {
-			if (action == 'Concluir' || action == 'Editar') {
-				return true;
-			}
+	callbackHandler(context: string, action: string, element: CopyInterface) {
+		switch (context) {
+			case 'request-creation':
+				return this.removeCopy(element);
 		}
-		return false;
+
+		return console.log([context, action, element]);
 	}
 
-  removeCopy(index: CopyInterface){
-    this.dataSource.data = this.dataSource.data.filter(item => item != index);
-  }
+	removeCopy(copy: CopyInterface) {
+		this.dataSource.data = this.dataSource.data.filter(
+			(item) => item != copy
+		);
+	}
+
+	editCopy(copy: CopyInterface) {
+		if (this.pageState == 'Editar Solicitação') {
+			this.dialogService
+				.openEditCopyDialog({
+					title: 'Solicitação N° 000011 >> ' + copy.file_name +'.' +copy.file_extension,
+					message: 'Defina o número de cópias',
+					data: copy,
+					positive_label: 'Confirmar',
+					negative_label: 'Cancelar',
+				})
+				.afterClosed()
+				.subscribe((result) => {
+					console.log(result);
+				});
+		}
+	}
 }

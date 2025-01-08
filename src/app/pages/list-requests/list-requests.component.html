@@ -136,10 +136,11 @@
 			<td mat-cell *matCellDef="let element">
 				@for (action of allowedActions; track $index) {
 				<button
-					[disabled]="checkDisabled(action, element)"
+					[disabled]="actionService.disabledHandler('list-requests', action, element)"
 					mat-icon-button
 					matTooltip="{{ action }}"
 					aria-label="Action button"
+					(click)="actionService.callbackHandler('list-requests', action, element)"
 				>
 					<mat-icon>{{ action | icon }}</mat-icon>
 				</button>
