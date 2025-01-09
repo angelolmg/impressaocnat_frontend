@@ -1,6 +1,6 @@
 export interface DialogData {
-	title?: string;
-	message: string;
+	title: string;
+	message?: string;
 	warning?: string;
 	data?: any;
 	positive_label: string;

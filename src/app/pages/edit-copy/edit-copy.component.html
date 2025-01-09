@@ -1,36 +1,35 @@
 @if (data.title) {
-    <h2 mat-dialog-title>{{ data.title }}</h2>
-    }
-    <mat-dialog-content>{{ data.message }}</mat-dialog-content>
-    @if (data.warning) {
-    <mat-dialog-content class="warning">{{ data.warning }}</mat-dialog-content>
-    }
+<h2 mat-dialog-title>{{ data.title }}</h2>
+}
+<mat-dialog-content>{{ data.message }}</mat-dialog-content>
+@if (data.warning) {
+<mat-dialog-content class="warning">{{ data.warning }}</mat-dialog-content>
+}
 
-    <div class="copynum-input">
-		<mat-form-field>
-			<mat-label>Número de cópias</mat-label>
-			<input
-				matInput
-				type="number"
-				class="copy-number-input"
-				[formControl]="copyNumFormControl"
-				[errorStateMatcher]="matcher"
-				placeholder="Ex. 10"
-			/>
-			<!-- <mat-hint>Errors appear instantly!</mat-hint> -->
-			@if (copyNumFormControl.hasError('min') &&
-			!copyNumFormControl.hasError('required')) {
-			<mat-error>Insira um valor positivo</mat-error>
-			} @if (copyNumFormControl.hasError('required')) {
-			<mat-error>Campo <strong>obrigatório</strong></mat-error>
-			}
-		</mat-form-field>
-	</div>
+<mat-dialog-content class="copynum-input">
+	<mat-form-field>
+		<mat-label>Número de cópias</mat-label>
+		<input
+			matInput
+			type="number"
+			class="copy-number-input"
+			[formControl]="copyNumFormControl"
+			[errorStateMatcher]="matcher"
+			placeholder="Ex. 10"
+		/>
+		<!-- <mat-hint>Errors appear instantly!</mat-hint> -->
+		@if (copyNumFormControl.hasError('min') &&
+		!copyNumFormControl.hasError('required')) {
+		<mat-error>Insira um valor positivo</mat-error>
+		} @if (copyNumFormControl.hasError('required')) {
+		<mat-error>Campo <strong>obrigatório</strong></mat-error>
+		}
+	</mat-form-field>
+</mat-dialog-content>
 
-    <mat-dialog-actions>
-        <button mat-button (click)="onNoClick()">{{ data.negative_label }}</button>
-        <button mat-button [mat-dialog-close]="true" cdkFocusInitial>
-            {{ data.positive_label }}
-        </button>
-    </mat-dialog-actions>
-    
+<mat-dialog-actions>
+	<button mat-button (click)="onNoClick()">{{ data.negative_label }}</button>
+	<button mat-button [mat-dialog-close]="formControl()" cdkFocusInitial>
+		{{ data.positive_label }}
+	</button>
+</mat-dialog-actions>

@@ -76,7 +76,7 @@ export class RequestFormComponent implements AfterViewInit {
 		'actions',
 	];
 
-	copyNumFormControl = new FormControl('10', [
+	copyNumFormControl = new FormControl(10, [
 		Validators.required,
 		Validators.min(1),
 	]);
@@ -107,7 +107,7 @@ export class RequestFormComponent implements AfterViewInit {
 		if (this.pageState == 'Editar Solicitação') {
 			this.dialogService
 				.openEditCopyDialog({
-					title: 'Solicitação N° 000011 >> ' + copy.file_name +'.' +copy.file_extension,
+					title: 'Editando arquivo',
 					message: 'Defina o número de cópias',
 					data: copy,
 					positive_label: 'Confirmar',
