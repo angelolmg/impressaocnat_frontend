@@ -20,6 +20,7 @@ import { REQUEST_DATA, RequestInterface } from '../../models/request.interface';
 import { DatePipe } from '@angular/common';
 import { IconPipe } from '../../pipes/icon.pipe';
 import { ActionService } from '../../service/action.service';
+import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
 
 @Component({
 	selector: 'app-list-requests',
@@ -84,7 +85,7 @@ export class ListRequestsComponent implements AfterViewInit {
 
 	openDialog() {
 		this.dialogService
-			.openDialog(this.data)
+			.openDialog(this.data, DialogBoxComponent)
 			.afterClosed()
 			.subscribe((result) => {
 				console.log(result);

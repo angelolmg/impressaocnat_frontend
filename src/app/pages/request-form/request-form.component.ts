@@ -19,6 +19,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { COPY_DATA, CopyInterface } from '../../models/copy.interface';
 import { ActionService } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
+import { EditCopyComponent } from '../edit-copy/edit-copy.component';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class MyErrorStateMatcher implements ErrorStateMatcher {
@@ -106,13 +107,13 @@ export class RequestFormComponent implements AfterViewInit {
 	editCopy(copy: CopyInterface) {
 		if (this.pageState == 'Editar Solicitação') {
 			this.dialogService
-				.openEditCopyDialog({
+				.openDialog({
 					title: 'Editando arquivo',
 					message: 'Defina o número de cópias',
 					data: copy,
 					positive_label: 'Confirmar',
 					negative_label: 'Cancelar',
-				})
+				}, EditCopyComponent)
 				.afterClosed()
 				.subscribe((result) => {
 					console.log(result);
