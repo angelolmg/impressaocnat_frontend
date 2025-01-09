@@ -92,20 +92,14 @@ table {
 		background-color: #e0f2f7;
 		padding-block: 1rem;
 	}
+
 	tr {
 		background-color: white;
 	}
 
-	tr:last-child td:first-child {
-		border-bottom-left-radius: $border-radius;
-	}
-
-
 	th:first-child {
 		border-top-left-radius: $border-radius;
 	}
-
-
 
 	th,
 	td {

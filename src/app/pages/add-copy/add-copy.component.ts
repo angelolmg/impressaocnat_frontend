@@ -43,6 +43,8 @@ import { MyErrorStateMatcher } from '../request-form/request-form.component';
 export class AddCopyComponent {
 	readonly dialogRef = inject(MatDialogRef<AddCopyComponent>);
 	readonly data = inject<DialogData>(MAT_DIALOG_DATA);
+	matcher = new MyErrorStateMatcher();
+	selectedFile: any = null;
 
 	copyNumFormControl = new FormControl('10', [
 		Validators.required,
@@ -55,5 +57,8 @@ export class AddCopyComponent {
 		this.dialogRef.close();
 	}
 
-	matcher = new MyErrorStateMatcher();
+	onFileSelected(event: any): void {
+		this.selectedFile = event.target.files[0] ?? null;
+		console.log(this.selectedFile);
+	}
 }

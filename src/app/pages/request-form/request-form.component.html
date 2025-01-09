@@ -1,49 +1,12 @@
 <form class="my-steps">
 	<h2 class="page-title">{{ pageState }}</h2>
 
-	<div class="file-input">
-		<p>1. Escolha seu arquivo (.pdf)</p>
-		<button type="button" mat-stroked-button (click)="fileInput.click()">
-			Escolher arquivo...
-		</button>
-		<input
-			hidden
-			(change)="onFileSelected($event)"
-			#fileInput
-			type="file"
-			accept="application/pdf"
-		/>
-		<span class="file-name">{{ selectedFile?.name }}</span>
-	</div>
-
-	<div class="copynum-input">
-		<p>2. Defina o número de cópias</p>
-		<mat-form-field>
-			<mat-label>Número de cópias</mat-label>
-			<input
-				matInput
-				type="number"
-				class="copy-number-input"
-				[formControl]="copyNumFormControl"
-				[errorStateMatcher]="matcher"
-				placeholder="Ex. 10"
-			/>
-			<!-- <mat-hint>Errors appear instantly!</mat-hint> -->
-			@if (copyNumFormControl.hasError('min') &&
-			!copyNumFormControl.hasError('required')) {
-			<mat-error>Insira um valor positivo</mat-error>
-			} @if (copyNumFormControl.hasError('required')) {
-			<mat-error>Campo <strong>obrigatório</strong></mat-error>
-			}
-		</mat-form-field>
-	</div>
-
 	<div class="btn-selection">
-		<button type="button" mat-flat-button>Adicionar arquivo</button>
+		<button type="button" mat-flat-button (click)="addCopy()">Adicionar arquivo</button>
 		<button type="button" mat-button>Limpar</button>
 	</div>
 
-	<div class="file-table">
+	<div class="file-table" style="margin-bottom: 2rem">
 		<table
 			mat-table
 			[dataSource]="dataSource"

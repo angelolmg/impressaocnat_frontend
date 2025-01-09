@@ -1,36 +1,57 @@
 @if (data.title) {
-    <h2 mat-dialog-title>{{ data.title }}</h2>
-    }
-    <mat-dialog-content>{{ data.message }}</mat-dialog-content>
-    @if (data.warning) {
-    <mat-dialog-content class="warning">{{ data.warning }}</mat-dialog-content>
-    }
-    
-    <mat-dialog-content class="copynum-input">
-        <mat-form-field>
-            <mat-label>Número de cópias</mat-label>
-            <input
-                matInput
-                type="number"
-                class="copy-number-input"
-                [formControl]="copyNumFormControl"
-                [errorStateMatcher]="matcher"
-                placeholder="Ex. 10"
-            />
-            <!-- <mat-hint>Errors appear instantly!</mat-hint> -->
-            @if (copyNumFormControl.hasError('min') &&
-            !copyNumFormControl.hasError('required')) {
-            <mat-error>Insira um valor positivo</mat-error>
-            } @if (copyNumFormControl.hasError('required')) {
-            <mat-error>Campo <strong>obrigatório</strong></mat-error>
-            }
-        </mat-form-field>
-    </mat-dialog-content>
-    
-    <mat-dialog-actions>
-        <button mat-button (click)="onNoClick()">{{ data.negative_label }}</button>
-        <button mat-button [mat-dialog-close]="formControl()" cdkFocusInitial>
-            {{ data.positive_label }}
-        </button>
-    </mat-dialog-actions>
-    
+<h2 mat-dialog-title>{{ data.title }}</h2>
+}
+<mat-dialog-content>{{ data.message }}</mat-dialog-content>
+@if (data.warning) {
+<mat-dialog-content class="warning">{{ data.warning }}</mat-dialog-content>
+}
+
+<mat-dialog-content class="file-input">
+	<p>1. Escolha seu arquivo (.pdf)</p>
+
+	<div class="file-input-field">
+		<button type="button" mat-stroked-button (click)="fileInput.click()">
+			Escolher arquivo...
+		</button>
+		<input
+			hidden
+			(change)="onFileSelected($event)"
+			#fileInput
+			type="file"
+			accept="application/pdf"
+		/>
+		<div class="file-name">
+			<span>
+				{{ selectedFile?.name }}
+			</span>
+		</div>
+	</div>
+</mat-dialog-content>
+
+<mat-dialog-content class="copynum-input">
+	<p>2. Defina o número de cópias</p>
+	<mat-form-field>
+		<mat-label>Número de cópias</mat-label>
+		<input
+			matInput
+			type="number"
+			class="copy-number-input"
+			[formControl]="copyNumFormControl"
+			[errorStateMatcher]="matcher"
+			placeholder="Ex. 10"
+		/>
+		@if (copyNumFormControl.hasError('min') &&
+		!copyNumFormControl.hasError('required')) {
+		<mat-error>Insira um valor positivo</mat-error>
+		} @if (copyNumFormControl.hasError('required')) {
+		<mat-error>Campo <strong>obrigatório</strong></mat-error>
+		}
+	</mat-form-field>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+	<button mat-button (click)="onNoClick()">{{ data.negative_label }}</button>
+	<button mat-button [mat-dialog-close]="formControl()" cdkFocusInitial>
+		{{ data.positive_label }}
+	</button>
+</mat-dialog-actions>

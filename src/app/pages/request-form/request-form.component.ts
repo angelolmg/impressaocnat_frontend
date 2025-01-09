@@ -20,6 +20,7 @@ import { COPY_DATA, CopyInterface } from '../../models/copy.interface';
 import { ActionService } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
 import { EditCopyComponent } from '../edit-copy/edit-copy.component';
+import { AddCopyComponent } from '../add-copy/add-copy.component';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class MyErrorStateMatcher implements ErrorStateMatcher {
@@ -66,7 +67,7 @@ export class RequestFormComponent implements AfterViewInit {
 	actionService = inject(ActionService);
 	dialogService = inject(DialogService);
 
-	times: number[] = [48, 24, 12, 4, 2, 1];
+	times: number[] = [48, 24, 12, 4, 2];
 
 	allowedActions: string[] = ['Editar', 'Excluir'];
 
@@ -119,5 +120,18 @@ export class RequestFormComponent implements AfterViewInit {
 					console.log(result);
 				});
 		}
+	}
+
+	addCopy() {
+		this.dialogService
+				.openDialog({
+					title: 'Adicionar arquivo',
+					positive_label: 'Adicionar',
+					negative_label: 'Cancelar',
+				}, AddCopyComponent)
+				.afterClosed()
+				.subscribe((result) => {
+					console.log(result);
+				});
 	}
 }
