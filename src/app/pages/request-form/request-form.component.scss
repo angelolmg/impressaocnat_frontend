@@ -10,12 +10,11 @@ form {
 
 .my-steps {
 	height: 100%;
+	p {
+		margin-bottom: 1rem;
+	}
 	div {
 		margin-bottom: 1rem;
-
-		p:first-child {
-			margin-bottom: 1rem;
-		}
 
 		&:last-child {
 			margin: 0;

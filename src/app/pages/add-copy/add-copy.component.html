@@ -51,7 +51,7 @@
 
 <mat-dialog-actions>
 	<button mat-button (click)="onNoClick()">{{ data.negative_label }}</button>
-	<button mat-button [mat-dialog-close]="formControl()" cdkFocusInitial>
+	<button mat-button [mat-dialog-close]="newCopyData()" cdkFocusInitial>
 		{{ data.positive_label }}
 	</button>
 </mat-dialog-actions>

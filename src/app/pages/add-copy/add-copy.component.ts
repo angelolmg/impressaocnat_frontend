@@ -51,14 +51,20 @@ export class AddCopyComponent {
 		Validators.min(1),
 	]);
 
-	readonly formControl = model(this.copyNumFormControl);
-
-	onNoClick(): void {
-		this.dialogRef.close();
-	}
+	readonly newCopyData = model({
+		file: this.selectedFile,
+		control: this.copyNumFormControl,
+	});
 
 	onFileSelected(event: any): void {
 		this.selectedFile = event.target.files[0] ?? null;
-		console.log(this.selectedFile);
+		this.newCopyData.set({
+			file: this.selectedFile,
+			control: this.copyNumFormControl,
+		});
+	}
+
+	onNoClick(): void {
+		this.dialogRef.close();
 	}
 }
