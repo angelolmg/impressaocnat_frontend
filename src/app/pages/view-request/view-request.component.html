@@ -1,1 +1,93 @@
-<p>view-request works!</p>
+<form class="my-steps">
+	<h2 class="page-title">Solicitação Nº {{ requestNumber }}</h2>
+
+	<mat-form-field class="search-bar">
+		<mat-label>Filtrar</mat-label>
+		<input matInput placeholder="Nº, Matrícula, etc" value="" />
+		<mat-icon matSuffix>search</mat-icon>
+	</mat-form-field>
+
+	<table mat-table [dataSource]="copies" matSort class="mat-elevation-z8">
+		<ng-container matColumnDef="id">
+			<th mat-header-cell *matHeaderCellDef>ID</th>
+			<td mat-cell *matCellDef="let element">
+				{{ element.id.toString().padStart(6, "0") }}
+			</td>
+		</ng-container>
+
+		<ng-container matColumnDef="file_name">
+			<th mat-header-cell *matHeaderCellDef style="width: 50%">
+				Arquivo
+			</th>
+			<td mat-cell *matCellDef="let element" style="width: 50%">
+				{{ element.file_name }}
+			</td>
+		</ng-container>
+
+		<ng-container matColumnDef="page_count">
+			<th mat-header-cell *matHeaderCellDef>Páginas</th>
+			<td mat-cell *matCellDef="let element">
+				{{ element.page_count }}
+			</td>
+		</ng-container>
+
+		<ng-container matColumnDef="copy_count">
+			<th mat-header-cell *matHeaderCellDef>Nº Cópias</th>
+			<td mat-cell *matCellDef="let element">
+				{{ element.copy_count }}
+			</td>
+		</ng-container>
+
+		<ng-container class="center-elements" matColumnDef="actions">
+			<th mat-header-cell *matHeaderCellDef>Ações</th>
+
+			<td mat-cell *matCellDef="let element">
+				<button
+					mat-icon-button
+					matTooltip="Baixar Arquivo"
+					aria-label="Baixar Arquivo"
+					(click)="downloadFile(element)"
+				>
+					<mat-icon>download</mat-icon>
+				</button>
+
+				<button
+					mat-icon-button
+					matTooltip="Editar"
+					aria-label="Editar cópia"
+					(click)="editCopyDialog(element)"
+				>
+					<mat-icon>edit</mat-icon>
+				</button>
+
+				<button
+					mat-icon-button
+					matTooltip="Remover"
+					aria-label="Remover cópia"
+					(click)="removeCopy(element)"
+				>
+					<mat-icon>delete</mat-icon>
+				</button>
+			</td>
+		</ng-container>
+
+		<tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+		<tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+	</table>
+
+    <div class="copy-summary" style="margin-bottom: 2rem">
+		<mat-chip-set aria-label="Sumário de cópias">
+			<mat-chip>Arquivos adicionados: {{ fileCount() }}</mat-chip>
+			<mat-chip>Contagem de folhas: {{ requestPageCounter() }}</mat-chip>
+		</mat-chip-set>
+	</div>
+
+	<mat-paginator
+		showFirstLastButtons
+		[length]="100"
+		[pageSize]="10"
+		[pageSizeOptions]="[10]"
+		aria-label="Select page"
+	>
+	</mat-paginator>
+</form>

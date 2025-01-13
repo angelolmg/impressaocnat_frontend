@@ -1,9 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { DialogBoxComponent } from '../components/dialog-box/dialog-box.component';
 import { DialogData } from '../models/dialogData.interface';
-import { EditCopyComponent } from '../pages/edit-copy/edit-copy.component';
-import { AddCopyComponent } from '../pages/add-copy/add-copy.component';
 
 @Injectable({
 	providedIn: 'root',
