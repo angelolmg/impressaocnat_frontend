@@ -8,7 +8,7 @@ import { DialogData } from '../models/dialogData.interface';
 export class DialogService {
 	readonly dialog = inject(MatDialog);
 	
-	openDialog(data: DialogData, dialogBoxComponent: any): MatDialogRef<any> {
+	openDialog(dialogBoxComponent: any, data?: DialogData): MatDialogRef<any> {
 		
 		// Remover foco do botão de abrir modal
 		// Previnir conflito com aria-hidden='true' no app-root

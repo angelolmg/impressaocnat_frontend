@@ -114,14 +114,14 @@ export class RequestFormComponent implements AfterViewInit {
 		if (this.pageState == 'Editar Solicitação') {
 			this.dialogService
 				.openDialog(
+					EditCopyComponent,
 					{
 						title: 'Editando arquivo',
 						message: 'Defina o número de cópias',
 						data: copy,
 						positive_label: 'Confirmar',
 						negative_label: 'Cancelar',
-					},
-					EditCopyComponent
+					}
 				)
 				.afterClosed()
 				.subscribe((result) => {
@@ -133,12 +133,12 @@ export class RequestFormComponent implements AfterViewInit {
 	addCopyDialog() {
 		this.dialogService
 			.openDialog(
+				AddCopyComponent,
 				{
 					title: 'Adicionar arquivo',
 					positive_label: 'Adicionar',
-					negative_label: 'Cancelar',
-				},
-				AddCopyComponent
+				}
+	
 			)
 			.afterClosed()
 			.subscribe((result) => {

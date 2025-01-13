@@ -1,8 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import {MatButtonModule} from '@angular/material/button';
 import {MatTooltipModule} from '@angular/material/tooltip';
+import { DialogService } from '../../service/dialog.service';
+import { LoginBoxComponent } from '../login-box/login-box.component';
 
 interface Option {
 	icon: string;
@@ -22,6 +24,9 @@ interface User {
 	styleUrl: './side-menu.component.scss',
 })
 export class SideMenuComponent {
+
+	dialogService = inject(DialogService);
+
 	user: User = {
 		id: '123456',
 		name: 'Fulano de Tal',
@@ -44,4 +49,8 @@ export class SideMenuComponent {
 			routerLink: 'ver-solicitacao',
 		},
 	];
+
+	loginDialog() {
+		this.dialogService.openDialog(LoginBoxComponent);
+	}
 }

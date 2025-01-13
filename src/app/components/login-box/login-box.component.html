@@ -1,0 +1,14 @@
+<mat-dialog-content>
+	<div class="header">
+		<img src="assets/printer-01.svg" alt="logo" class="header-logo" />
+		<h1>{{ loginTitle }}</h1>
+	</div>
+
+	<div matRipple class="button-content" (click)="userService.logUser()">
+		<img src="assets/suap.svg" alt="logo" />
+		<span>
+			{{ loginButtonText }}
+		</span>
+	</div>
+    
+</mat-dialog-content>

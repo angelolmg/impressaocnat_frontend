@@ -121,14 +121,14 @@ export class ViewRequestComponent implements AfterViewInit {
 	editCopyDialog(copy: CopyInterface) {
 		this.dialogService
 			.openDialog(
+        EditCopyComponent,
 				{
 					title: 'Editando arquivo',
 					message: 'Defina o número de cópias',
 					data: copy,
 					positive_label: 'Confirmar',
 					negative_label: 'Cancelar',
-				},
-				EditCopyComponent
+				}
 			)
 			.afterClosed()
 			.subscribe((result) => {

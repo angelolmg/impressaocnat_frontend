@@ -85,7 +85,7 @@ export class ListRequestsComponent implements AfterViewInit {
 
 	openDialog() {
 		this.dialogService
-			.openDialog(this.data, DialogBoxComponent)
+			.openDialog(DialogBoxComponent, this.data)
 			.afterClosed()
 			.subscribe((result) => {
 				console.log(result);

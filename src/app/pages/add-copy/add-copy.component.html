@@ -1,7 +1,8 @@
-@if (data.title) {
-<h2 mat-dialog-title>{{ data.title }}</h2>
-}
+<h2 mat-dialog-title>{{ data.title || "Adicionar arquivo" }}</h2>
+
+@if (data.message) {
 <mat-dialog-content>{{ data.message }}</mat-dialog-content>
+}
 @if (data.warning) {
 <mat-dialog-content class="warning">{{ data.warning }}</mat-dialog-content>
 }
@@ -50,8 +51,8 @@
 </mat-dialog-content>
 
 <mat-dialog-actions>
-	<button mat-button (click)="onNoClick()">{{ data.negative_label }}</button>
+	<button mat-button (click)="onNoClick()">{{ data.negative_label || 'Cancelar' }}</button>
 	<button mat-button [mat-dialog-close]="newCopyData()" cdkFocusInitial>
-		{{ data.positive_label }}
+		{{ data.positive_label || 'Confirmar' }}
 	</button>
 </mat-dialog-actions>

@@ -1,8 +1,7 @@
-@if (data.title) {
-<h2 mat-dialog-title>{{ data.title }}</h2>
-}
+<h2 mat-dialog-title>{{ data.title || "Editar arquivo" }}</h2>
+@if (data.message) {
 <mat-dialog-content>{{ data.message }}</mat-dialog-content>
-@if (data.warning) {
+} @if (data.warning) {
 <mat-dialog-content class="warning">{{ data.warning }}</mat-dialog-content>
 }
 

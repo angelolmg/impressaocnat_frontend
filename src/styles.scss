@@ -26,6 +26,23 @@
   ));
 }
 
+:root {
+  --white: #fff;
+  --grey-200: #eee;
+  --grey-400: #ccc;
+  --grey-500: #999;
+  --grey-600: #666;
+  --black: #292929;
+  --primary: #347b3e;
+  --secondary: #75ad0a;
+  --success: #198754;
+  --login-black: #112828;
+  --login-primary: #37FFAC;
+  --login-primary-rgb: 55, 255, 172;
+  --login-secondary: #376F6C;
+  --login-tertiary: #0D3433;
+}
+
 * {
 	margin: 0;
 	padding: 0;
