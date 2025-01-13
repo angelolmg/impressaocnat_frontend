@@ -24,6 +24,7 @@ import { EditCopyComponent } from '../edit-copy/edit-copy.component';
 
 import { PDFDocument } from 'pdf-lib';
 import { RequestService } from '../../service/request.service';
+import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class MyErrorStateMatcher implements ErrorStateMatcher {
@@ -90,7 +91,6 @@ export class RequestFormComponent implements AfterViewInit {
 
 	selectedTimeControl = new FormControl(24);
 
-
 	callbackHandler(context: string, action: string, element: CopyInterface) {
 		switch (context) {
 			case 'request-creation':
@@ -100,29 +100,42 @@ export class RequestFormComponent implements AfterViewInit {
 	}
 
 	removeCopy(copy: CopyInterface) {
-		const copyIndex = this.copies.data.indexOf(copy);
+		this.dialogService
+			.openDialog(DialogBoxComponent, {
+				title: 'Excluir cópia',
+				message:
+					"Deseja realmente excluir cópia de '" +
+					copy.file_name +
+					"'?",
+				warning: 'Esta ação é permanente',
+				positive_label: 'Sim',
+				negative_label: 'Não',
+			})
+			.afterClosed()
+			.subscribe((result) => {
+				if (result) {
+					const copyIndex = this.copies.data.indexOf(copy);
 
-		if (copyIndex >= 0) {
-			this.copies.data.splice(copyIndex, 1);
-			this.files.splice(copyIndex, 1);
+					if (copyIndex >= 0) {
+						this.copies.data.splice(copyIndex, 1);
+						this.files.splice(copyIndex, 1);
 
-			this.refreshTable();
-		}
+						this.refreshTable();
+					}
+				}
+			});
 	}
 
 	editCopyDialog(copy: CopyInterface) {
 		if (this.pageState == 'Editar Solicitação') {
 			this.dialogService
-				.openDialog(
-					EditCopyComponent,
-					{
-						title: 'Editando arquivo',
-						message: 'Defina o número de cópias',
-						data: copy,
-						positive_label: 'Confirmar',
-						negative_label: 'Cancelar',
-					}
-				)
+				.openDialog(EditCopyComponent, {
+					title: 'Editando arquivo',
+					message: 'Defina o número de cópias',
+					data: copy,
+					positive_label: 'Confirmar',
+					negative_label: 'Cancelar',
+				})
 				.afterClosed()
 				.subscribe((result) => {
 					console.log(result);
@@ -132,14 +145,10 @@ export class RequestFormComponent implements AfterViewInit {
 
 	addCopyDialog() {
 		this.dialogService
-			.openDialog(
-				AddCopyComponent,
-				{
-					title: 'Adicionar arquivo',
-					positive_label: 'Adicionar',
-				}
-	
-			)
+			.openDialog(AddCopyComponent, {
+				title: "Adicionar Nova Cópia",
+				positive_label: 'Adicionar',
+			})
 			.afterClosed()
 			.subscribe((result) => {
 				const reader = new FileReader();
@@ -167,10 +176,23 @@ export class RequestFormComponent implements AfterViewInit {
 	}
 
 	clearCopies() {
-		this.copies.data = [];
-		this.files = [];
+		this.dialogService
+			.openDialog(DialogBoxComponent, {
+				title: 'Limpar Cópias',
+				message: `Deseja realmente excluir todas as [${this.copies.data.length}] cópias anexadas?`,
+				warning: 'Esta ação é permanente',
+				positive_label: 'Sim',
+				negative_label: 'Não',
+			})
+			.afterClosed()
+			.subscribe((result) => {
+				if (result) {
+					this.copies.data = [];
+					this.files = [];
 
-		this.refreshTable();
+					this.refreshTable();
+				}
+			});
 	}
 
 	refreshTable() {
@@ -189,8 +211,11 @@ export class RequestFormComponent implements AfterViewInit {
 		this.requestPageCounter.set(counter);
 	}
 
-	submitRequest(){
-		this.requestService.saveRequest(this.files, this.copies.data, this.selectedTimeControl.value);
-		
+	submitRequest() {
+		this.requestService.saveRequest(
+			this.files,
+			this.copies.data,
+			this.selectedTimeControl.value
+		);
 	}
 }

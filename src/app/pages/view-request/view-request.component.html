@@ -79,6 +79,14 @@
 		<mat-chip-set aria-label="Sumário de cópias">
 			<mat-chip>Arquivos adicionados: {{ fileCount() }}</mat-chip>
 			<mat-chip>Contagem de folhas: {{ requestPageCounter() }}</mat-chip>
+            <img
+			style="margin-left: .5rem;"
+				matTooltip="Nº folhas = Σ(nº páginas * nº de cópias) ∀ arquivos anexados"
+				matTooltipPosition="after"
+				class="help-icon"
+				src="assets/help.svg"
+				alt="Icone de Ajuda"
+			/>
 		</mat-chip-set>
 	</div>
 

@@ -1,10 +1,10 @@
-<h2 mat-dialog-title>{{ data.title || "Adicionar arquivo" }}</h2>
+<h2 mat-dialog-title>{{ data.title || "Adicionar Nova Cópia" }}</h2>
 
 @if (data.message) {
 <mat-dialog-content>{{ data.message }}</mat-dialog-content>
 }
 @if (data.warning) {
-<mat-dialog-content class="warning">{{ data.warning }}</mat-dialog-content>
+<mat-dialog-content class="warning"><strong>{{ data.warning }}</strong></mat-dialog-content>
 }
 
 <mat-dialog-content class="file-input">

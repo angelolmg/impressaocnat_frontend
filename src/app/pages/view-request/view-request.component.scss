@@ -101,3 +101,12 @@ th:last-child {
 .search-bar {
 	margin-left: auto;
 }
+
+.help-icon {
+	width: 1.25rem;
+		opacity: 50%;
+		cursor: pointer;
+		&:hover {
+			opacity: 30%;
+		}
+}

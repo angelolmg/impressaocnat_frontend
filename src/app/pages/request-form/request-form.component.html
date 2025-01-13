@@ -1,11 +1,11 @@
 <form class="my-steps">
 	<h2 class="page-title">{{ pageState }}</h2>
 
-	<p>1. Anexe arquivos à solicitação</p>
+	<p>1. Anexe cópias à solicitação</p>
 
 	<div class="btn-selection">
 		<button type="button" mat-flat-button (click)="addCopyDialog()">
-			Adicionar arquivo
+			Adicionar nova cópia
 		</button>
 		<button type="button" mat-button (click)="clearCopies()">Limpar</button>
 	</div>
@@ -76,15 +76,29 @@
 
 	<div class="copy-summary" style="margin-bottom: 2rem">
 		<mat-chip-set aria-label="Sumário de cópias">
-			<mat-chip>Arquivos adicionados: {{ fileCount() }}</mat-chip>
-			<mat-chip>Contagem de folhas: {{ requestPageCounter() }}</mat-chip>
+			<mat-chip>Arquivos: {{ fileCount() }}</mat-chip>
+			<mat-chip>Contagem de Folhas: {{ requestPageCounter() }}</mat-chip>
+			<img
+			style="margin-left: .5rem;"
+				matTooltip="Nº folhas = Σ(nº páginas * nº de cópias) ∀ arquivos anexados"
+				matTooltipPosition="after"
+				class="help-icon"
+				src="assets/help.svg"
+				alt="Icone de Ajuda"
+			/>
 		</mat-chip-set>
 	</div>
 
 	<div class="term-input">
 		<div class="term-title">
 			<p>2. Defina o prazo de entrega</p>
-			<img matTooltip="Contado em dias úteis" class="help-icon" src="assets/help.svg" alt="Icone de Ajuda" />
+			<img
+				matTooltip="Contado em dias úteis"
+				matTooltipPosition="after"
+				class="help-icon"
+				src="assets/help.svg"
+				alt="Icone de Ajuda"
+			/>
 		</div>
 
 		<mat-form-field>

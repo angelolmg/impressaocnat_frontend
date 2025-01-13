@@ -81,16 +81,16 @@ h3 {
 	p {
 		margin: 0;
 	}
-	img {
-		width: 1.25rem;
+}
+
+.help-icon {
+	width: 1.25rem;
 		opacity: 50%;
 		cursor: pointer;
 		&:hover {
 			opacity: 30%;
 		}
-	}
 }
-
 
 
 .copy-summary {
