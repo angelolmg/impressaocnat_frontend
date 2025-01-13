@@ -82,10 +82,14 @@
 	</div>
 
 	<div class="term-input">
-		<p>2. Defina o prazo de entrega</p>
+		<div class="term-title">
+			<p>2. Defina o prazo de entrega</p>
+			<img matTooltip="Contado em dias úteis" class="help-icon" src="assets/help.svg" alt="Icone de Ajuda" />
+		</div>
+
 		<mat-form-field>
 			<mat-label>Selecione um prazo</mat-label>
-			<mat-select>
+			<mat-select [formControl]="selectedTimeControl">
 				@for (time of times; track time) {
 				<mat-option [value]="time">{{ time }} horas</mat-option>
 				}
@@ -94,6 +98,8 @@
 	</div>
 
 	<div class="confirm-button">
-		<button type="button" mat-flat-button>Enviar Solicitação</button>
+		<button type="button" mat-flat-button (click)="submitRequest()">
+			Enviar Solicitação
+		</button>
 	</div>
 </form>

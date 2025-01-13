@@ -23,6 +23,7 @@ import { AddCopyComponent } from '../add-copy/add-copy.component';
 import { EditCopyComponent } from '../edit-copy/edit-copy.component';
 
 import { PDFDocument } from 'pdf-lib';
+import { RequestService } from '../../service/request.service';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class MyErrorStateMatcher implements ErrorStateMatcher {
@@ -62,6 +63,7 @@ export class RequestFormComponent implements AfterViewInit {
 		// console.log(this.copies);
 		this.refreshTable();
 	}
+
 	pageStates: string[] = ['Nova Solicitação', 'Editar Solicitação'];
 	pageState: string = this.pageStates[0];
 
@@ -73,6 +75,7 @@ export class RequestFormComponent implements AfterViewInit {
 	copies = new MatTableDataSource<CopyInterface>(COPY_DATA);
 	actionService = inject(ActionService);
 	dialogService = inject(DialogService);
+	requestService = inject(RequestService);
 
 	times: number[] = [48, 24, 12, 4, 2];
 
@@ -85,10 +88,8 @@ export class RequestFormComponent implements AfterViewInit {
 		'actions',
 	];
 
-	copyNumFormControl = new FormControl(10, [
-		Validators.required,
-		Validators.min(1),
-	]);
+	selectedTimeControl = new FormControl(24);
+
 
 	callbackHandler(context: string, action: string, element: CopyInterface) {
 		switch (context) {
@@ -141,7 +142,6 @@ export class RequestFormComponent implements AfterViewInit {
 			)
 			.afterClosed()
 			.subscribe((result) => {
-				console.log(result);
 				const reader = new FileReader();
 				reader.readAsArrayBuffer(result.file);
 				reader.onloadend = () => {
@@ -151,7 +151,7 @@ export class RequestFormComponent implements AfterViewInit {
 							this.copies.data.push({
 								file_name: result.file.name,
 								file_type: result.file.type,
-								page_count: document.getPageCount() ?? 999,
+								page_count: document.getPageCount() ?? 0,
 								copy_count: result.control.value,
 							});
 
@@ -187,5 +187,10 @@ export class RequestFormComponent implements AfterViewInit {
 		});
 
 		this.requestPageCounter.set(counter);
+	}
+
+	submitRequest(){
+		this.requestService.saveRequest(this.files, this.copies.data, this.selectedTimeControl.value);
+		
 	}
 }

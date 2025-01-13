@@ -74,6 +74,25 @@ h3 {
 	}
 }
 
+.term-title {
+	display: flex;
+	align-items: center;
+    gap: 0.5rem;
+	p {
+		margin: 0;
+	}
+	img {
+		width: 1.25rem;
+		opacity: 50%;
+		cursor: pointer;
+		&:hover {
+			opacity: 30%;
+		}
+	}
+}
+
+
+
 .copy-summary {
 	margin-bottom: 2rem;
 	mat-chip {
