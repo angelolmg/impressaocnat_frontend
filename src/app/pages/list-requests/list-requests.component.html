@@ -29,7 +29,7 @@
 			<mat-form-field>
 				<mat-label>Filtrar por Atributo</mat-label>
 				<input matInput placeholder="Nº, Matrícula, etc" value="" />
-                <mat-icon matSuffix>search</mat-icon>
+				<mat-icon matSuffix>search</mat-icon>
 			</mat-form-field>
 		</form>
 	</div>
@@ -44,7 +44,9 @@
 			>
 				ID
 			</th>
-			<td mat-cell *matCellDef="let element">{{ element.id.toString().padStart(6, '0') }}</td>
+			<td mat-cell *matCellDef="let element">
+				{{ element.id.toString().padStart(6, "0") }}
+			</td>
 		</ng-container>
 
 		<ng-container matColumnDef="creation_date">
@@ -136,11 +138,12 @@
 			<td mat-cell *matCellDef="let element">
 				@for (action of allowedActions; track $index) {
 				<button
-					[disabled]="actionService.disabledHandler('list-requests', action, element)"
+					[hidden]="actionService.hiddenHandler(action, element)"
+					[disabled]="actionService.disabledHandler(action, element)"
 					mat-icon-button
 					matTooltip="{{ action }}"
 					aria-label="Action button"
-					(click)="actionService.callbackHandler('list-requests', action, element)"
+					(click)="actionService.callbackHandler(action, element)"
 				>
 					<mat-icon>{{ action | icon }}</mat-icon>
 				</button>

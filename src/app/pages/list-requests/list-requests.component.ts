@@ -19,7 +19,11 @@ import { DialogData } from '../../models/dialogData.interface';
 import { REQUEST_DATA, RequestInterface } from '../../models/request.interface';
 import { DatePipe } from '@angular/common';
 import { IconPipe } from '../../pipes/icon.pipe';
-import { ActionService } from '../../service/action.service';
+import {
+	actions,
+	ActionService,
+	PageStates,
+} from '../../service/action.service';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
 
 @Component({
@@ -55,24 +59,18 @@ export class ListRequestsComponent implements AfterViewInit {
 		'actions',
 	];
 
-	allowedActions: string[] = [
-		'Visualizar',
-		'Concluir',
-		'Editar',
-		'Excluir',
-		// 'Abrir',
-		// 'Download',
-	];
+	allowedActions: string[] = [];
 
 	dialogService = inject(DialogService);
 	actionService = inject(ActionService);
+	pageState = PageStates.viewAllRequests;
 
 	dataSource = new MatTableDataSource<RequestInterface>(REQUEST_DATA);
 	data: DialogData = {
 		title: 'Excluir Solicitação',
 		message: 'Deseja realmente excluir N°00011?',
 		positive_label: 'Sim',
-		negative_label: 'Não'
+		negative_label: 'Não',
 	};
 
 	@ViewChild(MatSort) sort!: MatSort;
@@ -81,6 +79,10 @@ export class ListRequestsComponent implements AfterViewInit {
 	ngAfterViewInit() {
 		this.dataSource.sort = this.sort;
 		this.dataSource.paginator = this.paginator;
+
+		if (this.pageState == PageStates.viewAllRequests)
+			this.allowedActions = actions.allowedActionsforViewAllRequests;
+		else this.allowedActions = actions.allowedActionsforViewMyRequests;
 	}
 
 	openDialog() {
@@ -91,5 +93,4 @@ export class ListRequestsComponent implements AfterViewInit {
 				console.log(result);
 			});
 	}
-
 }

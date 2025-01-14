@@ -5,7 +5,6 @@ import {
 	FormsModule,
 	NgForm,
 	ReactiveFormsModule,
-	Validators,
 } from '@angular/forms';
 import { MatButton, MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
@@ -14,17 +13,23 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { COPY_DATA, CopyInterface } from '../../models/copy.interface';
-import { ActionService } from '../../service/action.service';
+import {
+	actions,
+	ActionService,
+	PageStates,
+} from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
 import { AddCopyComponent } from '../add-copy/add-copy.component';
 import { EditCopyComponent } from '../edit-copy/edit-copy.component';
 
 import { PDFDocument } from 'pdf-lib';
-import { RequestService } from '../../service/request.service';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
+import { RequestService } from '../../service/request.service';
+import { IconPipe } from '../../pipes/icon.pipe';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class MyErrorStateMatcher implements ErrorStateMatcher {
@@ -55,18 +60,21 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
 		MatButtonModule,
 		MatSelectModule,
 		MatChipsModule,
+		IconPipe,
 	],
 	templateUrl: './request-form.component.html',
 	styleUrl: './request-form.component.scss',
 })
 export class RequestFormComponent implements AfterViewInit {
 	ngAfterViewInit(): void {
-		// console.log(this.copies);
+		if (this.pageState == PageStates.newRequest)
+			this.allowedActions = actions.allowedActionsforNewRequest;
+		else this.allowedActions = actions.allowedActionsforEditRequest;
+
 		this.refreshTable();
 	}
 
-	pageStates: string[] = ['Nova Solicitação', 'Editar Solicitação'];
-	pageState: string = this.pageStates[0];
+	pageState = PageStates.newRequest;
 
 	files: any[] = [];
 	fileCount = signal(0);
@@ -77,10 +85,11 @@ export class RequestFormComponent implements AfterViewInit {
 	actionService = inject(ActionService);
 	dialogService = inject(DialogService);
 	requestService = inject(RequestService);
+	_snackBar = inject(MatSnackBar);
 
 	times: number[] = [48, 24, 12, 4, 2];
 
-	allowedActions: string[] = ['Editar', 'Excluir'];
+	allowedActions: string[] = [];
 
 	displayedColumns: string[] = [
 		'file_name',
@@ -91,13 +100,13 @@ export class RequestFormComponent implements AfterViewInit {
 
 	selectedTimeControl = new FormControl(24);
 
-	callbackHandler(context: string, action: string, element: CopyInterface) {
-		switch (context) {
-			case 'request-creation':
-				return this.removeCopy(element);
-		}
-		return console.log([context, action, element]);
-	}
+	// callbackHandler(action: string, element: CopyInterface) {
+	// 	// switch (context) {
+	// 	// 	case 'request-creation':
+	// 	// 		return this.removeCopy(element);
+	// 	// }
+	// 	return console.log([action, element]);
+	// }
 
 	removeCopy(copy: CopyInterface) {
 		this.dialogService
@@ -146,7 +155,7 @@ export class RequestFormComponent implements AfterViewInit {
 	addCopyDialog() {
 		this.dialogService
 			.openDialog(AddCopyComponent, {
-				title: "Adicionar Nova Cópia",
+				title: 'Adicionar Nova Cópia',
 				positive_label: 'Adicionar',
 			})
 			.afterClosed()
@@ -176,23 +185,25 @@ export class RequestFormComponent implements AfterViewInit {
 	}
 
 	clearCopies() {
-		this.dialogService
-			.openDialog(DialogBoxComponent, {
-				title: 'Limpar Cópias',
-				message: `Deseja realmente excluir todas as [${this.copies.data.length}] cópias anexadas?`,
-				warning: 'Esta ação é permanente',
-				positive_label: 'Sim',
-				negative_label: 'Não',
-			})
-			.afterClosed()
-			.subscribe((result) => {
-				if (result) {
-					this.copies.data = [];
-					this.files = [];
+		if (this.anyCopies()) {
+			this.dialogService
+				.openDialog(DialogBoxComponent, {
+					title: 'Limpar Cópias',
+					message: `Deseja realmente excluir todas as [${this.copies.data.length}] cópias anexadas?`,
+					warning: 'Esta ação é permanente',
+					positive_label: 'Sim',
+					negative_label: 'Não',
+				})
+				.afterClosed()
+				.subscribe((result) => {
+					if (result) {
+						this.copies.data = [];
+						this.files = [];
 
-					this.refreshTable();
-				}
-			});
+						this.refreshTable();
+					}
+				});
+		}
 	}
 
 	refreshTable() {
@@ -212,10 +223,24 @@ export class RequestFormComponent implements AfterViewInit {
 	}
 
 	submitRequest() {
-		this.requestService.saveRequest(
-			this.files,
-			this.copies.data,
-			this.selectedTimeControl.value
-		);
+		if (this.anyCopies() && this.files.length > 0) {
+			this.requestService.saveRequest(
+				this.files,
+				this.copies.data,
+				this.selectedTimeControl.value
+			);
+		} else {
+			this._snackBar.open(
+				'É necessário adicionar pelo menos uma cópia à solicitação',
+				'Ok',
+				{
+					duration: 6000,
+				}
+			);
+		}
+	}
+
+	anyCopies() {
+		return this.copies.data.length > 0;
 	}
 }

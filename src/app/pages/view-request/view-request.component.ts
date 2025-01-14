@@ -23,12 +23,13 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { COPY_DATA, CopyInterface } from '../../models/copy.interface';
-import { ActionService } from '../../service/action.service';
+import { actions, ActionService } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
 import { EditCopyComponent } from '../edit-copy/edit-copy.component';
 
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
+import { IconPipe } from '../../pipes/icon.pipe';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class MyErrorStateMatcher implements ErrorStateMatcher {
@@ -60,6 +61,7 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
 		MatButtonModule,
 		MatSelectModule,
 		MatChipsModule,
+		IconPipe
 	],
 	templateUrl: './view-request.component.html',
 	styleUrl: './view-request.component.scss',
@@ -71,6 +73,8 @@ export class ViewRequestComponent implements AfterViewInit {
 	ngAfterViewInit() {
 		this.copies.sort = this.sort;
 		this.copies.paginator = this.paginator;
+
+		this.allowedActions = actions.allowedActionsforViewRequest;
 		this.refreshTable();
 	}
 
@@ -85,7 +89,7 @@ export class ViewRequestComponent implements AfterViewInit {
 	actionService = inject(ActionService);
 	dialogService = inject(DialogService);
 
-	allowedActions: string[] = ['Editar', 'Excluir'];
+	allowedActions: string[] = [];
 
 	displayedColumns: string[] = [
 		'file_name',
@@ -99,13 +103,14 @@ export class ViewRequestComponent implements AfterViewInit {
 		Validators.min(1),
 	]);
 
-	callbackHandler(context: string, action: string, element: CopyInterface) {
-		switch (context) {
-			case 'request-creation':
-				return this.removeCopy(element);
-		}
-		return console.log([context, action, element]);
-	}
+	// callbackHandler(action: string, element: CopyInterface) {
+	// 	// switch (context) {
+	// 	// 	case 'request-creation':
+	// 	// 		return this.removeCopy(element);
+	// 	// }
+	// 	return console.log([action, element]);
+	// }
+
 
 	removeCopy(copy: CopyInterface) {
 		const copyIndex = this.copies.data.indexOf(copy);
@@ -120,16 +125,13 @@ export class ViewRequestComponent implements AfterViewInit {
 
 	editCopyDialog(copy: CopyInterface) {
 		this.dialogService
-			.openDialog(
-        EditCopyComponent,
-				{
-					title: 'Editando arquivo',
-					message: 'Defina o número de cópias',
-					data: copy,
-					positive_label: 'Confirmar',
-					negative_label: 'Cancelar',
-				}
-			)
+			.openDialog(EditCopyComponent, {
+				title: 'Editando arquivo',
+				message: 'Defina o número de cópias',
+				data: copy,
+				positive_label: 'Confirmar',
+				negative_label: 'Cancelar',
+			})
 			.afterClosed()
 			.subscribe((result) => {
 				console.log(result);

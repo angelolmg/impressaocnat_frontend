@@ -38,7 +38,25 @@
 			</td>
 		</ng-container>
 
-		<ng-container class="center-elements" matColumnDef="actions">
+		<ng-container matColumnDef="actions">
+			<th mat-header-cell *matHeaderCellDef>Ações</th>
+			<td mat-cell *matCellDef="let element">
+				@for (action of allowedActions; track $index) {
+				<button
+					[hidden]="actionService.hiddenHandler()"
+					[disabled]="actionService.disabledHandler(action, element)"
+					mat-icon-button
+					matTooltip="{{ action }}"
+					aria-label="Action button"
+					(click)="actionService.callbackHandler(action, element)"
+				>
+					<mat-icon>{{ action | icon }}</mat-icon>
+				</button>
+				}
+			</td>
+		</ng-container>
+
+		<!-- <ng-container class="center-elements" matColumnDef="actions">
 			<th mat-header-cell *matHeaderCellDef>Ações</th>
 
 			<td mat-cell *matCellDef="let element">
@@ -69,7 +87,7 @@
 					<mat-icon>delete</mat-icon>
 				</button>
 			</td>
-		</ng-container>
+		</ng-container> -->
 
 		<tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
 		<tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>

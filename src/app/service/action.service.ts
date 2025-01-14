@@ -2,6 +2,41 @@ import { RequestInterface } from './../models/request.interface';
 import { Injectable } from '@angular/core';
 import { CopyInterface } from '../models/copy.interface';
 
+// Gerencia o estado dos botões de ação em componentes de listagem. Define quais botões estarão habilitados, ocultos ou inativos, 
+// e especifica as ações que cada botão realizará, levando em consideração o componente em questão, o estado atual da página, 
+// a ação a ser executada e o elemento selecionado. 
+
+export enum PageStates {
+	newRequest = 'Nova Solicitação',
+	editRequest = 'Editar Solicitação',
+	viewAllRequests = 'Todas as Solicitações',
+	viewMyRequests = 'Minhas Solicitações',
+}
+
+export const actions = {
+	allActions: [
+		'Visualizar',
+		'Concluir',
+		'Editar',
+		'Excluir',
+		'Abrir',
+		'Download',
+	],
+
+	allowedActionsforViewAllRequests: [
+		'Visualizar',
+		'Concluir',
+		'Editar',
+		'Excluir',
+		'Abrir',
+	],
+
+	allowedActionsforViewMyRequests: ['Visualizar', 'Editar', 'Excluir'],
+	allowedActionsforEditRequest: ['Editar', 'Excluir'],
+	allowedActionsforNewRequest: ['Excluir'],
+	allowedActionsforViewRequest: ['Editar', 'Excluir', 'Download'],
+};
+
 @Injectable({
 	providedIn: 'root',
 })
@@ -20,11 +55,12 @@ export class ActionService {
 
 	// Controla se determinadas opções são, ou não, desabilidadas a depender do contexto (tela), ação e elemento a ser modificado
 	disabledHandler(
-		context: string,
-		action: string,
-		element: RequestInterface | CopyInterface
+		component?: string,
+		state?: string,
+		action?: string,
+		element?: RequestInterface | CopyInterface
 	) {
-		switch (context) {
+		switch (state) {
 			case 'list-requests':
 				// Desabilitar botões de 'Concluir' e 'Editar' caso solicitação tenha data de conclusão (solicitação concluída)
 				if (
@@ -38,7 +74,8 @@ export class ActionService {
 			case 'request-creation':
 				// Desabilita tentativas de edição de cópia durante >>criação<< de solicitação
 				// É habilitado durante >>edição<< de solicitação
-				if (this.intanceOfCopy(element) && action == 'Editar') return true;
+				if (this.intanceOfCopy(element) && action == 'Editar')
+					return true;
 				break;
 		}
 
@@ -46,15 +83,20 @@ export class ActionService {
 	}
 
 	callbackHandler(
-		context: string,
-		action: string,
+		component?: string,
+		state?: string,
+		action?: string,
 		element?: RequestInterface | CopyInterface
 	) {
+		return console.log([state, action, element]);
+	}
 
-
-
-		return console.log([context, action, element]);
-
-
+	hiddenHandler(
+		component?: string,
+		state?: string,
+		action?: string,
+		element?: RequestInterface | CopyInterface
+	) {
+		return false;
 	}
 }
