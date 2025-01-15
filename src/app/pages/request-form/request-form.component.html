@@ -1,5 +1,5 @@
 <form class="my-steps">
-	<h2 class="page-title">{{ pageState }}</h2>
+	<h2 class="page-title">{{ pageType }}</h2>
 
 	<p>1. Anexe cópias à solicitação</p>
 
@@ -49,8 +49,6 @@
 					<button
 						[disabled]="
 							actionService.disabledHandler(
-								'request-form',
-								pageState,
 								action,
 								element
 							)
@@ -60,8 +58,6 @@
 						aria-label="Action Button"
 						(click)="
 							actionService.callbackHandler(
-								'request-form',
-								pageState,
 								action,
 								element
 							)
@@ -72,33 +68,6 @@
 					}
 				</td>
 			</ng-container>
-
-			<!-- <ng-container class="center-elements" matColumnDef="actions">
-				<th mat-header-cell *matHeaderCellDef>Ações</th>
-
-				<td mat-cell *matCellDef="let element">
-					@if (pageState == 'Editar Solicitação') {
-
-					<button
-						mat-icon-button
-						matTooltip="Editar"
-						aria-label="Editar cópia"
-						(click)="editCopyDialog(element)"
-					>
-						<mat-icon>edit</mat-icon>
-					</button>
-					}
-
-					<button
-						mat-icon-button
-						matTooltip="Remover"
-						aria-label="Remover cópia"
-						(click)="removeCopy(element)"
-					>
-						<mat-icon>delete</mat-icon>
-					</button>
-				</td>
-			</ng-container> -->
 
 			<tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
 			<tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>

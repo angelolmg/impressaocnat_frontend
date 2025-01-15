@@ -26,8 +26,8 @@ import { COPY_DATA, CopyInterface } from '../../models/copy.interface';
 import {
 	actions,
 	ActionService,
-	actionType,
-	PageState,
+	ActionType,
+	PageType,
 } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
 import { AddCopyComponent } from '../add-copy/add-copy.component';
@@ -75,7 +75,7 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
 })
 export class RequestFormComponent implements AfterViewInit, OnDestroy {
 	ngAfterViewInit(): void {
-		if (this.pageState == PageState.newRequest)
+		if (this.pageType == PageType.newRequest)
 			this.allowedActions = actions.allowedActionsforNewRequest;
 		else this.allowedActions = actions.allowedActionsforEditRequest;
 
@@ -94,7 +94,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy {
 		this.refreshTable();
 	}
 
-	pageState = PageState.editRequest;
+	pageType = PageType.editRequest;
 
 	files: any[] = [];
 	fileCount = signal(0);
@@ -109,7 +109,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy {
 
 	times: number[] = [48, 24, 12, 4, 2];
 
-	allowedActions: actionType[] = [];
+	allowedActions: ActionType[] = [];
 
 	displayedColumns: string[] = [
 		'file_name',
@@ -150,7 +150,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy {
 	}
 
 	editCopyDialog(copy: CopyInterface) {
-		if (this.pageState == PageState.editRequest) {
+		if (this.pageType == PageType.editRequest) {
 			this.dialogService
 				.openDialog(EditCopyComponent, {
 					title: 'Editar cópia',

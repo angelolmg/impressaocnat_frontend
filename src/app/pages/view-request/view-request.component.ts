@@ -1,3 +1,4 @@
+import { PageType } from './../../service/action.service';
 import {
 	AfterViewInit,
 	Component,
@@ -30,6 +31,8 @@ import { EditCopyComponent } from '../edit-copy/edit-copy.component';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { IconPipe } from '../../pipes/icon.pipe';
+import { Subscription } from 'rxjs';
+import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class MyErrorStateMatcher implements ErrorStateMatcher {
@@ -61,7 +64,7 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
 		MatButtonModule,
 		MatSelectModule,
 		MatChipsModule,
-		IconPipe
+		IconPipe,
 	],
 	templateUrl: './view-request.component.html',
 	styleUrl: './view-request.component.scss',
@@ -74,9 +77,27 @@ export class ViewRequestComponent implements AfterViewInit {
 		this.copies.sort = this.sort;
 		this.copies.paginator = this.paginator;
 
-		this.allowedActions = actions.allowedActionsforViewRequest;
+		this.subscriptions.push(
+			this.actionService.deleteCopy.subscribe((copy) => {
+				this.removeCopy(copy);
+			})
+		);
+
+		this.subscriptions.push(
+			this.actionService.editCopy.subscribe((copy) => {
+				this.editCopyDialog(copy);
+			})
+		);
+
+		this.subscriptions.push(
+			this.actionService.downloadCopy.subscribe((copy) => {
+				this.downloadFile(copy);
+			})
+		);
+
 		this.refreshTable();
 	}
+	subscriptions: Subscription[] = [];
 
 	requestNumber: number = 1111;
 
@@ -89,7 +110,8 @@ export class ViewRequestComponent implements AfterViewInit {
 	actionService = inject(ActionService);
 	dialogService = inject(DialogService);
 
-	allowedActions: string[] = [];
+	allowedActions = actions.allowedActionsforViewRequest;
+	pageType = PageType.viewRequest;
 
 	displayedColumns: string[] = [
 		'file_name',
@@ -103,42 +125,57 @@ export class ViewRequestComponent implements AfterViewInit {
 		Validators.min(1),
 	]);
 
-	// callbackHandler(action: string, element: CopyInterface) {
-	// 	// switch (context) {
-	// 	// 	case 'request-creation':
-	// 	// 		return this.removeCopy(element);
-	// 	// }
-	// 	return console.log([action, element]);
-	// }
-
-
 	removeCopy(copy: CopyInterface) {
-		const copyIndex = this.copies.data.indexOf(copy);
+		this.dialogService
+			.openDialog(DialogBoxComponent, {
+				title: 'Excluir cópia',
+				message:
+					"Deseja realmente excluir cópia de '" +
+					copy.file_name +
+					"'?",
+				warning: 'Esta ação é permanente',
+				positive_label: 'Sim',
+				negative_label: 'Não',
+			})
+			.afterClosed()
+			.subscribe((result: boolean) => {
+				if (result) {
+					const copyIndex = this.copies.data.indexOf(copy);
 
-		if (copyIndex >= 0) {
-			this.copies.data.splice(copyIndex, 1);
-			this.files.splice(copyIndex, 1);
+					if (copyIndex >= 0) {
+						this.copies.data.splice(copyIndex, 1);
+						this.files.splice(copyIndex, 1);
 
-			this.refreshTable();
-		}
+						this.refreshTable();
+					}
+				}
+			});
 	}
 
 	editCopyDialog(copy: CopyInterface) {
 		this.dialogService
 			.openDialog(EditCopyComponent, {
-				title: 'Editando arquivo',
+				title: 'Editar cópia',
 				message: 'Defina o número de cópias',
 				data: copy,
 				positive_label: 'Confirmar',
 				negative_label: 'Cancelar',
 			})
 			.afterClosed()
-			.subscribe((result) => {
-				console.log(result);
+			.subscribe((result: FormControl) => {
+				if (result && !result.errors) {
+					const copyIndex = this.copies.data.indexOf(copy);
+
+					if (copyIndex >= 0)
+						this.copies.data[copyIndex].copy_count = result.value;
+
+					this.refreshTable();
+				}
 			});
 	}
 
 	downloadFile(element: any) {
+		console.log('Baixando arquivo...');
 		console.log(element);
 	}
 
@@ -163,5 +200,12 @@ export class ViewRequestComponent implements AfterViewInit {
 		});
 
 		this.requestPageCounter.set(counter);
+	}
+
+	// Unsubscribe para prevenir memory leak
+	ngOnDestroy(): void {
+		this.subscriptions.forEach((subscription) => {
+			subscription.unsubscribe();
+		});
 	}
 }

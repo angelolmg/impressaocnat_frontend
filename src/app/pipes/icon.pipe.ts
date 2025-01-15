@@ -1,23 +1,26 @@
 import { Pipe, PipeTransform } from '@angular/core';
+import { ActionType } from '../service/action.service';
 @Pipe({
 	name: 'icon',
 })
 export class IconPipe implements PipeTransform {
-	transform(value: string): string {
-		switch (value) {
-			case 'Visualizar':
+	transform(action: ActionType): string {
+		switch (action) {
+			case ActionType.VISUALIZAR:
 				return 'visibility';
-			case 'Concluir':
-				return 'check';
-            case 'Abrir':
-                return 'close';
-			case 'Excluir':
+			case ActionType.FECHAR:
+				return 'check_box_outline_blank';
+			case ActionType.ABRIR:
+				return 'check_box';
+			case ActionType.EXCLUIR:
 				return 'delete';
-			case 'Editar':
+			case ActionType.EDITAR:
 				return 'edit';
-			case 'Download':
+			case ActionType.BAIXAR:
 				return 'download';
 		}
+		
+		// Just in case
 		return 'question_mark';
 	}
 }

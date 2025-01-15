@@ -10,23 +10,22 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 
 import { MatBadgeModule } from '@angular/material/badge';
 
+import { DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { DialogService } from '../../service/dialog.service';
-import { DialogData } from '../../models/dialogData.interface';
+import { Subscription } from 'rxjs';
+import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
 import { REQUEST_DATA, RequestInterface } from '../../models/request.interface';
-import { DatePipe } from '@angular/common';
 import { IconPipe } from '../../pipes/icon.pipe';
 import {
 	actions,
 	ActionService,
-	actionType,
-	PageState,
+	ActionType,
+	PageType,
 } from '../../service/action.service';
-import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
-import { Subscription } from 'rxjs';
+import { DialogService } from '../../service/dialog.service';
 
 @Component({
 	selector: 'app-list-requests',
@@ -61,11 +60,11 @@ export class ListRequestsComponent implements AfterViewInit, OnDestroy {
 		'actions',
 	];
 
-	allowedActions: actionType[] = [];
+	allowedActions: ActionType[] = [];
 
 	dialogService = inject(DialogService);
 	actionService = inject(ActionService);
-	pageState = PageState.viewMyRequests;
+	pageType = PageType.viewAllRequests;
 
 	requests = new MatTableDataSource<RequestInterface>(REQUEST_DATA);
 
@@ -78,7 +77,7 @@ export class ListRequestsComponent implements AfterViewInit, OnDestroy {
 		this.requests.sort = this.sort;
 		this.requests.paginator = this.paginator;
 
-		if (this.pageState == PageState.viewAllRequests)
+		if (this.pageType == PageType.viewAllRequests)
 			this.allowedActions = actions.allowedActionsforViewAllRequests;
 		else this.allowedActions = actions.allowedActionsforViewMyRequests;
 
@@ -93,6 +92,36 @@ export class ListRequestsComponent implements AfterViewInit, OnDestroy {
 				this.editRequestRedirect(request);
 			})
 		);
+
+		this.subscriptions.push(
+			this.actionService.viewRequest.subscribe((request) => {
+				this.viewRequestRedirect(request);
+			})
+		);
+
+		this.subscriptions.push(
+			this.actionService.closeRequest.subscribe((request) => {
+				this.closeRequest(request);
+			})
+		);
+
+		this.subscriptions.push(
+			this.actionService.openRequest.subscribe((request) => {
+				this.openRequest(request);
+			})
+		);
+	}
+
+	openRequest(request: RequestInterface) {
+		console.log("Abrindo solicitação...");
+		
+		console.log(request);
+		
+	}
+	closeRequest(request: RequestInterface) {
+		console.log("Fechando solicitação...");
+		
+		console.log(request);
 	}
 
 	removeRequest(request: RequestInterface) {
@@ -123,6 +152,14 @@ export class ListRequestsComponent implements AfterViewInit, OnDestroy {
 
 	editRequestRedirect(request: RequestInterface) {
 		console.log('Editando solicitação...');
+		console.log(request);
+		
+	}
+
+	viewRequestRedirect(request: RequestInterface) {
+		console.log('Ver solicitação...');
+		console.log(request);
+
 	}
 
 	refreshTable() {
