@@ -19,6 +19,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { DialogData } from '../../models/dialogData.interface';
 import { MyErrorStateMatcher } from '../request-form/request-form.component';
+import { CopyInterface } from '../../models/copy.interface';
 
 @Component({
 	selector: 'app-edit-copy',
@@ -45,12 +46,13 @@ export class EditCopyComponent {
 	readonly data = inject<DialogData>(MAT_DIALOG_DATA);
 	
 
-	copyNumFormControl = new FormControl('10', [
+	copy = this.data.data as CopyInterface;
+
+	copyNumFormControl = new FormControl(this.copy.copy_count, [
 		Validators.required,
 		Validators.min(1),
 	]);
 		
-	
 	readonly formControl = model(this.copyNumFormControl);
 
 	onNoClick(): void {

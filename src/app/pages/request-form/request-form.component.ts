@@ -1,4 +1,10 @@
-import { AfterViewInit, Component, inject, signal } from '@angular/core';
+import {
+	AfterViewInit,
+	Component,
+	inject,
+	OnDestroy,
+	signal,
+} from '@angular/core';
 import {
 	FormControl,
 	FormGroupDirective,
@@ -20,7 +26,8 @@ import { COPY_DATA, CopyInterface } from '../../models/copy.interface';
 import {
 	actions,
 	ActionService,
-	PageStates,
+	actionType,
+	PageState,
 } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
 import { AddCopyComponent } from '../add-copy/add-copy.component';
@@ -30,6 +37,7 @@ import { PDFDocument } from 'pdf-lib';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
 import { RequestService } from '../../service/request.service';
 import { IconPipe } from '../../pipes/icon.pipe';
+import { Subscription } from 'rxjs';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class MyErrorStateMatcher implements ErrorStateMatcher {
@@ -65,16 +73,28 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
 	templateUrl: './request-form.component.html',
 	styleUrl: './request-form.component.scss',
 })
-export class RequestFormComponent implements AfterViewInit {
+export class RequestFormComponent implements AfterViewInit, OnDestroy {
 	ngAfterViewInit(): void {
-		if (this.pageState == PageStates.newRequest)
+		if (this.pageState == PageState.newRequest)
 			this.allowedActions = actions.allowedActionsforNewRequest;
 		else this.allowedActions = actions.allowedActionsforEditRequest;
+
+		this.subscriptions.push(
+			this.actionService.deleteCopy.subscribe((copy) => {
+				this.removeCopy(copy);
+			})
+		);
+
+		this.subscriptions.push(
+			this.actionService.editCopy.subscribe((copy) => {
+				this.editCopyDialog(copy);
+			})
+		);
 
 		this.refreshTable();
 	}
 
-	pageState = PageStates.newRequest;
+	pageState = PageState.editRequest;
 
 	files: any[] = [];
 	fileCount = signal(0);
@@ -89,7 +109,7 @@ export class RequestFormComponent implements AfterViewInit {
 
 	times: number[] = [48, 24, 12, 4, 2];
 
-	allowedActions: string[] = [];
+	allowedActions: actionType[] = [];
 
 	displayedColumns: string[] = [
 		'file_name',
@@ -100,13 +120,7 @@ export class RequestFormComponent implements AfterViewInit {
 
 	selectedTimeControl = new FormControl(24);
 
-	// callbackHandler(action: string, element: CopyInterface) {
-	// 	// switch (context) {
-	// 	// 	case 'request-creation':
-	// 	// 		return this.removeCopy(element);
-	// 	// }
-	// 	return console.log([action, element]);
-	// }
+	subscriptions: Subscription[] = [];
 
 	removeCopy(copy: CopyInterface) {
 		this.dialogService
@@ -121,7 +135,7 @@ export class RequestFormComponent implements AfterViewInit {
 				negative_label: 'Não',
 			})
 			.afterClosed()
-			.subscribe((result) => {
+			.subscribe((result: boolean) => {
 				if (result) {
 					const copyIndex = this.copies.data.indexOf(copy);
 
@@ -136,18 +150,26 @@ export class RequestFormComponent implements AfterViewInit {
 	}
 
 	editCopyDialog(copy: CopyInterface) {
-		if (this.pageState == 'Editar Solicitação') {
+		if (this.pageState == PageState.editRequest) {
 			this.dialogService
 				.openDialog(EditCopyComponent, {
-					title: 'Editando arquivo',
+					title: 'Editar cópia',
 					message: 'Defina o número de cópias',
 					data: copy,
 					positive_label: 'Confirmar',
 					negative_label: 'Cancelar',
 				})
 				.afterClosed()
-				.subscribe((result) => {
-					console.log(result);
+				.subscribe((result: FormControl) => {
+					if (result && !result.errors) {
+						const copyIndex = this.copies.data.indexOf(copy);
+
+						if (copyIndex >= 0)
+							this.copies.data[copyIndex].copy_count =
+								result.value;
+
+						this.refreshTable();
+					}
 				});
 		}
 	}
@@ -160,27 +182,29 @@ export class RequestFormComponent implements AfterViewInit {
 			})
 			.afterClosed()
 			.subscribe((result) => {
-				const reader = new FileReader();
-				reader.readAsArrayBuffer(result.file);
-				reader.onloadend = () => {
-					if (reader.result) {
-						const pdf = PDFDocument.load(reader.result);
-						pdf.then((document: PDFDocument) => {
-							this.copies.data.push({
-								file_name: result.file.name,
-								file_type: result.file.type,
-								page_count: document.getPageCount() ?? 0,
-								copy_count: result.control.value,
+				if (result) {
+					const reader = new FileReader();
+					reader.readAsArrayBuffer(result.file);
+					reader.onloadend = () => {
+						if (reader.result) {
+							const pdf = PDFDocument.load(reader.result);
+							pdf.then((document: PDFDocument) => {
+								this.copies.data.push({
+									file_name: result.file.name,
+									file_type: result.file.type,
+									page_count: document.getPageCount() ?? 0,
+									copy_count: result.control.value,
+								});
+
+								this.files.push(result.file);
+
+								this.refreshTable();
 							});
-
-							this.files.push(result.file);
-
-							this.refreshTable();
-						});
-					} else {
-						console.log('Não foi possível ler arquivo');
-					}
-				};
+						} else {
+							console.log('Não foi possível ler arquivo');
+						}
+					};
+				}
 			});
 	}
 
@@ -195,7 +219,7 @@ export class RequestFormComponent implements AfterViewInit {
 					negative_label: 'Não',
 				})
 				.afterClosed()
-				.subscribe((result) => {
+				.subscribe((result: boolean) => {
 					if (result) {
 						this.copies.data = [];
 						this.files = [];
@@ -242,5 +266,12 @@ export class RequestFormComponent implements AfterViewInit {
 
 	anyCopies() {
 		return this.copies.data.length > 0;
+	}
+
+	// Unsubscribe para prevenir memory leak
+	ngOnDestroy(): void {
+		this.subscriptions.forEach((subscription) => {
+			subscription.unsubscribe();
+		});
 	}
 }

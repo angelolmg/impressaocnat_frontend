@@ -43,7 +43,6 @@
 			<td mat-cell *matCellDef="let element">
 				@for (action of allowedActions; track $index) {
 				<button
-					[hidden]="actionService.hiddenHandler()"
 					[disabled]="actionService.disabledHandler(action, element)"
 					mat-icon-button
 					matTooltip="{{ action }}"

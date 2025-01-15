@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, OnDestroy, ViewChild } from '@angular/core';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatIconModule } from '@angular/material/icon';
@@ -22,9 +22,11 @@ import { IconPipe } from '../../pipes/icon.pipe';
 import {
 	actions,
 	ActionService,
-	PageStates,
+	actionType,
+	PageState,
 } from '../../service/action.service';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
+import { Subscription } from 'rxjs';
 
 @Component({
 	selector: 'app-list-requests',
@@ -48,7 +50,7 @@ import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.compo
 	styleUrl: './list-requests.component.scss',
 	changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ListRequestsComponent implements AfterViewInit {
+export class ListRequestsComponent implements AfterViewInit, OnDestroy {
 	displayedColumns: string[] = [
 		'id',
 		'registration',
@@ -59,38 +61,80 @@ export class ListRequestsComponent implements AfterViewInit {
 		'actions',
 	];
 
-	allowedActions: string[] = [];
+	allowedActions: actionType[] = [];
 
 	dialogService = inject(DialogService);
 	actionService = inject(ActionService);
-	pageState = PageStates.viewAllRequests;
+	pageState = PageState.viewMyRequests;
 
-	dataSource = new MatTableDataSource<RequestInterface>(REQUEST_DATA);
-	data: DialogData = {
-		title: 'Excluir Solicitação',
-		message: 'Deseja realmente excluir N°00011?',
-		positive_label: 'Sim',
-		negative_label: 'Não',
-	};
+	requests = new MatTableDataSource<RequestInterface>(REQUEST_DATA);
 
 	@ViewChild(MatSort) sort!: MatSort;
 	@ViewChild(MatPaginator) paginator!: MatPaginator;
 
-	ngAfterViewInit() {
-		this.dataSource.sort = this.sort;
-		this.dataSource.paginator = this.paginator;
+	subscriptions: Subscription[] = [];
 
-		if (this.pageState == PageStates.viewAllRequests)
+	ngAfterViewInit() {
+		this.requests.sort = this.sort;
+		this.requests.paginator = this.paginator;
+
+		if (this.pageState == PageState.viewAllRequests)
 			this.allowedActions = actions.allowedActionsforViewAllRequests;
 		else this.allowedActions = actions.allowedActionsforViewMyRequests;
+
+		this.subscriptions.push(
+			this.actionService.deleteRequest.subscribe((request) => {
+				this.removeRequest(request);
+			})
+		);
+
+		this.subscriptions.push(
+			this.actionService.editRequest.subscribe((request) => {
+				this.editRequestRedirect(request);
+			})
+		);
 	}
 
-	openDialog() {
+	removeRequest(request: RequestInterface) {
 		this.dialogService
-			.openDialog(DialogBoxComponent, this.data)
+			.openDialog(DialogBoxComponent, {
+				title: 'Excluir solicitação',
+				message:
+					'Deseja realmente excluir solicitação Nº' +
+					request.id +
+					'?',
+				warning: 'Esta ação é permanente',
+				positive_label: 'Sim',
+				negative_label: 'Não',
+			})
 			.afterClosed()
 			.subscribe((result) => {
-				console.log(result);
+				if (result) {
+					const requestIndex = this.requests.data.indexOf(request);
+
+					if (requestIndex >= 0) {
+						this.requests.data.splice(requestIndex, 1);
+
+						this.refreshTable();
+					}
+				}
 			});
+	}
+
+	editRequestRedirect(request: RequestInterface) {
+		console.log('Editando solicitação...');
+	}
+
+	refreshTable() {
+		// Refresh the data source object
+		// Angular Material is weird
+		this.requests.data = this.requests.data;
+	}
+
+	// Unsubscribe para prevenir memory leak
+	ngOnDestroy(): void {
+		this.subscriptions.forEach((subscription) => {
+			subscription.unsubscribe();
+		})
 	}
 }
