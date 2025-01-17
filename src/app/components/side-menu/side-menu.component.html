@@ -1,7 +1,12 @@
 <div class="main-container">
 	<div class="base-container">
 		<div class="header">
-			<img routerLink="" src="assets/printer-01.svg" alt="logo" class="header-logo" />
+			<img
+				routerLink=""
+				src="assets/printer-01.svg"
+				alt="logo"
+				class="header-logo"
+			/>
 			<h1>Solicitação de Cópias - CNAT</h1>
 		</div>
 
@@ -18,14 +23,24 @@
 	</div>
 	<div class="user-container">
 		<div class="user-card">
-			<img src="assets/user-01.svg" alt="user" class="user-pp" (click)="loginDialog()"/>
+			<img
+				[src]="userSignal().pfp"
+				alt="user"
+				class="user-pp"
+				(click)="loginDialog()"
+			/>
+
 			<div class="user-info">
-				<span>{{ user.name }}</span>
-				<span>{{ user.id }}</span>
+				<span>{{ userSignal().name }}</span>
+				<span>{{ userSignal().registration }}</span>
 			</div>
-			<button mat-icon-button matTooltip="Sair" aria-label="Download button">
-                <mat-icon>logout</mat-icon>
-            </button>
+			<button
+				mat-icon-button
+				matTooltip="Sair"
+				aria-label="Download button"
+			>
+				<mat-icon>logout</mat-icon>
+			</button>
 		</div>
 	</div>
 </div>

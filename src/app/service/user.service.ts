@@ -1,11 +1,18 @@
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { EventEmitter, inject, Injectable } from '@angular/core';
+import { EMPTY, Observable } from 'rxjs';
 import { environment } from './../../environments/environment';
-import { Injectable } from '@angular/core';
+import { userData } from './../models/userData.interface';
 
 @Injectable({
 	providedIn: 'root',
 })
 export class UserService {
+  http: HttpClient = inject(HttpClient);
 	client!: SuapClient;
+  user?: userData;
+
+  userUpdate = new EventEmitter<userData>();
 
 	constructor() {
 		this.client = new SuapClient(
@@ -19,6 +26,28 @@ export class UserService {
 	logUser() {
 		location.href = this.client.getLoginURL();
 	}
+
+  getUserData(): Observable<userData> {
+    const token = this.client.getToken().getValue();
+
+    if(!token) {
+      console.warn('No token set');
+      return EMPTY;
+    }
+
+    const url = `${environment.SUAP_URL}/api/rh/meus-dados/`;
+    const headers = new HttpHeaders({
+      'Authorization': 'Bearer ' + token,
+      'Accept': '*/*'
+    });
+
+    return this.http.get<userData>(url, { headers });
+  }
+
+  setUser(data: userData) {
+    this.user = data;
+    this.userUpdate.emit(this.user);
+  }
 }
 
 /**
