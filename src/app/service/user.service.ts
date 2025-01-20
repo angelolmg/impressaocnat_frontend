@@ -1,18 +1,27 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { EventEmitter, inject, Injectable } from '@angular/core';
-import { EMPTY, Observable } from 'rxjs';
+import {
+	AfterViewInit,
+	EventEmitter,
+	inject,
+	Injectable,
+	OnDestroy,
+} from '@angular/core';
+import { Router } from '@angular/router';
+import { Observable, Subscription, throwError } from 'rxjs';
 import { environment } from './../../environments/environment';
 import { userData } from './../models/userData.interface';
 
 @Injectable({
 	providedIn: 'root',
 })
-export class UserService {
-  http: HttpClient = inject(HttpClient);
+export class UserService implements AfterViewInit, OnDestroy {
+	http: HttpClient = inject(HttpClient);
+	router: Router = inject(Router);
 	client!: SuapClient;
-  user?: userData;
+	user?: userData;
 
-  userUpdate = new EventEmitter<userData>();
+	userUpdate = new EventEmitter<userData>();
+	userInit = new Subscription();
 
 	constructor() {
 		this.client = new SuapClient(
@@ -21,33 +30,58 @@ export class UserService {
 			environment.REDIRECT_URI,
 			environment.SCOPE
 		);
+
+		let token = localStorage.getItem('suapToken');
+		if (token) this.client.initializeToken('localStorage');
+
+		this.userInit = this.getUserData().subscribe({
+			next: (data: userData) => {
+				this.setUser(data);
+			},
+			error: (err) => {
+				console.warn(err);
+			},
+			complete: () => console.log('Tentativa de login concluída'),
+		});
 	}
 
-	logUser() {
+	ngAfterViewInit(): void {}
+
+	logUserRedirect() {
 		location.href = this.client.getLoginURL();
 	}
 
-  getUserData(): Observable<userData> {
-    const token = this.client.getToken().getValue();
+	logoutUser() {
+		let token = this.client.getToken();
+		if (token) token.revoke();
+		else console.warn('No token set');
 
-    if(!token) {
-      console.warn('No token set');
-      return EMPTY;
-    }
+		this.router.navigate(['']);
+	}
 
-    const url = `${environment.SUAP_URL}/api/rh/meus-dados/`;
-    const headers = new HttpHeaders({
-      'Authorization': 'Bearer ' + token,
-      'Accept': '*/*'
-    });
+	getUserData(): Observable<userData> {
+		let token = this.client.getToken();
 
-    return this.http.get<userData>(url, { headers });
-  }
+		if (!token)
+			return throwError(() => new Error('Nenhum usuário conectado'));
 
-  setUser(data: userData) {
-    this.user = data;
-    this.userUpdate.emit(this.user);
-  }
+		const url = `${environment.SUAP_URL}/api/rh/meus-dados/`;
+		const headers = new HttpHeaders({
+			Authorization: 'Bearer ' + token.getValue(),
+			Accept: '*/*',
+		});
+
+		return this.http.get<userData>(url, { headers });
+	}
+
+	setUser(data: userData) {
+		this.user = data;
+		this.userUpdate.emit(this.user);
+	}
+
+	ngOnDestroy(): void {
+		this.userInit.unsubscribe();
+	}
 }
 
 /**
@@ -66,7 +100,6 @@ class SuapClient {
 	redirectURI: string;
 	scope: string;
 
-	dataJSON = {};
 	token!: Token;
 
 	authorizationURL: string;
@@ -145,21 +178,39 @@ class SuapClient {
 	/* Métodos públicos */
 
 	/**
-	 * Inicializa os objetos token e o dataJSON.
-	 *
+	 * Inicializa o objeto token.
+	 * @param source Define a origem das informações: 'uri' para extrair da URI ou 'localStorage' para usar o armazenamento local.
 	 */
-	public extractInfoFromURI(): boolean {
-		const tokenValue = this.extractToken();
-		const extractDuration = this.extractDuration();
-		const extractScope = this.extractScope();
+	public initializeToken(source: string): boolean {
+		let tokenValue: string | null = null;
+		let tokenStartTimeMs: number | null = null;
+		let tokenDurationSecs: number | null = null;
+		let scope: string | null = null;
 
-		if (tokenValue && extractDuration && extractScope) {
-			this.token = new Token(tokenValue, extractDuration, extractScope);
-			this.dataJSON = {};
-			return true;
+		if (source === 'uri') {
+			tokenValue = this.extractToken();
+			tokenStartTimeMs = new Date().getTime();
+			tokenDurationSecs = this.extractDuration();
+			scope = this.extractScope();
+		} else if (source === 'localStorage') {
+			tokenValue = localStorage.getItem('suapToken');
+			tokenStartTimeMs =
+				+localStorage.getItem('suapTokenStartTime')! || 0;
+			tokenDurationSecs =
+				+localStorage.getItem('suapTokenExpirationTime')! || 0;
+			scope = localStorage.getItem('suapScope');
 		}
 
-		console.warn('Inicialização do cliente SUAP falhou');
+		if (tokenValue && tokenStartTimeMs && tokenDurationSecs && scope) {
+			this.token = new Token(
+				tokenValue,
+				tokenStartTimeMs,
+				tokenDurationSecs,
+				scope
+			);
+			return true;
+		}
+		console.warn('Erro ao inicializar token do cliente SUAP');
 		return false;
 	}
 
@@ -170,15 +221,6 @@ class SuapClient {
 	 */
 	public getToken(): Token {
 		return this.token;
-	}
-
-	/**
-	 * Retorna o objeto dataJSON, que contém os dados retornados após a requisição Ajax.
-	 *
-	 * @return {Object} O objeto JSON com os dados requisitados.
-	 */
-	public getDataJSON(): {} {
-		return this.dataJSON;
 	}
 
 	/**
@@ -234,31 +276,32 @@ class SuapClient {
  * @constructor
  *
  * @param {string} value - A sequência de caracteres que representa o Token.
- * @param {number} expirationTime - Número de segundos que o token durará.
+ * @param {number} tokenStartTimeMs - Data de inicialização do token em milissegundos.
+ * @param {number} expirationTimeInSeconds - Número de segundos que o token durará.
  * @param {string} scope - A lista de escopos (separados por espaço) que foi autorizado pelo usuário.
  */
 class Token {
 	value?: string;
 	startTime?: number;
-	endTime?: Date;
+	expirationTimeInSeconds?: number;
 	scope?: string;
 
 	public constructor(
 		value: string,
+		startTime: number,
 		expirationTimeInSeconds: number,
 		scope: string
 	) {
 		this.value = value;
-		this.startTime = new Date().getTime(); // O valor em milissegundos.
-		this.endTime = new Date(
-			this.startTime + expirationTimeInSeconds * 1000
-		);
+		this.startTime = startTime;
+		this.expirationTimeInSeconds = expirationTimeInSeconds;
 		this.scope = scope;
 
 		localStorage.setItem('suapToken', value);
+		localStorage.setItem('suapTokenStartTime', this.startTime.toString());
 		localStorage.setItem(
 			'suapTokenExpirationTime',
-			this.endTime.toDateString()
+			this.expirationTimeInSeconds.toString()
 		);
 		localStorage.setItem('suapScope', scope);
 	}
@@ -268,7 +311,7 @@ class Token {
 	}
 
 	public getExpirationTime() {
-		return this.endTime;
+		return this.expirationTimeInSeconds;
 	}
 
 	public getScope() {
@@ -276,16 +319,32 @@ class Token {
 	}
 
 	public isValid() {
-		return localStorage.getItem('suapToken') && this.value != null;
+		return (
+			localStorage.getItem('suapToken') &&
+			this.getValue() &&
+			!this.hasExpired()
+		);
+	}
+
+	public hasExpired() {
+		let actualTime = new Date().getTime();
+		return (
+			this.startTime! + this.expirationTimeInSeconds! * 1000 > actualTime
+		);
 	}
 
 	public revoke() {
 		this.value = undefined;
 		this.startTime = undefined;
-		this.endTime = undefined;
+		this.expirationTimeInSeconds = undefined;
+		this.scope = undefined;
 
 		if (localStorage.getItem('suapToken')) {
 			localStorage.removeItem('suapToken');
+		}
+
+		if (localStorage.getItem('suapTokenStartTime')) {
+			localStorage.removeItem('suapTokenStartTime');
 		}
 
 		if (localStorage.getItem('suapTokenExpirationTime')) {

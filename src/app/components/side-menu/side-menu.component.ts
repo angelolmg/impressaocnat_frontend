@@ -26,23 +26,21 @@ interface User {
 	templateUrl: './side-menu.component.html',
 	styleUrl: './side-menu.component.scss',
 })
-export class SideMenuComponent implements AfterViewInit{
-	
+export class SideMenuComponent implements AfterViewInit {
 	dialogService = inject(DialogService);
 	userService = inject(UserService);
-
+	defaultUser = {
+		registration: '123456',
+		name: 'Fulano de Tal',
+		pfp: 'assets/user-01.svg',
+	};
+	userSignal = signal<User>(this.defaultUser);
 
 	ngAfterViewInit(): void {
 		this.userService.userUpdate.subscribe((data) => {
-			this.setUser(data);
+			this.updateUser(data);
 		});
 	}
-
-	userSignal = signal<User>({
-		registration: '123456',
-		name: 'Fulano de Tal',
-		pfp: 'assets/user-01.svg'
-	});
 
 	options: Option[] = [
 		{
@@ -66,11 +64,21 @@ export class SideMenuComponent implements AfterViewInit{
 		this.dialogService.openDialog(LoginBoxComponent);
 	}
 
-	setUser(user: userData) {
-		this.userSignal.set({
-			registration: user.matricula,
-			name: user.nome_usual,
-			pfp: user.url_foto_75x100
-		})
+	logoutUser() {
+		this.userService.logoutUser();
+		this.updateUser();
+		console.log('Usuário desconectado com sucesso');
+	}
+
+	updateUser(user?: userData) {
+		if (user) {
+			this.userSignal.set({
+				registration: user.matricula,
+				name: user.nome_usual,
+				pfp: user.url_foto_75x100,
+			});
+		} else {
+			this.userSignal.set(this.defaultUser);
+		}
 	}
 }
