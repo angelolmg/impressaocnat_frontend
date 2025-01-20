@@ -74,6 +74,31 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
 	styleUrl: './request-form.component.scss',
 })
 export class RequestFormComponent implements AfterViewInit, OnDestroy {
+	actionService = inject(ActionService);
+	dialogService = inject(DialogService);
+	requestService = inject(RequestService);
+	_snackBar = inject(MatSnackBar);
+
+	pageType = PageType.newRequest;
+
+	files: any[] = [];
+	copies = new MatTableDataSource<CopyInterface>(COPY_DATA);
+	allowedActions: ActionType[] = [];
+	subscriptions: Subscription[] = [];
+
+	fileCount = signal(0);
+	requestPageCounter = signal(0);
+	times: number[] = [48, 24, 12, 4, 2];
+	selectedTimeControl = new FormControl(24);
+	displayedColumns: string[] = [
+		'fileName',
+		'pageCount',
+		'copyCount',
+		'actions',
+	];
+
+	matcher = new MyErrorStateMatcher();
+
 	ngAfterViewInit(): void {
 		if (this.pageType == PageType.newRequest)
 			this.allowedActions = actions.allowedActionsforNewRequest;
@@ -94,41 +119,13 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy {
 		this.refreshTable();
 	}
 
-	pageType = PageType.editRequest;
-
-	files: any[] = [];
-	fileCount = signal(0);
-	requestPageCounter = signal(0);
-
-	matcher = new MyErrorStateMatcher();
-	copies = new MatTableDataSource<CopyInterface>(COPY_DATA);
-	actionService = inject(ActionService);
-	dialogService = inject(DialogService);
-	requestService = inject(RequestService);
-	_snackBar = inject(MatSnackBar);
-
-	times: number[] = [48, 24, 12, 4, 2];
-
-	allowedActions: ActionType[] = [];
-
-	displayedColumns: string[] = [
-		'file_name',
-		'page_count',
-		'copy_count',
-		'actions',
-	];
-
-	selectedTimeControl = new FormControl(24);
-
-	subscriptions: Subscription[] = [];
-
 	removeCopy(copy: CopyInterface) {
 		this.dialogService
 			.openDialog(DialogBoxComponent, {
 				title: 'Excluir cópia',
 				message:
 					"Deseja realmente excluir cópia de '" +
-					copy.file_name +
+					copy.fileName +
 					"'?",
 				warning: 'Esta ação é permanente',
 				positive_label: 'Sim',
@@ -165,7 +162,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy {
 						const copyIndex = this.copies.data.indexOf(copy);
 
 						if (copyIndex >= 0)
-							this.copies.data[copyIndex].copy_count =
+							this.copies.data[copyIndex].copyCount =
 								result.value;
 
 						this.refreshTable();
@@ -190,18 +187,17 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy {
 							const pdf = PDFDocument.load(reader.result);
 							pdf.then((document: PDFDocument) => {
 								this.copies.data.push({
-									file_name: result.file.name,
-									file_type: result.file.type,
-									page_count: document.getPageCount() ?? 0,
-									copy_count: result.control.value,
+									fileName: result.file.name,
+									fileType: result.file.type,
+									pageCount: document.getPageCount() ?? 0,
+									copyCount: result.control.value,
 								});
 
 								this.files.push(result.file);
-
 								this.refreshTable();
 							});
 						} else {
-							console.log('Não foi possível ler arquivo');
+							console.error('Não foi possível ler arquivo');
 						}
 					};
 				}
@@ -240,7 +236,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy {
 		// Refresh total page counter of the request
 		var counter = 0;
 		this.copies.data.forEach((copy) => {
-			counter += copy.page_count * copy.copy_count;
+			counter += copy.pageCount * copy.copyCount;
 		});
 
 		this.requestPageCounter.set(counter);

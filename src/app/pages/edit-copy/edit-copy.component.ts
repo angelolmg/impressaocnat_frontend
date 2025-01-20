@@ -48,7 +48,7 @@ export class EditCopyComponent {
 
 	copy = this.data.data as CopyInterface;
 
-	copyNumFormControl = new FormControl(this.copy.copy_count, [
+	copyNumFormControl = new FormControl(this.copy.copyCount, [
 		Validators.required,
 		Validators.min(1),
 	]);

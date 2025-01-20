@@ -1,20 +1,17 @@
-import { AfterViewInit, Component, OnDestroy, ViewChild } from '@angular/core';
+import { DatePipe } from '@angular/common';
+import { AfterViewInit, ChangeDetectionStrategy, Component, inject, OnDestroy, ViewChild } from '@angular/core';
+import { FormsModule } from '@angular/forms';
+import { MatBadgeModule } from '@angular/material/badge';
+import { MatButtonModule } from '@angular/material/button';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-
-import { MatBadgeModule } from '@angular/material/badge';
-
-import { DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, inject } from '@angular/core';
-import { FormsModule } from '@angular/forms';
-import { MatButtonModule } from '@angular/material/button';
-import { MatFormFieldModule } from '@angular/material/form-field';
 import { Subscription } from 'rxjs';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
 import { REQUEST_DATA, RequestInterface } from '../../models/request.interface';
@@ -54,9 +51,9 @@ export class ListRequestsComponent implements AfterViewInit, OnDestroy {
 		'id',
 		'registration',
 		'username',
-		'creation_date',
+		'creationDate',
 		'term',
-		'conclusion_date',
+		'conclusionDate',
 		'actions',
 	];
 

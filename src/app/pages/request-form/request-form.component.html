@@ -19,7 +19,7 @@
 				</td>
 			</ng-container>
 
-			<ng-container matColumnDef="file_name">
+			<ng-container matColumnDef="fileName">
 				<th mat-header-cell *matHeaderCellDef style="width: 50%">
 					Arquivo
 				</th>
@@ -28,14 +28,14 @@
 				</td>
 			</ng-container>
 
-			<ng-container matColumnDef="page_count">
+			<ng-container matColumnDef="pageCount">
 				<th mat-header-cell *matHeaderCellDef>Páginas</th>
 				<td mat-cell *matCellDef="let element">
 					{{ element.page_count }}
 				</td>
 			</ng-container>
 
-			<ng-container matColumnDef="copy_count">
+			<ng-container matColumnDef="copyCount">
 				<th mat-header-cell *matHeaderCellDef>Nº Cópias</th>
 				<td mat-cell *matCellDef="let element">
 					{{ element.copy_count }}
@@ -93,7 +93,7 @@
 		<div class="term-title">
 			<p>2. Defina o prazo de entrega</p>
 			<img
-				matTooltip="Contado em dias úteis"
+				matTooltip="Contado em horas úteis"
 				matTooltipPosition="after"
 				class="help-icon"
 				src="assets/help.svg"

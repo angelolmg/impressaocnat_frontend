@@ -46,8 +46,8 @@ export const actions = {
 	],
 };
 
-const CREATION_DATE_KEY = 'creation_date';
-const FILE_NAME_KEY = 'file_name';
+const CREATION_DATE_KEY = 'creationDate';
+const FILE_NAME_KEY = 'fileName';
 
 @Injectable({
 	providedIn: 'root',
@@ -86,7 +86,7 @@ export class ActionService {
 				// Desabilitar botões de 'Concluir' e 'Editar' caso solicitação tenha data de conclusão (solicitação concluída)
 				if (
 					this.instanceOfRequest(element) &&
-					element.conclusion_date &&
+					element.conclusionDate &&
 					(action == ActionType.EXCLUIR ||
 						action == ActionType.EDITAR)
 				)

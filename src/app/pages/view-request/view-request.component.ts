@@ -114,9 +114,9 @@ export class ViewRequestComponent implements AfterViewInit {
 	pageType = PageType.viewRequest;
 
 	displayedColumns: string[] = [
-		'file_name',
-		'page_count',
-		'copy_count',
+		'fileName',
+		'pageCount',
+		'copyCount',
 		'actions',
 	];
 
@@ -131,7 +131,7 @@ export class ViewRequestComponent implements AfterViewInit {
 				title: 'Excluir cópia',
 				message:
 					"Deseja realmente excluir cópia de '" +
-					copy.file_name +
+					copy.fileName +
 					"'?",
 				warning: 'Esta ação é permanente',
 				positive_label: 'Sim',
@@ -167,7 +167,7 @@ export class ViewRequestComponent implements AfterViewInit {
 					const copyIndex = this.copies.data.indexOf(copy);
 
 					if (copyIndex >= 0)
-						this.copies.data[copyIndex].copy_count = result.value;
+						this.copies.data[copyIndex].copyCount = result.value;
 
 					this.refreshTable();
 				}
@@ -196,7 +196,7 @@ export class ViewRequestComponent implements AfterViewInit {
 		// Refresh total page counter of the request
 		var counter = 0;
 		this.copies.data.forEach((copy) => {
-			counter += copy.page_count * copy.copy_count;
+			counter += copy.pageCount * copy.copyCount;
 		});
 
 		this.requestPageCounter.set(counter);
