@@ -58,7 +58,7 @@
 				Data de Criação
 			</th>
 			<td mat-cell *matCellDef="let element">
-				{{ element.creation_date | date : "M/d/yy, h:mm a" }}
+				{{ element.creationDate | date : "M/d/yy, h:mm a" }}
 			</td>
 		</ng-container>
 
@@ -126,7 +126,7 @@
 			<td mat-cell *matCellDef="let element">
 				{{
 					element.conclusion_date
-						? (element.conclusion_date | date : "short")
+						? (element.conclusionDate | date : "short")
 						: "Pendente"
 				}}
 			</td>
@@ -175,10 +175,4 @@
 		aria-label="Select page"
 	>
 	</mat-paginator>
-
-	<!-- @if (animal()) {
-        <li>
-          You chose: <em>{{animal()}}</em>
-        </li>
-      } -->
 </div>

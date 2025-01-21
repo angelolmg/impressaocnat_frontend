@@ -20,7 +20,7 @@ export class RedirectComponent implements OnDestroy {
 
 		userService.client.initializeToken('uri');
 
-		this.userInit = userService.getUserData().subscribe({
+		this.userInit = userService.fetchUserData().subscribe({
 			next: (data: userData) => {
 				userService.setUser(data);
 			},

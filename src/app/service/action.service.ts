@@ -38,7 +38,7 @@ export const actions = {
 		ActionType.EXCLUIR,
 	],
 	allowedActionsforEditRequest: [ActionType.EDITAR, ActionType.EXCLUIR],
-	allowedActionsforNewRequest: [ActionType.EXCLUIR],
+	allowedActionsforNewRequest: [ActionType.EDITAR, ActionType.EXCLUIR],
 	allowedActionsforViewRequest: [
 		ActionType.BAIXAR,
 		ActionType.EDITAR,

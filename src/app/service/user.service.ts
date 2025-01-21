@@ -34,7 +34,7 @@ export class UserService implements AfterViewInit, OnDestroy {
 		let token = localStorage.getItem('suapToken');
 		if (token) this.client.initializeToken('localStorage');
 
-		this.userInit = this.getUserData().subscribe({
+		this.userInit = this.fetchUserData().subscribe({
 			next: (data: userData) => {
 				this.setUser(data);
 			},
@@ -59,7 +59,7 @@ export class UserService implements AfterViewInit, OnDestroy {
 		this.router.navigate(['']);
 	}
 
-	getUserData(): Observable<userData> {
+	fetchUserData(): Observable<userData> {
 		let token = this.client.getToken();
 
 		if (!token)
@@ -77,6 +77,10 @@ export class UserService implements AfterViewInit, OnDestroy {
 	setUser(data: userData) {
 		this.user = data;
 		this.userUpdate.emit(this.user);
+	}
+
+	getCurrentUser(): userData | undefined {
+		return this.user;
 	}
 
 	ngOnDestroy(): void {

@@ -37,7 +37,9 @@ import { PDFDocument } from 'pdf-lib';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
 import { RequestService } from '../../service/request.service';
 import { IconPipe } from '../../pipes/icon.pipe';
-import { Subscription } from 'rxjs';
+import { delay, Subscription } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class MyErrorStateMatcher implements ErrorStateMatcher {
@@ -69,6 +71,7 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
 		MatSelectModule,
 		MatChipsModule,
 		IconPipe,
+		MatProgressSpinnerModule,
 	],
 	templateUrl: './request-form.component.html',
 	styleUrl: './request-form.component.scss',
@@ -81,7 +84,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy {
 
 	pageType = PageType.newRequest;
 
-	files: any[] = [];
+	files: File[] = [];
 	copies = new MatTableDataSource<CopyInterface>(COPY_DATA);
 	allowedActions: ActionType[] = [];
 	subscriptions: Subscription[] = [];
@@ -89,13 +92,14 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy {
 	fileCount = signal(0);
 	requestPageCounter = signal(0);
 	times: number[] = [48, 24, 12, 4, 2];
-	selectedTimeControl = new FormControl(24);
+	selectedTermControl = new FormControl(environment.DEFAULT_TERM_VALUE);
 	displayedColumns: string[] = [
 		'fileName',
 		'pageCount',
 		'copyCount',
 		'actions',
 	];
+	uploading = signal(false);
 
 	matcher = new MyErrorStateMatcher();
 
@@ -147,28 +151,25 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy {
 	}
 
 	editCopyDialog(copy: CopyInterface) {
-		if (this.pageType == PageType.editRequest) {
-			this.dialogService
-				.openDialog(EditCopyComponent, {
-					title: 'Editar cópia',
-					message: 'Defina o número de cópias',
-					data: copy,
-					positive_label: 'Confirmar',
-					negative_label: 'Cancelar',
-				})
-				.afterClosed()
-				.subscribe((result: FormControl) => {
-					if (result && !result.errors) {
-						const copyIndex = this.copies.data.indexOf(copy);
+		this.dialogService
+			.openDialog(EditCopyComponent, {
+				title: 'Editar cópia',
+				message: 'Defina o número de cópias',
+				data: copy,
+				positive_label: 'Confirmar',
+				negative_label: 'Cancelar',
+			})
+			.afterClosed()
+			.subscribe((result: FormControl) => {
+				if (result && !result.errors) {
+					const copyIndex = this.copies.data.indexOf(copy);
 
-						if (copyIndex >= 0)
-							this.copies.data[copyIndex].copyCount =
-								result.value;
+					if (copyIndex >= 0)
+						this.copies.data[copyIndex].copyCount = result.value;
 
-						this.refreshTable();
-					}
-				});
-		}
+					this.refreshTable();
+				}
+			});
 	}
 
 	addCopyDialog() {
@@ -180,6 +181,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy {
 			.afterClosed()
 			.subscribe((result) => {
 				if (result) {
+					let file: File = result.file;
 					const reader = new FileReader();
 					reader.readAsArrayBuffer(result.file);
 					reader.onloadend = () => {
@@ -187,13 +189,13 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy {
 							const pdf = PDFDocument.load(reader.result);
 							pdf.then((document: PDFDocument) => {
 								this.copies.data.push({
-									fileName: result.file.name,
-									fileType: result.file.type,
+									fileName: file.name,
+									fileType: file.type,
 									pageCount: document.getPageCount() ?? 0,
 									copyCount: result.control.value,
 								});
 
-								this.files.push(result.file);
+								this.files.push(file);
 								this.refreshTable();
 							});
 						} else {
@@ -204,7 +206,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy {
 			});
 	}
 
-	clearCopies() {
+	clearCopiesDialog() {
 		if (this.anyCopies()) {
 			this.dialogService
 				.openDialog(DialogBoxComponent, {
@@ -216,14 +218,17 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy {
 				})
 				.afterClosed()
 				.subscribe((result: boolean) => {
-					if (result) {
-						this.copies.data = [];
-						this.files = [];
-
-						this.refreshTable();
-					}
+					if (result) this.clearCopies();
 				});
 		}
+	}
+
+	clearCopies() {
+		this.copies.data = [];
+		this.files = [];
+		this.selectedTermControl.setValue(environment.DEFAULT_TERM_VALUE);
+
+		this.refreshTable();
 	}
 
 	refreshTable() {
@@ -244,11 +249,38 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy {
 
 	submitRequest() {
 		if (this.anyCopies() && this.files.length > 0) {
-			this.requestService.saveRequest(
-				this.files,
-				this.copies.data,
-				this.selectedTimeControl.value
-			);
+			this.uploading.set(true);
+
+			this.requestService
+				.saveRequest(
+					this.files,
+					this.copies.data,
+					this.selectedTermControl.value || 24, // Default 24h de prazo
+					this.requestPageCounter()
+				)
+				.pipe(delay(500))
+				.subscribe({
+					next: (response) => {
+						console.log('Resposta: ' + response);
+						this._snackBar.open(
+							'Requisição adicionada (ID: ' + response.id + ')',
+							'Ok',
+							{
+								duration: 6000,
+							}
+						);
+					},
+					error: (err) => {
+						console.error(err);
+					},
+					complete: () => {
+						console.log(
+							'Procedimento de salvamento de solicitação concluído'
+						);
+						this.uploading.set(false);
+						this.clearCopies();
+					},
+				});
 		} else {
 			this._snackBar.open(
 				'É necessário adicionar pelo menos uma cópia à solicitação',

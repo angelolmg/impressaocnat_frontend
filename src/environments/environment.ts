@@ -3,4 +3,8 @@ export const environment = {
 	REDIRECT_URI: 'http://localhost:4200/',
 	SUAP_URL: 'https://suap.ifrn.edu.br',
 	SCOPE: 'identificacao',
+
+	API_URL: 'http://localhost:8080',
+
+	DEFAULT_TERM_VALUE: 24
 };

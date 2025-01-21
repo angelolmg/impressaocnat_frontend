@@ -20,21 +20,21 @@
 				Arquivo
 			</th>
 			<td mat-cell *matCellDef="let element" style="width: 50%">
-				{{ element.file_name }}
+				{{ element.fileName }}
 			</td>
 		</ng-container>
 
 		<ng-container matColumnDef="pageCount">
 			<th mat-header-cell *matHeaderCellDef>Páginas</th>
 			<td mat-cell *matCellDef="let element">
-				{{ element.page_count }}
+				{{ element.pageCount }}
 			</td>
 		</ng-container>
 
 		<ng-container matColumnDef="copyCount">
 			<th mat-header-cell *matHeaderCellDef>Nº Cópias</th>
 			<td mat-cell *matCellDef="let element">
-				{{ element.copy_count }}
+				{{ element.copyCount }}
 			</td>
 		</ng-container>
 
