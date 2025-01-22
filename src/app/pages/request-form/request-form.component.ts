@@ -37,7 +37,7 @@ import { PDFDocument } from 'pdf-lib';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
 import { RequestService } from '../../service/request.service';
 import { IconPipe } from '../../pipes/icon.pipe';
-import { delay, Subscription } from 'rxjs';
+import { delay, finalize, Subscription } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
@@ -248,6 +248,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy {
 
 	submitRequest() {
 		if (this.anyCopies() && this.files.length > 0) {
+
 			this.uploading.set(true);
 
 			this.requestService
@@ -257,10 +258,16 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy {
 					this.selectedTermControl.value || 24, // Default 24h de prazo
 					this.requestPageCounter()
 				)
-				.pipe(delay(500))
+				.pipe(
+					delay(500),
+					finalize(() => {
+						this.uploading.set(false);
+					})
+				)
 				.subscribe({
 					next: (response) => {
 						console.log('Resposta: ' + response);
+						this.clearCopies();
 						this._snackBar.open(
 							'Requisição adicionada (ID: ' + response.id + ')',
 							'Ok',
@@ -271,13 +278,14 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy {
 					},
 					error: (err) => {
 						console.error(err);
+						this._snackBar.open(err, 'Ok', {
+							duration: 6000,
+						});
 					},
 					complete: () => {
-						console.log(
+						console.info(
 							'Procedimento de salvamento de solicitação concluído'
 						);
-						this.uploading.set(false);
-						this.clearCopies();
 					},
 				});
 		} else {

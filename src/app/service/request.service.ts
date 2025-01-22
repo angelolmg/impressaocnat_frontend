@@ -31,7 +31,7 @@ export class RequestService {
 			return throwError(
 				() =>
 					new Error(
-						'Falha nos dados do formulário. Não foi possível enviar POST de requisição'
+						'Falha nos dados do formulário. Não foi possível enviar requisição.'
 					)
 			);
 		}
@@ -41,7 +41,7 @@ export class RequestService {
 			return throwError(
 				() =>
 					new Error(
-						'Nenhum usuário encontrado. Não foi possível enviar POST de requisição'
+						'Nenhum usuário encontrado. Não foi possível enviar requisição.'
 					)
 			);
 		}
@@ -78,5 +78,9 @@ export class RequestService {
 
 	getAllRequests(): Observable<RequestInterface[]> {
 		return this.http.get<RequestInterface[]>(this.url);
+	}
+
+	getRequestById(id: number): Observable<RequestInterface> {
+		return this.http.get<RequestInterface>(this.url + '/' + id);
 	}
 }
