@@ -248,7 +248,6 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy {
 
 	submitRequest() {
 		if (this.anyCopies() && this.files.length > 0) {
-
 			this.uploading.set(true);
 
 			this.requestService
@@ -259,7 +258,6 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy {
 					this.requestPageCounter()
 				)
 				.pipe(
-					delay(500),
 					finalize(() => {
 						this.uploading.set(false);
 					})
@@ -270,31 +268,18 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy {
 						this.clearCopies();
 						this._snackBar.open(
 							'Requisição adicionada (ID: ' + response.id + ')',
-							'Ok',
-							{
-								duration: 6000,
-							}
+							'Ok'
 						);
 					},
 					error: (err) => {
 						console.error(err);
-						this._snackBar.open(err, 'Ok', {
-							duration: 6000,
-						});
-					},
-					complete: () => {
-						console.info(
-							'Procedimento de salvamento de solicitação concluído'
-						);
+						this._snackBar.open(err, 'Ok');
 					},
 				});
 		} else {
 			this._snackBar.open(
 				'É necessário adicionar pelo menos uma cópia à solicitação',
-				'Ok',
-				{
-					duration: 6000,
-				}
+				'Ok'
 			);
 		}
 	}

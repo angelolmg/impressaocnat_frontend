@@ -83,4 +83,8 @@ export class RequestService {
 	getRequestById(id: number): Observable<RequestInterface> {
 		return this.http.get<RequestInterface>(this.url + '/' + id);
 	}
+
+	deleteRequestById(id: number): Observable<any> {
+		return this.http.delete<any>(this.url + '/' + id);
+	}
 }

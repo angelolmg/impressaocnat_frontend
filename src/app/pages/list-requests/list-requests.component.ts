@@ -19,7 +19,15 @@ import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Subscription } from 'rxjs';
+import {
+	catchError,
+	EMPTY,
+	filter,
+	of,
+	Subscription,
+	switchMap,
+	tap,
+} from 'rxjs';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
 import {
 	REQUEST_MOCK_DATA,
@@ -34,6 +42,7 @@ import {
 } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
 import { RequestService } from '../../service/request.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
 	selector: 'app-list-requests',
@@ -73,6 +82,7 @@ export class ListRequestsComponent implements AfterViewInit, OnDestroy {
 	dialogService = inject(DialogService);
 	actionService = inject(ActionService);
 	requestService = inject(RequestService);
+	_snackBar = inject(MatSnackBar);
 
 	pageType = PageType.viewAllRequests;
 
@@ -93,7 +103,7 @@ export class ListRequestsComponent implements AfterViewInit, OnDestroy {
 
 		this.subscriptions.push(
 			this.actionService.deleteRequest.subscribe((request) => {
-				this.removeRequest(request);
+				this.deleteRequest(request);
 			})
 		);
 
@@ -124,7 +134,6 @@ export class ListRequestsComponent implements AfterViewInit, OnDestroy {
 		this.subscriptions.push(
 			this.requestService.getAllRequests().subscribe((requests) => {
 				this.requests.data = requests;
-				this.refreshTable();
 			})
 		);
 	}
@@ -139,29 +148,50 @@ export class ListRequestsComponent implements AfterViewInit, OnDestroy {
 		console.log(request);
 	}
 
-	removeRequest(request: RequestInterface) {
+	deleteRequest(request: RequestInterface): void {
 		this.dialogService
 			.openDialog(DialogBoxComponent, {
 				title: 'Excluir solicitação',
-				message:
-					'Deseja realmente excluir solicitação Nº' +
-					request.id +
-					'?',
+				message: `Deseja realmente excluir solicitação Nº ${request.id}?`,
 				warning: 'Esta ação é permanente',
 				positive_label: 'Sim',
 				negative_label: 'Não',
 			})
 			.afterClosed()
-			.subscribe((result) => {
-				if (result) {
-					const requestIndex = this.requests.data.indexOf(request);
-
-					if (requestIndex >= 0) {
-						this.requests.data.splice(requestIndex, 1);
-						this.refreshTable();
-					}
-				}
-			});
+			.pipe(
+				// Continua somente se o usuário confirmar a exclusão
+				filter((confirmed) => confirmed),
+				// Mapeia para a operação de exclusão
+				switchMap(() =>
+					this.requestService.deleteRequestById(request.id).pipe(
+						// Captura a mensagem de sucesso e emite a próxima operação
+						tap((response) => {
+							this._snackBar.open(response.message, 'Ok');
+						}),
+						// Em caso de erro, trata e retorna um observable vazio
+						catchError((error) => {
+							this._snackBar.open(
+								`Erro ao excluir solicitação: ${error.message}`,
+								'Ok'
+							);
+							return EMPTY;
+						})
+					)
+				),
+				// Após a exclusão, atualiza a lista de solicitações
+				switchMap(() => this.requestService.getAllRequests()),
+				tap((requests) => {
+					this.requests.data = requests;
+				}),
+				catchError((error) => {
+					this._snackBar.open(
+						`Erro ao atualizar solicitações: ${error.message}`,
+						'Ok'
+					);
+					return EMPTY;
+				})
+			)
+			.subscribe();
 	}
 
 	editRequestRedirect(request: RequestInterface) {
