@@ -5,6 +5,27 @@
 	height: 100%;
 }
 
+.table-wrapper {
+	position: relative; /* Define a referência para posicionamento absoluto */
+	display: inline-block; /* Ajusta o tamanho ao conteúdo da tabela */
+	height: 100%;
+}
+
+.overlay {
+	position: absolute; /* Posiciona a div relativa ao wrapper */
+	top: 0; /* Alinhado ao topo da tabela */
+	left: 0; /* Alinhado à esquerda da tabela */
+	width: 100%; /* Tamanho igual à tabela */
+	height: 100%; /* Altura igual à tabela */
+	background-color: rgba(0, 0, 0, 0.05); /* Fundo semitransparente */
+	border-radius: 1rem;
+	display: flex; /* Alinhamento central */
+	justify-content: center;
+	align-items: center;
+	z-index: 10; /* Garante que a div esteja acima da tabela */
+	// pointer-events: none; /* Permite clicar nos elementos da tabela abaixo */
+}
+
 .my-options {
 	display: flex;
 	justify-content: flex-end;
@@ -52,15 +73,16 @@ table {
 	}
 }
 
-th, td {
-    padding-inline: 3rem;
+th,
+td {
+	padding-inline: 3rem;
 }
 
 th {
-    padding-block: 1.5rem;
-    text-align: center;
+	padding-block: 1.5rem;
+	text-align: center;
 }
 
 td:last-child {
-    text-align: center;
+	text-align: center;
 }

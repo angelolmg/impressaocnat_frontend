@@ -16,6 +16,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -23,15 +25,13 @@ import {
 	catchError,
 	EMPTY,
 	filter,
-	of,
 	Subscription,
 	switchMap,
-	tap,
+	tap
 } from 'rxjs';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
 import {
-	REQUEST_MOCK_DATA,
-	RequestInterface,
+	RequestInterface
 } from '../../models/request.interface';
 import { IconPipe } from '../../pipes/icon.pipe';
 import {
@@ -42,7 +42,6 @@ import {
 } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
 import { RequestService } from '../../service/request.service';
-import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
 	selector: 'app-list-requests',
@@ -61,6 +60,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 		DatePipe,
 		IconPipe,
 		MatBadgeModule,
+		MatProgressSpinnerModule,
 	],
 	templateUrl: './list-requests.component.html',
 	styleUrl: './list-requests.component.scss',
@@ -86,7 +86,8 @@ export class ListRequestsComponent implements AfterViewInit, OnDestroy {
 
 	pageType = PageType.viewAllRequests;
 
-	requests = new MatTableDataSource<RequestInterface>(REQUEST_MOCK_DATA);
+	requests = new MatTableDataSource<RequestInterface>();
+	loadingData: boolean = true;
 
 	@ViewChild(MatSort) sort!: MatSort;
 	@ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -132,9 +133,13 @@ export class ListRequestsComponent implements AfterViewInit, OnDestroy {
 		);
 
 		this.subscriptions.push(
-			this.requestService.getAllRequests().subscribe((requests) => {
-				this.requests.data = requests;
-			})
+			this.requestService
+				.getAllRequests()
+				// .pipe(delay(1000))
+				.subscribe((requests) => {
+					this.requests.data = requests;
+					this.loadingData = false;
+				})
 		);
 	}
 
