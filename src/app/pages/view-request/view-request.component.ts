@@ -23,7 +23,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { COPY_DATA, CopyInterface } from '../../models/copy.interface';
+import { COPY_MOCK_DATA, CopyInterface } from '../../models/copy.interface';
 import { actions, ActionService } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
 import { EditCopyComponent } from '../edit-copy/edit-copy.component';
@@ -106,7 +106,7 @@ export class ViewRequestComponent implements AfterViewInit {
 	requestPageCounter = signal(0);
 
 	matcher = new MyErrorStateMatcher();
-	copies = new MatTableDataSource<CopyInterface>(COPY_DATA);
+	copies = new MatTableDataSource<CopyInterface>(COPY_MOCK_DATA);
 	actionService = inject(ActionService);
 	dialogService = inject(DialogService);
 

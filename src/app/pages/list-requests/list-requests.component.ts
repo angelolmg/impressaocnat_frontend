@@ -1,5 +1,12 @@
 import { DatePipe } from '@angular/common';
-import { AfterViewInit, ChangeDetectionStrategy, Component, inject, OnDestroy, ViewChild } from '@angular/core';
+import {
+	AfterViewInit,
+	ChangeDetectionStrategy,
+	Component,
+	inject,
+	OnDestroy,
+	ViewChild,
+} from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatButtonModule } from '@angular/material/button';
@@ -14,7 +21,10 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Subscription } from 'rxjs';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
-import { REQUEST_DATA, RequestInterface } from '../../models/request.interface';
+import {
+	REQUEST_MOCK_DATA,
+	RequestInterface,
+} from '../../models/request.interface';
 import { IconPipe } from '../../pipes/icon.pipe';
 import {
 	actions,
@@ -23,6 +33,7 @@ import {
 	PageType,
 } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
+import { RequestService } from '../../service/request.service';
 
 @Component({
 	selector: 'app-list-requests',
@@ -61,9 +72,11 @@ export class ListRequestsComponent implements AfterViewInit, OnDestroy {
 
 	dialogService = inject(DialogService);
 	actionService = inject(ActionService);
+	requestService = inject(RequestService);
+
 	pageType = PageType.viewAllRequests;
 
-	requests = new MatTableDataSource<RequestInterface>(REQUEST_DATA);
+	requests = new MatTableDataSource<RequestInterface>(REQUEST_MOCK_DATA);
 
 	@ViewChild(MatSort) sort!: MatSort;
 	@ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -107,17 +120,22 @@ export class ListRequestsComponent implements AfterViewInit, OnDestroy {
 				this.openRequest(request);
 			})
 		);
+
+		this.subscriptions.push(
+			this.requestService.getAllRequests().subscribe((requests) => {
+				this.requests.data = requests;
+				this.refreshTable();
+			})
+		);
 	}
 
 	openRequest(request: RequestInterface) {
-		console.log("Abrindo solicitação...");
-		
+		console.log('Abrindo solicitação...');
 		console.log(request);
-		
 	}
+
 	closeRequest(request: RequestInterface) {
-		console.log("Fechando solicitação...");
-		
+		console.log('Fechando solicitação...');
 		console.log(request);
 	}
 
@@ -140,7 +158,6 @@ export class ListRequestsComponent implements AfterViewInit, OnDestroy {
 
 					if (requestIndex >= 0) {
 						this.requests.data.splice(requestIndex, 1);
-
 						this.refreshTable();
 					}
 				}
@@ -150,13 +167,11 @@ export class ListRequestsComponent implements AfterViewInit, OnDestroy {
 	editRequestRedirect(request: RequestInterface) {
 		console.log('Editando solicitação...');
 		console.log(request);
-		
 	}
 
 	viewRequestRedirect(request: RequestInterface) {
 		console.log('Ver solicitação...');
 		console.log(request);
-
 	}
 
 	refreshTable() {
@@ -169,6 +184,6 @@ export class ListRequestsComponent implements AfterViewInit, OnDestroy {
 	ngOnDestroy(): void {
 		this.subscriptions.forEach((subscription) => {
 			subscription.unsubscribe();
-		})
+		});
 	}
 }

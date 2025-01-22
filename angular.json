@@ -5,6 +5,9 @@
 	"projects": {
 		"impressaocnat_frontend": {
 			"projectType": "application",
+			"i18n": {
+				"sourceLocale": "pt"
+			},
 			"schematics": {
 				"@schematics/angular:component": {
 					"style": "scss"

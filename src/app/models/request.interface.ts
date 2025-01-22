@@ -1,3 +1,5 @@
+import { CopyInterface } from "./copy.interface";
+
 export interface RequestInterface {
 	id: number;
 	creationDate: number; // Data de criação
@@ -5,6 +7,8 @@ export interface RequestInterface {
 	username: string; // Nome do usuário
 	registration: string; // Matrícula
 	conclusionDate?: number; // Data de conclusão
+    totalPageCount?: number; // Total de páginas na solicitação
+    copies?: CopyInterface[]; // Arquivos anexados a solicitação
 }
 
 const DATE_2024_01_15 = new Date('2024-01-15T22:00:00.000Z').getTime();
@@ -13,7 +17,7 @@ const DATE_2024_03_10 = new Date('2024-03-10T12:00:00.000Z').getTime();
 const DATE_2024_04_05 = new Date('2024-04-05T12:00:00.000Z').getTime();
 const DATE_2024_05_01 = new Date('2024-05-01T12:00:00.000Z').getTime();
 
-export const REQUEST_DATA: RequestInterface[] = [
+export const REQUEST_MOCK_DATA: RequestInterface[] = [
     {
         id: 1,
         creationDate: DATE_2024_01_15,

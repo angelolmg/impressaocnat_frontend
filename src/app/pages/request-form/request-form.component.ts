@@ -22,7 +22,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { COPY_DATA, CopyInterface } from '../../models/copy.interface';
+import { COPY_MOCK_DATA, CopyInterface } from '../../models/copy.interface';
 import {
 	actions,
 	ActionService,
@@ -85,7 +85,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy {
 	pageType = PageType.newRequest;
 
 	files: File[] = [];
-	copies = new MatTableDataSource<CopyInterface>(COPY_DATA);
+	copies = new MatTableDataSource<CopyInterface>(COPY_MOCK_DATA);
 	allowedActions: ActionType[] = [];
 	subscriptions: Subscription[] = [];
 
@@ -136,16 +136,15 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy {
 				negative_label: 'Não',
 			})
 			.afterClosed()
-			.subscribe((result: boolean) => {
-				if (result) {
-					const copyIndex = this.copies.data.indexOf(copy);
+			.subscribe((shouldRemove: boolean) => {
+				if (!shouldRemove) return;
+				const copyIndex = this.copies.data.indexOf(copy);
 
-					if (copyIndex >= 0) {
-						this.copies.data.splice(copyIndex, 1);
-						this.files.splice(copyIndex, 1);
+				if (copyIndex >= 0) {
+					this.copies.data.splice(copyIndex, 1);
+					this.files.splice(copyIndex, 1);
 
-						this.refreshTable();
-					}
+					this.refreshTable();
 				}
 			});
 	}

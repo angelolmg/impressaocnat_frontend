@@ -4,9 +4,11 @@ export interface CopyInterface {
 	fileType: string; // Extensão do arquivo
 	pageCount: number; // Número de páginas
 	copyCount: number; // Número de cópias
+	fileInDisk?: boolean; // Se o arquivo esta salvo no backend
+	requestId?: number; // ID da solicitação associada
 }
 
-export const COPY_DATA: CopyInterface[] = [
+export const COPY_MOCK_DATA: CopyInterface[] = [
 	// {
 	// 	id: 1,
 	// 	file_name: 'Relatório Mensal Janeiro',

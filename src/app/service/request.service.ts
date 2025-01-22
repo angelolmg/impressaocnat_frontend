@@ -4,6 +4,7 @@ import { Observable, of, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { CopyInterface } from '../models/copy.interface';
 import { UserService } from './user.service';
+import { RequestInterface } from '../models/request.interface';
 
 @Injectable({
 	providedIn: 'root',
@@ -11,6 +12,7 @@ import { UserService } from './user.service';
 export class RequestService {
 	userService = inject(UserService);
 	http: HttpClient = inject(HttpClient);
+	url = `${environment.API_URL}/solicitacoes`;
 
 	constructor() {}
 
@@ -63,16 +65,18 @@ export class RequestService {
 			})
 		);
 
-    files.forEach((file) => {
-      formData.append('arquivos', file);
-    })
-
-		const url = `${environment.API_URL}/solicitacoes`;
+		files.forEach((file) => {
+			formData.append('arquivos', file);
+		});
 
 		let headers = new HttpHeaders();
-    headers.append('Accept', 'application/json');
-    headers.append('Content-Type', 'multipart/form-data')
+		headers.append('Accept', 'application/json');
+		headers.append('Content-Type', 'multipart/form-data');
 
-		return this.http.post(url, formData, { headers });
+		return this.http.post(this.url, formData, { headers });
+	}
+
+	getAllRequests(): Observable<RequestInterface[]> {
+		return this.http.get<RequestInterface[]>(this.url);
 	}
 }
