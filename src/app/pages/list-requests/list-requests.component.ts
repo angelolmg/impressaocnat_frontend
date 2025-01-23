@@ -204,6 +204,7 @@ export class ListRequestsComponent implements AfterViewInit, OnDestroy {
 	editRequestRedirect(request: RequestInterface) {
 		console.log('Editando solicitação...');
 		console.log(request);
+		this.router.navigate(['/editar-solicitacao', request.id]);
 	}
 
 	viewRequestRedirect(request: RequestInterface) {

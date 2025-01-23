@@ -3,6 +3,7 @@ import {
 	Component,
 	inject,
 	OnDestroy,
+	OnInit,
 	signal,
 } from '@angular/core';
 import {
@@ -22,7 +23,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { COPY_MOCK_DATA, CopyInterface } from '../../models/copy.interface';
+import { CopyInterface } from '../../models/copy.interface';
 import {
 	actions,
 	ActionService,
@@ -33,13 +34,14 @@ import { DialogService } from '../../service/dialog.service';
 import { AddCopyComponent } from '../add-copy/add-copy.component';
 import { EditCopyComponent } from '../edit-copy/edit-copy.component';
 
-import { PDFDocument } from 'pdf-lib';
-import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
-import { RequestService } from '../../service/request.service';
-import { IconPipe } from '../../pipes/icon.pipe';
-import { delay, finalize, Subscription } from 'rxjs';
-import { environment } from '../../../environments/environment';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { ActivatedRoute } from '@angular/router';
+import { PDFDocument } from 'pdf-lib';
+import { finalize, Subscription } from 'rxjs';
+import { environment } from '../../../environments/environment';
+import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
+import { IconPipe } from '../../pipes/icon.pipe';
+import { RequestService } from '../../service/request.service';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class MyErrorStateMatcher implements ErrorStateMatcher {
@@ -76,13 +78,15 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
 	templateUrl: './request-form.component.html',
 	styleUrl: './request-form.component.scss',
 })
-export class RequestFormComponent implements AfterViewInit, OnDestroy {
+export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 	actionService = inject(ActionService);
 	dialogService = inject(DialogService);
 	requestService = inject(RequestService);
 	_snackBar = inject(MatSnackBar);
+	route = inject(ActivatedRoute);
 
-	pageType = PageType.newRequest;
+	pageType = '';
+	pageTitle: string = '';
 
 	files: File[] = [];
 	copies = new MatTableDataSource<CopyInterface>();
@@ -99,15 +103,41 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy {
 		'copyCount',
 		'actions',
 	];
+	editRequestId: number | undefined;
 	uploading = signal(false);
 
 	matcher = new MyErrorStateMatcher();
 
+	ngOnInit(): void {
+		// Definir tipo de formulário: edição ou criação
+		this.pageType =
+			this.route.snapshot.url[0].path == 'editar-solicitacao'
+				? PageType.editRequest
+				: PageType.newRequest;
+		if (this.pageType == PageType.editRequest) {
+			this.editRequestId = +this.route.snapshot.paramMap.get('id')!;
+			this.pageTitle = this.pageType + ' Nº ' + this.editRequestId;
+			this.subscriptions.push(
+				this.requestService
+					.getRequestById(this.editRequestId)
+					.subscribe((request) => {
+						this.copies.data = request.copies!;
+						this.selectedTermControl.setValue(request.term/(60*60));
+						console.log(request.term);
+						
+						this.refreshTable();
+					})
+			);
+		}
+	}
+
 	ngAfterViewInit(): void {
+		// Definir ações permitidas nos formulários, a depender do tipo de página
 		if (this.pageType == PageType.newRequest)
 			this.allowedActions = actions.allowedActionsforNewRequest;
 		else this.allowedActions = actions.allowedActionsforEditRequest;
 
+		// Observar eventos de deleção e edição
 		this.subscriptions.push(
 			this.actionService.deleteCopy.subscribe((copy) => {
 				this.removeCopy(copy);
@@ -119,8 +149,6 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy {
 				this.editCopyDialog(copy);
 			})
 		);
-
-		this.refreshTable();
 	}
 
 	removeCopy(copy: CopyInterface) {

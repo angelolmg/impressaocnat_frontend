@@ -21,7 +21,13 @@ export const routes: Routes = [
     },
     {
         path: 'formulario-solicitacao',
-        component: RequestFormComponent
+        component: RequestFormComponent,
+
+    },
+    {
+        path: 'editar-solicitacao/:id',
+        component: RequestFormComponent,
+        
     },
     {
         path: 'ver-solicitacao/:id',
