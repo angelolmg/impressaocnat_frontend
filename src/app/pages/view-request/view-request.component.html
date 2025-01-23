@@ -1,5 +1,5 @@
 <form class="my-steps">
-	<h2 class="page-title">Solicitação Nº {{ requestNumber }}</h2>
+	<h2 class="page-title">Solicitação Nº {{ requestId }}</h2>
 
 	<mat-form-field class="search-bar">
 		<mat-label>Filtrar</mat-label>
@@ -71,7 +71,7 @@
 
 	<div class="copy-summary" style="margin-bottom: 2rem">
 		<mat-chip-set aria-label="Sumário de cópias">
-			<mat-chip>Arquivos adicionados: {{ fileCount() }}</mat-chip>
+			<mat-chip>Arquivos: {{ fileCount() }}</mat-chip>
 			<mat-chip>Contagem de folhas: {{ requestPageCounter() }}</mat-chip>
 			<img
 				style="margin-left: 0.5rem"

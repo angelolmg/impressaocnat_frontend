@@ -1,4 +1,3 @@
-import { PageType } from './../../service/action.service';
 import {
 	AfterViewInit,
 	Component,
@@ -11,8 +10,7 @@ import {
 	FormGroupDirective,
 	FormsModule,
 	NgForm,
-	ReactiveFormsModule,
-	Validators,
+	ReactiveFormsModule
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
@@ -23,16 +21,19 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { COPY_MOCK_DATA, CopyInterface } from '../../models/copy.interface';
+import { CopyInterface } from '../../models/copy.interface';
 import { actions, ActionService } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
 import { EditCopyComponent } from '../edit-copy/edit-copy.component';
+import { PageType } from './../../service/action.service';
 
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
-import { IconPipe } from '../../pipes/icon.pipe';
+import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
+import { IconPipe } from '../../pipes/icon.pipe';
+import { RequestService } from '../../service/request.service';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class MyErrorStateMatcher implements ErrorStateMatcher {
@@ -72,8 +73,38 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
 export class ViewRequestComponent implements AfterViewInit {
 	@ViewChild(MatSort) sort!: MatSort;
 	@ViewChild(MatPaginator) paginator!: MatPaginator;
+	requestId: number | undefined;
+
+	subscriptions: Subscription[] = [];
+	
+	files: any[] = [];
+	fileCount = signal(0);
+	requestPageCounter = signal(0);
+	
+	matcher = new MyErrorStateMatcher();
+	copies = new MatTableDataSource<CopyInterface>();
+	route = inject(ActivatedRoute);
+	actionService = inject(ActionService);
+	dialogService = inject(DialogService);
+	requestService = inject(RequestService);
+
+	allowedActions = actions.allowedActionsforViewRequest;
+	pageType = PageType.viewRequest;
+
+	displayedColumns: string[] = [
+		'fileName',
+		'pageCount',
+		'copyCount',
+		'actions',
+	];
+
+	// copyNumFormControl = new FormControl(10, [
+	// 	Validators.required,
+	// 	Validators.min(1),
+	// ]);
 
 	ngAfterViewInit() {
+		this.requestId = +this.route.snapshot.paramMap.get('id')!;
 		this.copies.sort = this.sort;
 		this.copies.paginator = this.paginator;
 
@@ -95,35 +126,17 @@ export class ViewRequestComponent implements AfterViewInit {
 			})
 		);
 
+		this.subscriptions.push(
+			this.requestService
+				.getCopiesFromRequest(this.requestId)
+				.subscribe((copies) => {
+					this.copies.data = copies;
+					this.refreshTable();
+				})
+		);
+
 		this.refreshTable();
 	}
-	subscriptions: Subscription[] = [];
-
-	requestNumber: number = 1111;
-
-	files: any[] = [];
-	fileCount = signal(0);
-	requestPageCounter = signal(0);
-
-	matcher = new MyErrorStateMatcher();
-	copies = new MatTableDataSource<CopyInterface>(COPY_MOCK_DATA);
-	actionService = inject(ActionService);
-	dialogService = inject(DialogService);
-
-	allowedActions = actions.allowedActionsforViewRequest;
-	pageType = PageType.viewRequest;
-
-	displayedColumns: string[] = [
-		'fileName',
-		'pageCount',
-		'copyCount',
-		'actions',
-	];
-
-	copyNumFormControl = new FormControl(10, [
-		Validators.required,
-		Validators.min(1),
-	]);
 
 	removeCopy(copy: CopyInterface) {
 		this.dialogService

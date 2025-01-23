@@ -85,7 +85,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy {
 	pageType = PageType.newRequest;
 
 	files: File[] = [];
-	copies = new MatTableDataSource<CopyInterface>(COPY_MOCK_DATA);
+	copies = new MatTableDataSource<CopyInterface>();
 	allowedActions: ActionType[] = [];
 	subscriptions: Subscription[] = [];
 

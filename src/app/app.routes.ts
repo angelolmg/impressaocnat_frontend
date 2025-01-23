@@ -24,7 +24,7 @@ export const routes: Routes = [
         component: RequestFormComponent
     },
     {
-        path: 'ver-solicitacao',
+        path: 'ver-solicitacao/:id',
         component: ViewRequestComponent
     },
     {

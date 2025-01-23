@@ -1,10 +1,10 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { Observable, of, throwError } from 'rxjs';
+import { Observable, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { CopyInterface } from '../models/copy.interface';
-import { UserService } from './user.service';
 import { RequestInterface } from '../models/request.interface';
+import { CopyInterface } from './../models/copy.interface';
+import { UserService } from './user.service';
 
 @Injectable({
 	providedIn: 'root',
@@ -12,7 +12,8 @@ import { RequestInterface } from '../models/request.interface';
 export class RequestService {
 	userService = inject(UserService);
 	http: HttpClient = inject(HttpClient);
-	url = `${environment.API_URL}/solicitacoes`;
+	requestUrl = `${environment.API_URL}/solicitacoes`;
+	copyUrl = `${environment.API_URL}/copias`;
 
 	constructor() {}
 
@@ -73,18 +74,22 @@ export class RequestService {
 		headers.append('Accept', 'application/json');
 		headers.append('Content-Type', 'multipart/form-data');
 
-		return this.http.post(this.url, formData, { headers });
+		return this.http.post(this.requestUrl, formData, { headers });
 	}
 
 	getAllRequests(): Observable<RequestInterface[]> {
-		return this.http.get<RequestInterface[]>(this.url);
+		return this.http.get<RequestInterface[]>(this.requestUrl);
 	}
 
 	getRequestById(id: number): Observable<RequestInterface> {
-		return this.http.get<RequestInterface>(this.url + '/' + id);
+		return this.http.get<RequestInterface>(this.requestUrl + '/' + id);
 	}
 
 	deleteRequestById(id: number): Observable<any> {
-		return this.http.delete<any>(this.url + '/' + id);
+		return this.http.delete<any>(this.requestUrl + '/' + id);
+	}
+
+	getCopiesFromRequest(id: number): Observable<CopyInterface[]> {
+		return this.http.get<CopyInterface[]>(this.copyUrl + '/' + id);
 	}
 }

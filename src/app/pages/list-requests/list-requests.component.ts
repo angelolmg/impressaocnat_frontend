@@ -21,6 +21,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { Router } from '@angular/router';
 import {
 	catchError,
 	EMPTY,
@@ -83,6 +84,7 @@ export class ListRequestsComponent implements AfterViewInit, OnDestroy {
 	actionService = inject(ActionService);
 	requestService = inject(RequestService);
 	_snackBar = inject(MatSnackBar);
+	router = inject(Router);
 
 	pageType = PageType.viewAllRequests;
 
@@ -145,7 +147,7 @@ export class ListRequestsComponent implements AfterViewInit, OnDestroy {
 
 	openRequest(request: RequestInterface) {
 		console.log('Abrindo solicitação...');
-		console.log(request);
+		console.log(request);	
 	}
 
 	closeRequest(request: RequestInterface) {
@@ -207,6 +209,7 @@ export class ListRequestsComponent implements AfterViewInit, OnDestroy {
 	viewRequestRedirect(request: RequestInterface) {
 		console.log('Ver solicitação...');
 		console.log(request);
+		this.router.navigate(['/ver-solicitacao', request.id]);
 	}
 
 	refreshTable() {
