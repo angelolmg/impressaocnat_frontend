@@ -37,7 +37,7 @@ import { EditCopyComponent } from '../edit-copy/edit-copy.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute } from '@angular/router';
 import { PDFDocument } from 'pdf-lib';
-import { finalize, Subscription } from 'rxjs';
+import { finalize, Observable, Subscription } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
 import { IconPipe } from '../../pipes/icon.pipe';
@@ -86,7 +86,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 	route = inject(ActivatedRoute);
 
 	pageType = '';
-	pageTitle: string = '';
+	pageTitle: string = PageType.newRequest;
 
 	files: File[] = [];
 	copies = new MatTableDataSource<CopyInterface>();
@@ -122,9 +122,9 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 					.getRequestById(this.editRequestId)
 					.subscribe((request) => {
 						this.copies.data = request.copies!;
-						this.selectedTermControl.setValue(request.term/(60*60));
-						console.log(request.term);
-						
+						this.selectedTermControl.setValue(
+							request.term / (60 * 60)
+						);
 						this.refreshTable();
 					})
 			);
@@ -275,41 +275,57 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 	}
 
 	submitRequest() {
-		if (this.anyCopies() && this.files.length > 0) {
-			this.uploading.set(true);
+		let sub: Observable<any> = new Observable<any>();
 
-			this.requestService
-				.saveRequest(
+		switch (this.pageType) {
+			case PageType.newRequest:
+				if (this.anyCopies() && this.files.length > 0) {
+					this.uploading.set(true);
+
+					sub = this.requestService.saveRequest(
+						this.files,
+						this.copies.data,
+						this.selectedTermControl.value || 24, // Default 24h de prazo
+						this.requestPageCounter()
+					);
+				} else {
+					this._snackBar.open(
+						'É necessário adicionar pelo menos uma cópia à solicitação',
+						'Ok'
+					);
+				}
+				break;
+			case PageType.editRequest:
+				this.uploading.set(true);
+
+				sub = this.requestService.editRequest(
+					this.editRequestId!,
 					this.files,
 					this.copies.data,
-					this.selectedTermControl.value || 24, // Default 24h de prazo
+					this.selectedTermControl.value || 24,
 					this.requestPageCounter()
-				)
-				.pipe(
-					finalize(() => {
-						this.uploading.set(false);
-					})
-				)
-				.subscribe({
-					next: (response) => {
-						console.log('Resposta: ' + response);
-						this.clearCopies();
-						this._snackBar.open(
-							'Requisição adicionada (ID: ' + response.id + ')',
-							'Ok'
-						);
-					},
-					error: (err) => {
-						console.error(err);
-						this._snackBar.open(err, 'Ok');
-					},
-				});
-		} else {
-			this._snackBar.open(
-				'É necessário adicionar pelo menos uma cópia à solicitação',
-				'Ok'
-			);
+				);
+				break;
 		}
+
+		sub.pipe(
+			finalize(() => {
+				this.uploading.set(false);
+			})
+		).subscribe({
+			next: (response) => {
+				console.log('Resposta: ' + response);
+				this.clearCopies();
+				this._snackBar.open(
+					'Cadastro bem sucedido (ID: ' + response.id + ')',
+					'Ok'
+				);
+			},
+			error: (err) => {
+				console.error(err);
+				this._snackBar.open(err, 'Ok');
+			},
+		});
 	}
 
 	anyCopies() {

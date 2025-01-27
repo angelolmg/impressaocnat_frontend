@@ -1,11 +1,12 @@
 import { DatePipe } from '@angular/common';
 import {
-	AfterViewInit,
 	ChangeDetectionStrategy,
 	Component,
 	inject,
 	OnDestroy,
-	ViewChild,
+	OnInit,
+	signal,
+	ViewChild
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatBadgeModule } from '@angular/material/badge';
@@ -26,14 +27,15 @@ import {
 	catchError,
 	EMPTY,
 	filter,
+	of,
+	Subject,
 	Subscription,
 	switchMap,
+	takeUntil,
 	tap
 } from 'rxjs';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
-import {
-	RequestInterface
-} from '../../models/request.interface';
+import { RequestInterface } from '../../models/request.interface';
 import { IconPipe } from '../../pipes/icon.pipe';
 import {
 	actions,
@@ -67,7 +69,9 @@ import { RequestService } from '../../service/request.service';
 	styleUrl: './list-requests.component.scss',
 	changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ListRequestsComponent implements AfterViewInit, OnDestroy {
+export class ListRequestsComponent implements OnInit, OnDestroy {
+	private ngUnsubscribe = new Subject<void>();
+
 	displayedColumns: string[] = [
 		'id',
 		'registration',
@@ -89,14 +93,14 @@ export class ListRequestsComponent implements AfterViewInit, OnDestroy {
 	pageType = PageType.viewAllRequests;
 
 	requests = new MatTableDataSource<RequestInterface>();
-	loadingData: boolean = true;
+	loadingData = signal(true);
 
 	@ViewChild(MatSort) sort!: MatSort;
 	@ViewChild(MatPaginator) paginator!: MatPaginator;
 
 	subscriptions: Subscription[] = [];
 
-	ngAfterViewInit() {
+	ngOnInit() {
 		this.requests.sort = this.sort;
 		this.requests.paginator = this.paginator;
 
@@ -104,50 +108,54 @@ export class ListRequestsComponent implements AfterViewInit, OnDestroy {
 			this.allowedActions = actions.allowedActionsforViewAllRequests;
 		else this.allowedActions = actions.allowedActionsforViewMyRequests;
 
-		this.subscriptions.push(
-			this.actionService.deleteRequest.subscribe((request) => {
+		this.actionService.deleteRequest
+			.pipe(takeUntil(this.ngUnsubscribe))
+			.subscribe((request) => {
 				this.deleteRequest(request);
-			})
-		);
+			});
 
-		this.subscriptions.push(
-			this.actionService.editRequest.subscribe((request) => {
+		this.actionService.editRequest
+			.pipe(takeUntil(this.ngUnsubscribe))
+			.subscribe((request) => {
 				this.editRequestRedirect(request);
-			})
-		);
+			});
 
-		this.subscriptions.push(
-			this.actionService.viewRequest.subscribe((request) => {
+		this.actionService.viewRequest
+			.pipe(takeUntil(this.ngUnsubscribe))
+			.subscribe((request) => {
 				this.viewRequestRedirect(request);
-			})
-		);
+			});
 
-		this.subscriptions.push(
-			this.actionService.closeRequest.subscribe((request) => {
+		this.actionService.closeRequest
+			.pipe(takeUntil(this.ngUnsubscribe))
+			.subscribe((request) => {
 				this.closeRequest(request);
-			})
-		);
+			});
 
-		this.subscriptions.push(
-			this.actionService.openRequest.subscribe((request) => {
+		this.actionService.openRequest
+			.pipe(takeUntil(this.ngUnsubscribe))
+			.subscribe((request) => {
 				this.openRequest(request);
-			})
-		);
+			});
 
-		this.subscriptions.push(
-			this.requestService
-				.getAllRequests()
-				// .pipe(delay(1000))
-				.subscribe((requests) => {
-					this.requests.data = requests;
-					this.loadingData = false;
+		this.requestService
+			.getAllRequests()
+			.pipe(
+				catchError((err) => {
+					console.error(err);
+					this.loadingData.set(false);
+					return of([]);
 				})
-		);
+			)
+			.subscribe((requests) => {
+				this.requests.data = requests;
+				this.loadingData.set(false);
+			});
 	}
 
 	openRequest(request: RequestInterface) {
 		console.log('Abrindo solicitação...');
-		console.log(request);	
+		console.log(request);
 	}
 
 	closeRequest(request: RequestInterface) {
@@ -220,9 +228,8 @@ export class ListRequestsComponent implements AfterViewInit, OnDestroy {
 	}
 
 	// Unsubscribe para prevenir memory leak
-	ngOnDestroy(): void {
-		this.subscriptions.forEach((subscription) => {
-			subscription.unsubscribe();
-		});
+	ngOnDestroy() {
+		this.ngUnsubscribe.next();
+		this.ngUnsubscribe.complete();
 	}
 }

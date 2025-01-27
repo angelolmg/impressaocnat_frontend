@@ -1,16 +1,10 @@
-import {
-	AfterViewInit,
-	Component,
-	inject,
-	signal,
-	ViewChild,
-} from '@angular/core';
+import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
 import {
 	FormControl,
 	FormGroupDirective,
 	FormsModule,
 	NgForm,
-	ReactiveFormsModule
+	ReactiveFormsModule,
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
@@ -21,19 +15,20 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { CopyInterface } from '../../models/copy.interface';
 import { actions, ActionService } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
 import { EditCopyComponent } from '../edit-copy/edit-copy.component';
+import { CopyInterface } from './../../models/copy.interface';
 import { PageType } from './../../service/action.service';
 
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { ActivatedRoute } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { concat, Subject, Subscription, takeUntil } from 'rxjs';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
 import { IconPipe } from '../../pipes/icon.pipe';
 import { RequestService } from '../../service/request.service';
+import { RequestInterface } from '../../models/request.interface';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class MyErrorStateMatcher implements ErrorStateMatcher {
@@ -70,17 +65,18 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
 	templateUrl: './view-request.component.html',
 	styleUrl: './view-request.component.scss',
 })
-export class ViewRequestComponent implements AfterViewInit {
+export class ViewRequestComponent implements OnInit {
+	private ngUnsubscribe = new Subject<void>();
+
 	@ViewChild(MatSort) sort!: MatSort;
 	@ViewChild(MatPaginator) paginator!: MatPaginator;
-	requestId: number | undefined;
+	requestId?: number;
+	myRequest?: RequestInterface;
 
-	subscriptions: Subscription[] = [];
-	
 	files: any[] = [];
 	fileCount = signal(0);
 	requestPageCounter = signal(0);
-	
+
 	matcher = new MyErrorStateMatcher();
 	copies = new MatTableDataSource<CopyInterface>();
 	route = inject(ActivatedRoute);
@@ -98,44 +94,35 @@ export class ViewRequestComponent implements AfterViewInit {
 		'actions',
 	];
 
-	// copyNumFormControl = new FormControl(10, [
-	// 	Validators.required,
-	// 	Validators.min(1),
-	// ]);
-
-	ngAfterViewInit() {
+	ngOnInit() {
 		this.requestId = +this.route.snapshot.paramMap.get('id')!;
 		this.copies.sort = this.sort;
 		this.copies.paginator = this.paginator;
 
-		this.subscriptions.push(
-			this.actionService.deleteCopy.subscribe((copy) => {
+		this.actionService.deleteCopy
+			.pipe(takeUntil(this.ngUnsubscribe))
+			.subscribe((copy) => {
 				this.removeCopy(copy);
-			})
-		);
+			});
 
-		this.subscriptions.push(
-			this.actionService.editCopy.subscribe((copy) => {
+		this.actionService.editCopy
+			.pipe(takeUntil(this.ngUnsubscribe))
+			.subscribe((copy) => {
 				this.editCopyDialog(copy);
-			})
-		);
+			});
 
-		this.subscriptions.push(
-			this.actionService.downloadCopy.subscribe((copy) => {
+		this.actionService.downloadCopy
+			.pipe(takeUntil(this.ngUnsubscribe))
+			.subscribe((copy) => {
 				this.downloadFile(copy);
-			})
-		);
+			});
 
-		this.subscriptions.push(
-			this.requestService
-				.getCopiesFromRequest(this.requestId)
-				.subscribe((copies) => {
-					this.copies.data = copies;
-					this.refreshTable();
-				})
-		);
-
-		this.refreshTable();
+		this.requestService
+			.getRequestById(this.requestId)
+			.subscribe((request) => {
+				this.myRequest = request;
+				this.updateTable(request.copies);
+			});
 	}
 
 	removeCopy(copy: CopyInterface) {
@@ -151,16 +138,21 @@ export class ViewRequestComponent implements AfterViewInit {
 				negative_label: 'Não',
 			})
 			.afterClosed()
-			.subscribe((result: boolean) => {
-				if (result) {
-					const copyIndex = this.copies.data.indexOf(copy);
-
-					if (copyIndex >= 0) {
-						this.copies.data.splice(copyIndex, 1);
-						this.files.splice(copyIndex, 1);
-
-						this.refreshTable();
-					}
+			.subscribe((shouldDelete: boolean) => {
+				if (shouldDelete) {
+					let removeCopy = this.requestService.removeCopyById(
+						copy.id!,
+						this.myRequest!
+					);
+					let getUpdatedRequest = this.requestService.getRequestById(
+						this.myRequest!.id
+					);
+					concat(removeCopy, getUpdatedRequest).subscribe(
+						(request: RequestInterface) => {
+							this.myRequest = request;
+							this.updateTable(request.copies);
+						}
+					);
 				}
 			});
 	}
@@ -175,14 +167,22 @@ export class ViewRequestComponent implements AfterViewInit {
 				negative_label: 'Cancelar',
 			})
 			.afterClosed()
-			.subscribe((result: FormControl) => {
-				if (result && !result.errors) {
-					const copyIndex = this.copies.data.indexOf(copy);
-
-					if (copyIndex >= 0)
-						this.copies.data[copyIndex].copyCount = result.value;
-
-					this.refreshTable();
+			.subscribe((control: FormControl) => {
+				if (control && !control.errors) {
+					copy.copyCount = control.value;
+					let patchCopy = this.requestService.patchCopy(
+						copy,
+						this.myRequest!
+					);
+					let getUpdatedRequest = this.requestService.getRequestById(
+						this.myRequest!.id
+					);
+					concat(patchCopy, getUpdatedRequest).subscribe(
+						(request: RequestInterface) => {
+							this.myRequest = request;
+							this.updateTable(request.copies);
+						}
+					);
 				}
 			});
 	}
@@ -196,13 +196,13 @@ export class ViewRequestComponent implements AfterViewInit {
 		this.copies.data = [];
 		this.files = [];
 
-		this.refreshTable();
+		this.updateTable(this.copies.data);
 	}
 
-	refreshTable() {
+	updateTable(copies?: CopyInterface[]) {
 		// Refresh the data source object
 		// Angular Material is weird
-		this.copies.data = this.copies.data;
+		this.copies.data = copies || [];
 
 		this.fileCount.set(this.copies.data.length);
 
@@ -216,9 +216,8 @@ export class ViewRequestComponent implements AfterViewInit {
 	}
 
 	// Unsubscribe para prevenir memory leak
-	ngOnDestroy(): void {
-		this.subscriptions.forEach((subscription) => {
-			subscription.unsubscribe();
-		});
+	ngOnDestroy() {
+		this.ngUnsubscribe.next();
+		this.ngUnsubscribe.complete();
 	}
 }

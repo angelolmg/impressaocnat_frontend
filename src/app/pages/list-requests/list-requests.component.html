@@ -169,7 +169,7 @@
 			<tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
 		</table>
 
-		@if(loadingData) {
+		@if(loadingData()) {
 		<div class="overlay">
 			<mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
 		</div>
