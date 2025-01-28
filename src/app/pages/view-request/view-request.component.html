@@ -1,5 +1,8 @@
 <form class="my-steps">
-	<h2 class="page-title">Solicitação Nº {{ requestId }}</h2>
+	<h2 class="page-title">
+		Solicitação Nº {{ requestId }}
+		{{ myRequest?.conclusionDate ? "(FECHADA)" : "" }}
+	</h2>
 
 	<mat-form-field class="search-bar">
 		<mat-label>Filtrar</mat-label>
@@ -43,21 +46,11 @@
 			<td mat-cell *matCellDef="let element">
 				@for (action of allowedActions; track $index) {
 				<button
-					[disabled]="
-						actionService.disabledHandler(
-							action,
-							element
-						)
-					"
+					[disabled]="actionService.disabledHandler('view-request', undefined, action, myRequest)"
 					mat-icon-button
 					matTooltip="{{ action }}"
 					aria-label="Action button"
-					(click)="
-						actionService.callbackHandler(
-							action,
-							element
-						)
-					"
+					(click)="actionService.callbackHandler(action, element)"
 				>
 					<mat-icon>{{ action | icon }}</mat-icon>
 				</button>

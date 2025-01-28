@@ -60,7 +60,7 @@ export class ActionService {
 	editRequest = new EventEmitter<RequestInterface>();
 	viewRequest = new EventEmitter<RequestInterface>();
 	openRequest = new EventEmitter<RequestInterface>();
-	closeRequest = new EventEmitter<RequestInterface>();
+	toggleRequest = new EventEmitter<RequestInterface>();
 
 	constructor() {}
 
@@ -79,20 +79,15 @@ export class ActionService {
 		component?: string,
 		state?: PageType,
 		action?: ActionType,
-		element?: RequestInterface | CopyInterface
+		element?: RequestInterface
 	) {
-		switch (component) {
-			case 'list-requests':
-				// Desabilitar botões de 'Concluir' e 'Editar' caso solicitação tenha data de conclusão (solicitação concluída)
-				if (
-					this.instanceOfRequest(element) &&
-					element.conclusionDate &&
-					(action == ActionType.EXCLUIR ||
-						action == ActionType.EDITAR)
-				)
-					return true;
-				break;
-		}
+		// Desabilitar botões de 'Concluir' e 'Editar' caso solicitação tenha data de conclusão (solicitação concluída)
+		if (
+			this.instanceOfRequest(element) &&
+			element.conclusionDate &&
+			(action == ActionType.EXCLUIR || action == ActionType.EDITAR)
+		)
+			return true;
 
 		return false;
 	}
@@ -100,33 +95,41 @@ export class ActionService {
 	private emitAction(
 		action: ActionType,
 		element: RequestInterface | CopyInterface
-	  ): void {
+	): void {
 		const actionMap = new Map<ActionType, EventEmitter<any>>([
-		  [ActionType.EXCLUIR, this.instanceOfCopy(element) ? this.deleteCopy : this.deleteRequest],
-		  [ActionType.EDITAR, this.instanceOfCopy(element) ? this.editCopy : this.editRequest],
-		  [ActionType.VISUALIZAR, this.viewRequest],
-		  [ActionType.BAIXAR, this.downloadCopy],
-		  [ActionType.FECHAR, this.closeRequest],
-		  [ActionType.ABRIR, this.openRequest],
+			[
+				ActionType.EXCLUIR,
+				this.instanceOfCopy(element)
+					? this.deleteCopy
+					: this.deleteRequest,
+			],
+			[
+				ActionType.EDITAR,
+				this.instanceOfCopy(element) ? this.editCopy : this.editRequest,
+			],
+			[ActionType.VISUALIZAR, this.viewRequest],
+			[ActionType.BAIXAR, this.downloadCopy],
+			[ActionType.FECHAR, this.toggleRequest],
+			[ActionType.ABRIR, this.toggleRequest],
 		]);
-	
+
 		const emitter = actionMap.get(action);
 		if (emitter) {
-		  emitter.emit(element);
+			emitter.emit(element);
 		}
-	  }
+	}
 
-	  callbackHandler(
-		  action?: ActionType,
-		  element?: RequestInterface | CopyInterface,
-		  component?: string,
-		  state?: PageType,
-	  ): void {
+	callbackHandler(
+		action?: ActionType,
+		element?: RequestInterface | CopyInterface,
+		component?: string,
+		state?: PageType
+	): void {
 		if (!element || !action) {
-		  console.warn('Action or element is missing.');
-		  return;
+			console.warn('Ação ou elemento faltando.');
+			return;
 		}
-	
+
 		this.emitAction(action, element);
-	  }
+	}
 }

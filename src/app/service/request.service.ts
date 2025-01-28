@@ -27,7 +27,7 @@ export class RequestService {
 			return throwError(
 				() =>
 					new Error(
-						'Falha nos dados do formulário. Não foi possível enviar solicitação.'
+						'Dados do formulário não preenchidos. Não foi possível enviar solicitação.'
 					)
 			);
 		}
@@ -90,7 +90,7 @@ export class RequestService {
 			return throwError(
 				() =>
 					new Error(
-						'Falha nos dados do formulário. Não foi possível enviar requisição.'
+						'Dados do formulário não preenchidos. Não foi possível enviar requisição.'
 					)
 			);
 		}
@@ -135,6 +135,10 @@ export class RequestService {
 		return this.http.post(this.requestUrl, formData, { headers });
 	}
 
+	toogleRequest(id: number): Observable<any> {
+		return this.http.patch<any>(this.requestUrl + '/' + id + '/status', null)
+	}
+
 	getAllRequests(): Observable<RequestInterface[]> {
 		return this.http.get<RequestInterface[]>(this.requestUrl);
 	}
@@ -143,7 +147,7 @@ export class RequestService {
 		return this.http.get<RequestInterface>(this.requestUrl + '/' + id);
 	}
 
-	deleteRequestById(id: number): Observable<any> {
+	removeRequestById(id: number): Observable<any> {
 		return this.http.delete<any>(this.requestUrl + '/' + id);
 	}
 

@@ -23,12 +23,13 @@ import { PageType } from './../../service/action.service';
 
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSort, MatSortModule } from '@angular/material/sort';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { concat, Subject, Subscription, takeUntil } from 'rxjs';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
 import { IconPipe } from '../../pipes/icon.pipe';
 import { RequestService } from '../../service/request.service';
 import { RequestInterface } from '../../models/request.interface';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class MyErrorStateMatcher implements ErrorStateMatcher {
@@ -83,6 +84,8 @@ export class ViewRequestComponent implements OnInit {
 	actionService = inject(ActionService);
 	dialogService = inject(DialogService);
 	requestService = inject(RequestService);
+	_snackBar = inject(MatSnackBar);
+	router = inject(Router);
 
 	allowedActions = actions.allowedActionsforViewRequest;
 	pageType = PageType.viewRequest;
@@ -126,13 +129,19 @@ export class ViewRequestComponent implements OnInit {
 	}
 
 	removeCopy(copy: CopyInterface) {
+		let isLastCopy = this.copies.data.length == 1;
+		let lastCopyMessage = isLastCopy
+			? 'Esta é a única cópia e a solicitação também será excluída'
+			: '';
+
 		this.dialogService
 			.openDialog(DialogBoxComponent, {
 				title: 'Excluir cópia',
 				message:
 					"Deseja realmente excluir cópia de '" +
 					copy.fileName +
-					"'?",
+					"'? " +
+					lastCopyMessage,
 				warning: 'Esta ação é permanente',
 				positive_label: 'Sim',
 				negative_label: 'Não',
@@ -140,19 +149,30 @@ export class ViewRequestComponent implements OnInit {
 			.afterClosed()
 			.subscribe((shouldDelete: boolean) => {
 				if (shouldDelete) {
-					let removeCopy = this.requestService.removeCopyById(
-						copy.id!,
-						this.myRequest!
-					);
-					let getUpdatedRequest = this.requestService.getRequestById(
-						this.myRequest!.id
-					);
-					concat(removeCopy, getUpdatedRequest).subscribe(
-						(request: RequestInterface) => {
-							this.myRequest = request;
-							this.updateTable(request.copies);
-						}
-					);
+					if (isLastCopy) {
+						this.requestService
+							.removeRequestById(this.myRequest!.id)
+							.subscribe((response) => {
+								this._snackBar.open(response.message, 'Ok');
+								this.router.navigate(['listar-solicitacaoes']);
+							});
+					} else {
+						let removeCopy = this.requestService.removeCopyById(
+							copy.id!,
+							this.myRequest!
+						);
+						let getUpdatedRequest =
+							this.requestService.getRequestById(
+								this.myRequest!.id
+							);
+
+						concat(removeCopy, getUpdatedRequest).subscribe(
+							(request: RequestInterface) => {
+								this.myRequest = request;
+								this.updateTable(request.copies);
+							}
+						);
+					}
 				}
 			});
 	}

@@ -6,7 +6,7 @@ import {
 	OnDestroy,
 	OnInit,
 	signal,
-	ViewChild
+	ViewChild,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatBadgeModule } from '@angular/material/badge';
@@ -32,7 +32,7 @@ import {
 	Subscription,
 	switchMap,
 	takeUntil,
-	tap
+	tap,
 } from 'rxjs';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
 import { RequestInterface } from '../../models/request.interface';
@@ -126,16 +126,10 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 				this.viewRequestRedirect(request);
 			});
 
-		this.actionService.closeRequest
+		this.actionService.toggleRequest
 			.pipe(takeUntil(this.ngUnsubscribe))
 			.subscribe((request) => {
-				this.closeRequest(request);
-			});
-
-		this.actionService.openRequest
-			.pipe(takeUntil(this.ngUnsubscribe))
-			.subscribe((request) => {
-				this.openRequest(request);
+				this.toggleRequest(request);
 			});
 
 		this.requestService
@@ -153,14 +147,37 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 			});
 	}
 
-	openRequest(request: RequestInterface) {
-		console.log('Abrindo solicitação...');
-		console.log(request);
-	}
+	toggleRequest(request: RequestInterface) {
+		let hasConclusion = request.conclusionDate;
 
-	closeRequest(request: RequestInterface) {
-		console.log('Fechando solicitação...');
-		console.log(request);
+		this.dialogService
+			.openDialog(DialogBoxComponent, {
+				title: `${hasConclusion ? 'Abrir' : 'Fechar'} solicitação`,
+				message: `Deseja ${
+					hasConclusion ? 'abrir' : 'fechar'
+				} a solicitação Nº ${request.id}?`,
+				positive_label: 'Sim',
+				negative_label: 'Não',
+			})
+			.afterClosed()
+			.pipe(
+				// Continua somente se o usuário confirmar a alteração
+				filter((confirmed) => confirmed),
+				// Mapeia para a operação de alteração
+				switchMap(() => {
+					return this.requestService.toogleRequest(request.id).pipe(
+						// Após a mudança, atualiza a lista de solicitações
+						switchMap((response) => {
+							this._snackBar.open(response.message, 'Ok');
+							return this.requestService.getAllRequests();
+						}),
+						tap((requests) => {
+							this.requests.data = requests;
+						})
+					);
+				})
+			)
+			.subscribe();
 	}
 
 	deleteRequest(request: RequestInterface): void {
@@ -178,7 +195,7 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 				filter((confirmed) => confirmed),
 				// Mapeia para a operação de exclusão
 				switchMap(() =>
-					this.requestService.deleteRequestById(request.id).pipe(
+					this.requestService.removeRequestById(request.id).pipe(
 						// Captura a mensagem de sucesso e emite a próxima operação
 						tap((response) => {
 							this._snackBar.open(response.message, 'Ok');

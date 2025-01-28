@@ -135,7 +135,7 @@
 				</th>
 				<td mat-cell *matCellDef="let element">
 					{{
-						element.conclusion_date
+						element.conclusionDate
 							? (element.conclusionDate | date : "short")
 							: "Pendente"
 					}}
@@ -148,11 +148,11 @@
 					@for (action of allowedActions; track $index) {
 					<button
 						[hidden]="
-							(action == 'Abrir' && !element.conclusion_date) ||
-							(action == 'Fechar' && element.conclusion_date)
+							(action == 'Abrir' && !element.conclusionDate) ||
+							(action == 'Fechar' && element.conclusionDate)
 						"
 						[disabled]="
-							actionService.disabledHandler(action, element)
+							actionService.disabledHandler('list-requests', undefined, action, element)
 						"
 						mat-icon-button
 						matTooltip="{{ action }}"
@@ -166,7 +166,7 @@
 			</ng-container>
 
 			<tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-			<tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+			<tr mat-row *matRowDef="let row; columns: displayedColumns" [class.concluded]="row.conclusionDate"></tr>
 		</table>
 
 		@if(loadingData()) {
