@@ -39,6 +39,13 @@
 			[dataSource]="requests"
 			matSort
 			class="mat-elevation-z8"
+			[style.height.%]="
+				10 *
+				(paginator.pageSize / paginator.length != 1 &&
+				paginator.pageIndex == paginator.getNumberOfPages() - 1
+					? paginator.length % paginator.pageSize
+					: paginator.pageSize)
+			"
 		>
 			<ng-container matColumnDef="id">
 				<th
@@ -152,7 +159,12 @@
 							(action == 'Fechar' && element.conclusionDate)
 						"
 						[disabled]="
-							actionService.disabledHandler('list-requests', undefined, action, element)
+							actionService.disabledHandler(
+								'list-requests',
+								undefined,
+								action,
+								element
+							)
 						"
 						mat-icon-button
 						matTooltip="{{ action }}"
@@ -166,7 +178,11 @@
 			</ng-container>
 
 			<tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-			<tr mat-row *matRowDef="let row; columns: displayedColumns" [class.concluded]="row.conclusionDate"></tr>
+			<tr
+				mat-row
+				*matRowDef="let row; columns: displayedColumns"
+				[class.concluded]="row.conclusionDate"
+			></tr>
 		</table>
 
 		@if(loadingData()) {
@@ -177,7 +193,9 @@
 	</div>
 
 	<mat-paginator
+		#paginator
 		showFirstLastButtons
+		(page)="handlePageEvent($event)"
 		[length]="100"
 		[pageSize]="10"
 		[pageSizeOptions]="[10]"

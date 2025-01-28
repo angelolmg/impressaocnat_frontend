@@ -83,6 +83,8 @@ export class ActionService {
 	) {
 		// Desabilitar botões de 'Concluir' e 'Editar' caso solicitação tenha data de conclusão (solicitação concluída)
 		if (
+			component &&
+			['view-request', 'list-requests'].includes(component) &&
 			this.instanceOfRequest(element) &&
 			element.conclusionDate &&
 			(action == ActionType.EXCLUIR || action == ActionType.EDITAR)

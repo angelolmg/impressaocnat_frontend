@@ -46,7 +46,14 @@
 			<td mat-cell *matCellDef="let element">
 				@for (action of allowedActions; track $index) {
 				<button
-					[disabled]="actionService.disabledHandler('view-request', undefined, action, myRequest)"
+					[disabled]="
+						actionService.disabledHandler(
+							'view-request',
+							undefined,
+							action,
+							myRequest
+						)
+					"
 					mat-icon-button
 					matTooltip="{{ action }}"
 					aria-label="Action button"
