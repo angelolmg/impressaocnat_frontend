@@ -1,3 +1,4 @@
+import { AuthService } from './../../service/auth.service';
 import { Component, inject, OnDestroy } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router } from '@angular/router';
@@ -11,29 +12,27 @@ import { Subscription } from 'rxjs';
 	templateUrl: './redirect.component.html',
 	styleUrl: './redirect.component.scss',
 })
-export class RedirectComponent implements OnDestroy {
+export class RedirectComponent {
 	userInit = new Subscription();
 
 	constructor() {
+		var authService = inject(AuthService);
 		var userService = inject(UserService);
 		var router = inject(Router);
 
-		userService.client.initializeToken('uri');
+		authService.client.initializeToken('uri');
 
-		this.userInit = userService.fetchUserData().subscribe({
+		userService.fetchUserData().subscribe({
 			next: (data: userData) => {
 				userService.setUser(data);
 			},
 			error: (err) => {
-				console.error(err);
+				console.error('Erro: ', err);
 			},
 			complete: () => {
 				console.log('Procedimento de login concluído');
 				router.navigate(['']);
 			},
 		});
-	}
-	ngOnDestroy(): void {
-		this.userInit.unsubscribe();
 	}
 }

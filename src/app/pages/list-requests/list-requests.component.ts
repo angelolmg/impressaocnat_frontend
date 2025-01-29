@@ -16,7 +16,11 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import {
+	MatPaginator,
+	MatPaginatorModule,
+	PageEvent,
+} from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, MatSortModule } from '@angular/material/sort';
@@ -89,7 +93,6 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 	requestService = inject(RequestService);
 	_snackBar = inject(MatSnackBar);
 	router = inject(Router);
-	mytext = ''
 
 	pageType = PageType.viewAllRequests;
 
@@ -139,26 +142,26 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 					return of([]);
 				})
 			)
-			.subscribe((requests) => {
+			.subscribe((requests: RequestInterface[]) => {
 				this.requests.data = requests;
 				this.requests.sort = this.sort;
 				this.requests.paginator = this.paginator;
-				this.loadingData.set(false);	
+				this.loadingData.set(false);
 			});
 	}
 
 	getRowCount(): number {
-		const isLastPage = this.paginator.pageIndex === this.paginator.getNumberOfPages() - 1;
+		const isLastPage =
+			this.paginator.pageIndex === this.paginator.getNumberOfPages() - 1;
 		const itemsInLastPage = this.paginator.length % this.paginator.pageSize;
-	  
+
 		return isLastPage && itemsInLastPage !== 0
-		  ? itemsInLastPage
-		  : this.paginator.pageSize;
-	  }
+			? itemsInLastPage
+			: this.paginator.pageSize;
+	}
 
 	handlePageEvent($event: PageEvent) {
 		console.log($event);
-		this.mytext = $event.length.toString()
 	}
 
 	toggleRequest(request: RequestInterface) {

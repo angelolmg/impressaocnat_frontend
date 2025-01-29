@@ -35,7 +35,7 @@ import { AddCopyComponent } from '../add-copy/add-copy.component';
 import { EditCopyComponent } from '../edit-copy/edit-copy.component';
 
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { PDFDocument } from 'pdf-lib';
 import { finalize, Observable, Subscription } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -84,6 +84,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 	requestService = inject(RequestService);
 	_snackBar = inject(MatSnackBar);
 	route = inject(ActivatedRoute);
+	router = inject(Router);
 
 	pageType = '';
 	pageTitle: string = PageType.newRequest;
@@ -311,6 +312,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 		sub.pipe(
 			finalize(() => {
 				this.uploading.set(false);
+				this.router.navigate(['listar-solicitacoes']);
 			})
 		).subscribe({
 			next: (response) => {

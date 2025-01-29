@@ -99,8 +99,6 @@ export class ViewRequestComponent implements OnInit {
 
 	ngOnInit() {
 		this.requestId = +this.route.snapshot.paramMap.get('id')!;
-		this.copies.sort = this.sort;
-		this.copies.paginator = this.paginator;
 
 		this.actionService.deleteCopy
 			.pipe(takeUntil(this.ngUnsubscribe))
@@ -124,6 +122,8 @@ export class ViewRequestComponent implements OnInit {
 			.getRequestById(this.requestId)
 			.subscribe((request) => {
 				this.myRequest = request;
+				this.copies.sort = this.sort;
+				this.copies.paginator = this.paginator;
 				this.updateTable(request.copies);
 			});
 	}

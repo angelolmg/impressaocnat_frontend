@@ -9,8 +9,9 @@ import { routes } from './app.routes';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { MatPaginatorIntl } from '@angular/material/paginator';
 import { CustomPaginator } from './configs/paginator.config';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { MAT_SNACK_BAR_DEFAULT_OPTIONS } from '@angular/material/snack-bar';
+import { authInterceptor } from './guards/authInterceptor';
 
 export const appConfig: ApplicationConfig = {
 	providers: [
@@ -18,8 +19,12 @@ export const appConfig: ApplicationConfig = {
 		provideZoneChangeDetection({ eventCoalescing: true }),
 		provideRouter(routes),
 		provideAnimationsAsync(),
+		provideHttpClient(withInterceptors([authInterceptor])),
 		{ provide: MatPaginatorIntl, useValue: CustomPaginator() },
 		{ provide: LOCALE_ID, useValue: 'pt-BR' },
-		{ provide: MAT_SNACK_BAR_DEFAULT_OPTIONS, useValue: {duration: 6000} }
+		{
+			provide: MAT_SNACK_BAR_DEFAULT_OPTIONS,
+			useValue: { duration: 6000 },
+		},
 	],
 };
