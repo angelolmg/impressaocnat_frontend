@@ -8,7 +8,12 @@ import {
 	signal,
 	ViewChild,
 } from '@angular/core';
-import { FormsModule } from '@angular/forms';
+import {
+	FormControl,
+	FormGroup,
+	FormsModule,
+	ReactiveFormsModule,
+} from '@angular/forms';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatButtonModule } from '@angular/material/button';
 import { MatNativeDateModule } from '@angular/material/core';
@@ -29,6 +34,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import {
 	catchError,
+	debounceTime,
 	EMPTY,
 	filter,
 	of,
@@ -68,6 +74,7 @@ import { RequestService } from '../../service/request.service';
 		IconPipe,
 		MatBadgeModule,
 		MatProgressSpinnerModule,
+		ReactiveFormsModule,
 	],
 	templateUrl: './list-requests.component.html',
 	styleUrl: './list-requests.component.scss',
@@ -103,6 +110,12 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 	@ViewChild(MatPaginator) paginator!: MatPaginator;
 
 	subscriptions: Subscription[] = [];
+
+	queryForm = new FormGroup({
+		startDate: new FormControl<Date | null>(null),
+		endDate: new FormControl<Date | null>(null),
+		query: new FormControl(),
+	});
 
 	ngOnInit() {
 		if (this.pageType == PageType.viewAllRequests)
@@ -147,6 +160,25 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 				this.requests.sort = this.sort;
 				this.requests.paginator = this.paginator;
 				this.loadingData.set(false);
+			});
+
+		this.queryForm.valueChanges
+			.pipe(
+				takeUntil(this.ngUnsubscribe),
+				debounceTime(500),
+				switchMap((params) =>
+					this.requestService.getAllRequests(params)
+				)
+			)
+			.subscribe({
+				next: (requests: RequestInterface[]) =>
+					(this.requests.data = requests),
+				error: (error) => {
+					this._snackBar.open(
+						`Erro ao buscar solicitações: ${error}`,
+						'Ok'
+					);
+				},
 			});
 	}
 

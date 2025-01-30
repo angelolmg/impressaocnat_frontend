@@ -312,16 +312,15 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 		sub.pipe(
 			finalize(() => {
 				this.uploading.set(false);
-				this.router.navigate(['listar-solicitacoes']);
 			})
 		).subscribe({
 			next: (response) => {
-				console.log('Resposta: ' + response);
-				this.clearCopies();
 				this._snackBar.open(
 					'Cadastro bem sucedido (ID: ' + response.id + ')',
 					'Ok'
 				);
+				this.clearCopies();
+				this.router.navigate(['listar-solicitacoes']);
 			},
 			error: (err) => {
 				console.error(err);

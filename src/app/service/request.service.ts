@@ -1,4 +1,4 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { EMPTY, Observable, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
@@ -22,7 +22,6 @@ export class RequestService {
 		term: number,
 		totalPageCount: number
 	): Observable<any> {
-
 		if (!term || !totalPageCount) {
 			return throwError(
 				() =>
@@ -136,11 +135,26 @@ export class RequestService {
 	}
 
 	toogleRequest(id: number): Observable<any> {
-		return this.http.patch<any>(this.requestUrl + '/' + id + '/status', null)
+		return this.http.patch<any>(
+			this.requestUrl + '/' + id + '/status',
+			null
+		);
 	}
 
-	getAllRequests(): Observable<RequestInterface[]> {
-		return this.http.get<RequestInterface[]>(this.requestUrl);
+	getAllRequests(params?: Partial<{ startDate: Date | null; endDate: Date | null; query: string | null }>): Observable<RequestInterface[]> {
+		let httpParams = new HttpParams();
+	
+		if (params?.startDate) {
+			httpParams = httpParams.set('startDate', params.startDate.getTime().toString());
+		}
+		if (params?.endDate) {
+			httpParams = httpParams.set('endDate', params.endDate.getTime().toString());
+		}
+		if (params?.query) {
+			httpParams = httpParams.set('query', params.query);
+		}
+	
+		return this.http.get<RequestInterface[]>(this.requestUrl, { params: httpParams });
 	}
 
 	getRequestById(id: number): Observable<RequestInterface> {

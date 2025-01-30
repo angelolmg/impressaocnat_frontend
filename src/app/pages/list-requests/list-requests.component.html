@@ -2,7 +2,7 @@
 	<div class="top-shelf">
 		<h2 class="page-title">Todas as Solicitações</h2>
 
-		<form class="my-options">
+		<form [formGroup]="queryForm" class="my-options">
 			<button
 				mat-icon-button
 				matTooltip="Baixar .csv"
@@ -14,8 +14,8 @@
 			<mat-form-field>
 				<mat-label>Filtrar por Data</mat-label>
 				<mat-date-range-input [rangePicker]="picker">
-					<input matStartDate placeholder="Início" />
-					<input matEndDate placeholder="Fim" />
+					<input matStartDate placeholder="Início" formControlName="startDate"/>
+					<input matEndDate placeholder="Fim" formControlName="endDate"/>
 				</mat-date-range-input>
 
 				<mat-datepicker-toggle
@@ -27,7 +27,7 @@
 
 			<mat-form-field>
 				<mat-label>Filtrar por Atributo</mat-label>
-				<input matInput placeholder="Nº, Matrícula, etc" value="" />
+				<input matInput placeholder="Nº, Matrícula, etc" formControlName="query" />
 				<mat-icon matSuffix>search</mat-icon>
 			</mat-form-field>
 		</form>
