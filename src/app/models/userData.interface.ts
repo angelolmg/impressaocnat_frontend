@@ -12,6 +12,7 @@ export interface userData {
 	url_foto_75x100: string;
 	url_foto_150x200: string;
 	tipo_vinculo: string;
+	is_admin: boolean;
 	vinculo: Vinculo;
 }
 

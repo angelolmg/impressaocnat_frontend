@@ -13,7 +13,7 @@
 		<h2>Solicitações</h2>
 
 		<ul class="options-list">
-			@for (option of options; track $index) {
+			@for (option of options(); track $index) {
 			<button mat-fab extended [routerLink]="option.routerLink">
 				<mat-icon>{{ option.icon }}</mat-icon>
 				{{ option.text }}

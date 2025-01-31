@@ -1,10 +1,9 @@
-import { AuthService } from './../../service/auth.service';
-import { Component, inject, OnDestroy } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router } from '@angular/router';
+import { finalize, Subscription } from 'rxjs';
 import { UserService } from '../../service/user.service';
-import { userData } from '../../models/userData.interface';
-import { Subscription } from 'rxjs';
+import { AuthService } from './../../service/auth.service';
 
 @Component({
 	selector: 'app-redirect',
@@ -14,25 +13,17 @@ import { Subscription } from 'rxjs';
 })
 export class RedirectComponent {
 	userInit = new Subscription();
+	authService = inject(AuthService);
+	userService = inject(UserService);
+	router = inject(Router);
 
 	constructor() {
-		var authService = inject(AuthService);
-		var userService = inject(UserService);
-		var router = inject(Router);
-
-		authService.client.initializeToken('uri');
-
-		userService.fetchUserData().subscribe({
-			next: (data: userData) => {
-				userService.setUser(data);
-			},
-			error: (err) => {
-				console.error('Erro: ', err);
-			},
-			complete: () => {
-				console.log('Procedimento de login concluído');
-				router.navigate(['']);
-			},
-		});
+		this.authService.client.initializeToken('uri');
+		this.userService
+			.fetchUserData()
+			.pipe(finalize(() => this.router.navigate(['nova-solicitacao'])))
+			.subscribe({
+				error: (err) => console.warn(err),
+			});
 	}
 }

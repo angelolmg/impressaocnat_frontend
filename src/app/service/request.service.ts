@@ -141,9 +141,12 @@ export class RequestService {
 		);
 	}
 
-	getAllRequests(params?: Partial<{ startDate: Date | null; endDate: Date | null; query: string | null }>): Observable<RequestInterface[]> {
+	getAllRequests(params?: Partial<{ filtering: boolean | null; startDate: Date | null; endDate: Date | null; query: string | null }>): Observable<RequestInterface[]> {
 		let httpParams = new HttpParams();
 	
+		if (params?.filtering) {
+			httpParams = httpParams.set('filtering', params.filtering.toString());
+		}
 		if (params?.startDate) {
 			httpParams = httpParams.set('startDate', params.startDate.getTime().toString());
 		}

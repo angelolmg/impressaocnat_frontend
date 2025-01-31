@@ -1,7 +1,7 @@
-import { HttpClient } from '@angular/common/http';
-import { AfterViewInit, EventEmitter, inject, Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { EventEmitter, inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, Subscription, throwError } from 'rxjs';
+import { Observable, Subscription, switchMap, tap, throwError } from 'rxjs';
 import { environment } from './../../environments/environment';
 import { userData } from './../models/userData.interface';
 import { AuthService } from './auth.service';
@@ -20,12 +20,7 @@ export class UserService {
 
 	constructor() {
 		this.fetchUserData().subscribe({
-			next: (data: userData) => {
-				this.setUser(data);
-			},
-			error: (err) => {
-				console.warn(err);
-			},
+			error: (err) => console.warn(err),
 			complete: () => console.log('Tentativa de login concluída'),
 		});
 	}
@@ -42,23 +37,42 @@ export class UserService {
 		this.router.navigate(['']);
 	}
 
-	fetchUserData(): Observable<userData> {
-		let token = this.authService.client.getToken();;
+	// Busca dados do usuário no SUAP, depois usa matrícula para averiguar e atualizar permissões
+	fetchUserData(): Observable<boolean> {
+		let token = this.authService.client.getToken();
 
 		if (!token)
 			return throwError(() => new Error('Nenhum usuário conectado'));
 
 		const url = `${environment.SUAP_URL}/api/rh/meus-dados/`;
 
-		return this.http.get<userData>(url);
+		return this.http
+			.get<userData>(url)
+			.pipe(
+				switchMap((data: userData) =>
+					this.isAdmin(data.matricula).pipe(
+						tap((isAdmin: boolean) => this.setUser(data, isAdmin))
+					)
+				)
+			);
 	}
 
-	setUser(data: userData) {
+	setUser(data: userData, isAdmin: boolean) {
 		this.user = data;
+		this.user.is_admin = isAdmin;
+		localStorage.setItem('suapAdmin', isAdmin.toString());
 		this.userUpdate.emit(this.user);
 	}
 
 	getCurrentUser(): userData | undefined {
 		return this.user;
+	}
+
+	isAdmin(registration: string): Observable<boolean> {
+		let httpParams = new HttpParams();
+		httpParams = httpParams.set('registration', registration);
+		let url = `${environment.API_URL}/usuario/admin`;
+
+		return this.http.get<boolean>(url, { params: httpParams });
 	}
 }

@@ -31,12 +31,13 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import {
 	catchError,
 	debounceTime,
 	EMPTY,
 	filter,
+	finalize,
 	of,
 	Subject,
 	Subscription,
@@ -100,6 +101,7 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 	requestService = inject(RequestService);
 	_snackBar = inject(MatSnackBar);
 	router = inject(Router);
+	activatedRoute = inject(ActivatedRoute);
 
 	pageType = PageType.viewAllRequests;
 
@@ -146,20 +148,30 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 				this.toggleRequest(request);
 			});
 
+		// Inicializar listagem
+		// Admins: filtra entre as próprias ou todas as solicitações, a depender da rota
+		// Bug: Caso retorne erro, OnInit chamado 2 vezes
+		// https://stackoverflow.com/questions/38787795/why-is-ngoninit-called-twice
+		let filtering =
+			this.activatedRoute.snapshot.url[0].path == 'minhas-solicitacoes';
 		this.requestService
-			.getAllRequests()
+			.getAllRequests({ filtering: filtering })
 			.pipe(
-				catchError((err) => {
-					console.error(err);
+				finalize(() => {
 					this.loadingData.set(false);
 					return of([]);
 				})
 			)
-			.subscribe((requests: RequestInterface[]) => {
-				this.requests.data = requests;
-				this.requests.sort = this.sort;
-				this.requests.paginator = this.paginator;
-				this.loadingData.set(false);
+			.subscribe({
+				next: (requests: RequestInterface[]) => {
+					this.requests.data = requests;
+					this.requests.sort = this.sort;
+					this.requests.paginator = this.paginator;
+					this.loadingData.set(false);
+				},
+				error: (err) => {
+					console.error(err);
+				},
 			});
 
 		this.queryForm.valueChanges

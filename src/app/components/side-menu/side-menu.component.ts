@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -29,36 +29,47 @@ interface User {
 export class SideMenuComponent implements AfterViewInit {
 	dialogService = inject(DialogService);
 	userService = inject(UserService);
+	router = inject(Router);
+
 	defaultUser = {
 		registration: '123456',
 		name: 'Fulano de Tal',
 		pfp: 'assets/user-01.svg',
 	};
+
 	userSignal = signal<User>(this.defaultUser);
+	options = signal<Option[]>([]);
 
 	ngAfterViewInit(): void {
+		this.options.set([
+			{
+				icon: 'add_circle',
+				text: 'Nova Solicitação',
+				routerLink: 'nova-solicitacao',
+			},
+			{
+				icon: 'list',
+				text: 'Minhas Solicitações',
+				routerLink: 'minhas-solicitacoes',
+			},
+		]);
+
 		this.userService.userUpdate.subscribe((data) => {
 			this.updateUser(data);
+			if (this.userService.getCurrentUser()?.is_admin) {
+				
+				this.options.update((curr) =>
+					curr.concat([
+						{
+							icon: 'receipt_long',
+							text: 'Todas as Solicitações',
+							routerLink: 'solicitacoes',
+						},
+					])
+				);
+			}
 		});
 	}
-
-	options: Option[] = [
-		{
-			icon: 'add_circle',
-			text: 'Nova Solicitação',
-			routerLink: 'formulario-solicitacao',
-		},
-		{
-			icon: 'list',
-			text: 'Minhas Solicitações',
-			routerLink: 'listar-solicitacoes',
-		},
-		{
-			icon: 'receipt_long',
-			text: 'Todas as Solicitações',
-			routerLink: 'ver-solicitacao',
-		},
-	];
 
 	loginDialog() {
 		this.dialogService.openDialog(LoginBoxComponent);
@@ -67,7 +78,8 @@ export class SideMenuComponent implements AfterViewInit {
 	logoutUser() {
 		this.userService.logoutUser();
 		this.updateUser();
-		console.log('Usuário desconectado com sucesso');
+		this.router.navigate(['redirect']);
+		console.log('Usuário desconectado com sucesso.');
 	}
 
 	updateUser(user?: userData) {

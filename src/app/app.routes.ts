@@ -9,25 +9,27 @@ export const routes: Routes = [
     {
         path: '',
         pathMatch: 'full',
-        component: ListRequestsComponent
+        component: RequestFormComponent
     },
     {
         path: 'editar-copia',
         component: EditCopyComponent
     },
     {
-        path: 'listar-solicitacoes',
+        path: 'minhas-solicitacoes',
         component: ListRequestsComponent
     },
     {
-        path: 'formulario-solicitacao',
+        path: 'solicitacoes',
+        component: ListRequestsComponent
+    },
+    {
+        path: 'nova-solicitacao',
         component: RequestFormComponent,
-
     },
     {
         path: 'editar-solicitacao/:id',
         component: RequestFormComponent,
-        
     },
     {
         path: 'ver-solicitacao/:id',
@@ -39,6 +41,6 @@ export const routes: Routes = [
     },
     {
         path: '**',
-        redirectTo: ''
+        redirectTo: 'nova-solicitacao'
     }
 ];
