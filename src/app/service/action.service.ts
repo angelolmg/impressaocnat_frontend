@@ -1,6 +1,7 @@
-import { EventEmitter, Injectable } from '@angular/core';
+import { EventEmitter, inject, Injectable } from '@angular/core';
 import { CopyInterface } from '../models/copy.interface';
 import { RequestInterface } from './../models/request.interface';
+import { UserService } from './user.service';
 
 // Gerencia o estado dos botões de ação em componentes de listagem. Define quais botões estarão habilitados, ocultos ou inativos,
 // e especifica as ações que cada botão realizará, levando em consideração o componente em questão, o estado atual da página,
@@ -24,7 +25,7 @@ export enum ActionType {
 }
 
 export const actions = {
-	allowedActionsforViewAllRequests: [
+	allowedActionsforViewRequests: [
 		ActionType.VISUALIZAR,
 		ActionType.FECHAR,
 		ActionType.ABRIR,
@@ -32,11 +33,6 @@ export const actions = {
 		ActionType.EXCLUIR,
 	],
 
-	allowedActionsforViewMyRequests: [
-		ActionType.VISUALIZAR,
-		ActionType.EDITAR,
-		ActionType.EXCLUIR,
-	],
 	allowedActionsforEditRequest: [ActionType.EDITAR, ActionType.EXCLUIR],
 	allowedActionsforNewRequest: [ActionType.EDITAR, ActionType.EXCLUIR],
 	allowedActionsforViewRequest: [
@@ -62,6 +58,8 @@ export class ActionService {
 	openRequest = new EventEmitter<RequestInterface>();
 	toggleRequest = new EventEmitter<RequestInterface>();
 
+	userService = inject(UserService);
+
 	constructor() {}
 
 	// Verifica se objeto é instância de RequestInterface (é um objeto de solicitação)
@@ -72,6 +70,28 @@ export class ActionService {
 	// Verifica se objeto é instância de CopyInterface (é um objeto de cópia)
 	instanceOfCopy(object: any): object is CopyInterface {
 		return FILE_NAME_KEY in object;
+	}
+
+	hiddenHandler(
+		component?: string,
+		state?: PageType,
+		action?: ActionType,
+		element?: RequestInterface
+	) {
+		if (
+			element &&
+			((action == ActionType.ABRIR && !element.conclusionDate) ||
+				(action == ActionType.FECHAR && element.conclusionDate) ||
+				(action == ActionType.ABRIR &&
+					state == PageType.viewMyRequests &&
+					!this.userService.isUserAdmin()) ||
+				(action == ActionType.FECHAR &&
+					state == PageType.viewMyRequests &&
+					!this.userService.isUserAdmin()))
+		)
+			return true;
+
+		return false;
 	}
 
 	// Controla se determinadas opções são, ou não, desabilidadas a depender do contexto (tela), ação e elemento a ser modificado

@@ -94,7 +94,7 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 		'actions',
 	];
 
-	allowedActions: ActionType[] = [];
+	allowedActions: ActionType[] = actions.allowedActionsforViewRequests;
 
 	dialogService = inject(DialogService);
 	actionService = inject(ActionService);
@@ -120,10 +120,6 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 	});
 
 	ngOnInit() {
-		if (this.pageType == PageType.viewAllRequests)
-			this.allowedActions = actions.allowedActionsforViewAllRequests;
-		else this.allowedActions = actions.allowedActionsforViewMyRequests;
-
 		this.actionService.deleteRequest
 			.pipe(takeUntil(this.ngUnsubscribe))
 			.subscribe((request) => {
@@ -149,11 +145,14 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 			});
 
 		// Inicializar listagem
-		// Admins: filtra entre as próprias ou todas as solicitações, a depender da rota
+		// Admins: filtra entre as próprias ou todas as solicitações, a depender da rota '/minhas-solicitacoes' vs '/solicitacoes'
 		// Bug: Caso retorne erro, OnInit chamado 2 vezes
 		// https://stackoverflow.com/questions/38787795/why-is-ngoninit-called-twice
 		let filtering =
 			this.activatedRoute.snapshot.url[0].path == 'minhas-solicitacoes';
+
+		if (filtering) this.pageType = PageType.viewMyRequests;
+
 		this.requestService
 			.getAllRequests({ filtering: filtering })
 			.pipe(

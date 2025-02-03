@@ -1,6 +1,6 @@
 <div class="content">
 	<div class="top-shelf">
-		<h2 class="page-title">Todas as Solicitações</h2>
+		<h2 class="page-title">{{ pageType }}</h2>
 
 		<form [formGroup]="queryForm" class="my-options">
 			<button
@@ -14,8 +14,16 @@
 			<mat-form-field>
 				<mat-label>Filtrar por Data</mat-label>
 				<mat-date-range-input [rangePicker]="picker">
-					<input matStartDate placeholder="Início" formControlName="startDate"/>
-					<input matEndDate placeholder="Fim" formControlName="endDate"/>
+					<input
+						matStartDate
+						placeholder="Início"
+						formControlName="startDate"
+					/>
+					<input
+						matEndDate
+						placeholder="Fim"
+						formControlName="endDate"
+					/>
 				</mat-date-range-input>
 
 				<mat-datepicker-toggle
@@ -27,7 +35,11 @@
 
 			<mat-form-field>
 				<mat-label>Filtrar por Atributo</mat-label>
-				<input matInput placeholder="Nº, Matrícula, etc" formControlName="query" />
+				<input
+					matInput
+					placeholder="Nº, Matrícula, etc"
+					formControlName="query"
+				/>
 				<mat-icon matSuffix>search</mat-icon>
 			</mat-form-field>
 		</form>
@@ -155,13 +167,17 @@
 					@for (action of allowedActions; track $index) {
 					<button
 						[hidden]="
-							(action == 'Abrir' && !element.conclusionDate) ||
-							(action == 'Fechar' && element.conclusionDate)
+							actionService.hiddenHandler(
+								'list-requests',
+								pageType,
+								action,
+								element
+							)
 						"
 						[disabled]="
 							actionService.disabledHandler(
 								'list-requests',
-								undefined,
+								pageType,
 								action,
 								element
 							)

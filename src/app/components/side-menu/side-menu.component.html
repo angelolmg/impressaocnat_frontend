@@ -39,6 +39,7 @@
 				matTooltip="Sair"
 				aria-label="Download button"
 				(click)="logoutUser()"
+				[disabled]="userSignal() == defaultUser"
 			>
 				<mat-icon>logout</mat-icon>
 			</button>

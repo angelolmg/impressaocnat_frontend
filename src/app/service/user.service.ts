@@ -31,8 +31,10 @@ export class UserService {
 
 	logoutUser() {
 		let token = this.authService.client.getToken();
-		if (token) token.revoke();
-		else console.warn('No token set');
+		if (token) {
+			token.revoke();
+			localStorage.removeItem('suapAdmin');
+		} else console.warn('No token set');
 
 		this.router.navigate(['']);
 	}
@@ -50,7 +52,7 @@ export class UserService {
 			.get<userData>(url)
 			.pipe(
 				switchMap((data: userData) =>
-					this.isAdmin(data.matricula).pipe(
+					this.fetchAdminPermission(data.matricula).pipe(
 						tap((isAdmin: boolean) => this.setUser(data, isAdmin))
 					)
 				)
@@ -68,11 +70,15 @@ export class UserService {
 		return this.user;
 	}
 
-	isAdmin(registration: string): Observable<boolean> {
+	fetchAdminPermission(registration: string): Observable<boolean> {
 		let httpParams = new HttpParams();
 		httpParams = httpParams.set('registration', registration);
 		let url = `${environment.API_URL}/usuario/admin`;
 
 		return this.http.get<boolean>(url, { params: httpParams });
+	}
+
+	isUserAdmin() {
+		return this.user ? this.user.is_admin : false;
 	}
 }
