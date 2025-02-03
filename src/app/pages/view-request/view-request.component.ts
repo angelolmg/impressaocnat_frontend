@@ -22,14 +22,14 @@ import { CopyInterface } from './../../models/copy.interface';
 import { PageType } from './../../service/action.service';
 
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { ActivatedRoute, Router } from '@angular/router';
-import { concat, Subject, Subscription, takeUntil } from 'rxjs';
+import { concat, finalize, Subject, takeUntil } from 'rxjs';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
+import { RequestInterface } from '../../models/request.interface';
 import { IconPipe } from '../../pipes/icon.pipe';
 import { RequestService } from '../../service/request.service';
-import { RequestInterface } from '../../models/request.interface';
-import { MatSnackBar } from '@angular/material/snack-bar';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class MyErrorStateMatcher implements ErrorStateMatcher {
@@ -114,7 +114,7 @@ export class ViewRequestComponent implements OnInit {
 
 		this.actionService.downloadCopy
 			.pipe(takeUntil(this.ngUnsubscribe))
-			.subscribe((copy) => {
+			.subscribe((copy: CopyInterface) => {
 				this.downloadFile(copy);
 			});
 
@@ -207,9 +207,26 @@ export class ViewRequestComponent implements OnInit {
 			});
 	}
 
-	downloadFile(element: any) {
-		console.log('Baixando arquivo...');
-		console.log(element);
+	downloadFile(copy: CopyInterface) {
+		if (copy.fileInDisk && this.requestId)
+			this.requestService
+				.downloadFile(this.requestId, copy.fileName)
+				.pipe(
+					finalize(() => {
+						console.log('Download finalizado.');
+					})
+				)
+				.subscribe({
+					next: (response) => {
+						var url = window.URL.createObjectURL(response.data);
+						window.open(url);
+					},
+					error: (err) => {
+						this._snackBar.open(err, 'Ok');
+						console.error(err);
+					},
+				});
+		else this._snackBar.open('Arquivo não disponível.', 'Ok');
 	}
 
 	clearCopies() {

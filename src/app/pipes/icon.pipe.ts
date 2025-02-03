@@ -17,7 +17,7 @@ export class IconPipe implements PipeTransform {
 			case ActionType.EDITAR:
 				return 'edit';
 			case ActionType.BAIXAR:
-				return 'download';
+				return 'open_in_new';
 		}
 		
 		// Just in case

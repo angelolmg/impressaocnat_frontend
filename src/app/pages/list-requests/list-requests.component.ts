@@ -104,6 +104,7 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 	activatedRoute = inject(ActivatedRoute);
 
 	pageType = PageType.viewAllRequests;
+	filtering = true;
 
 	requests = new MatTableDataSource<RequestInterface>();
 	loadingData = signal(true);
@@ -148,13 +149,13 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 		// Admins: filtra entre as próprias ou todas as solicitações, a depender da rota '/minhas-solicitacoes' vs '/solicitacoes'
 		// Bug: Caso retorne erro, OnInit chamado 2 vezes
 		// https://stackoverflow.com/questions/38787795/why-is-ngoninit-called-twice
-		let filtering =
+		this.filtering =
 			this.activatedRoute.snapshot.url[0].path == 'minhas-solicitacoes';
 
-		if (filtering) this.pageType = PageType.viewMyRequests;
+		if (this.filtering) this.pageType = PageType.viewMyRequests;
 
 		this.requestService
-			.getAllRequests({ filtering: filtering })
+			.getAllRequests({ filtering: this.filtering })
 			.pipe(
 				finalize(() => {
 					this.loadingData.set(false);
@@ -178,7 +179,7 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 				takeUntil(this.ngUnsubscribe),
 				debounceTime(500),
 				switchMap((params) =>
-					this.requestService.getAllRequests(params)
+					this.requestService.getAllRequests({ filtering: this.filtering, ...params })
 				)
 			)
 			.subscribe({
@@ -229,7 +230,7 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 						// Após a mudança, atualiza a lista de solicitações
 						switchMap((response) => {
 							this._snackBar.open(response.message, 'Ok');
-							return this.requestService.getAllRequests();
+							return this.requestService.getAllRequests({ filtering: this.filtering });
 						}),
 						tap((requests) => {
 							this.requests.data = requests;
@@ -271,7 +272,7 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 					)
 				),
 				// Após a exclusão, atualiza a lista de solicitações
-				switchMap(() => this.requestService.getAllRequests()),
+				switchMap(() => this.requestService.getAllRequests({ filtering: this.filtering })),
 				tap((requests) => {
 					this.requests.data = requests;
 				}),

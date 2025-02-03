@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { EMPTY, Observable, throwError } from 'rxjs';
+import { EMPTY, map, Observable, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { RequestInterface } from '../models/request.interface';
 import { CopyInterface } from './../models/copy.interface';
@@ -232,5 +232,14 @@ export class RequestService {
 			request.term / (60 * 60),
 			counter
 		);
+	}
+
+	downloadFile(requestId: number, filename: string): Observable<any> {
+		return this.http.get(this.requestUrl + '/' + requestId + '/' + filename, { responseType: 'blob' }).pipe(map((response)=>{
+			return {
+				filename: filename,
+				data: response
+			};
+		}));
 	}
 }

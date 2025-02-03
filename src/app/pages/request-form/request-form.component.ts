@@ -316,11 +316,11 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 		).subscribe({
 			next: (response) => {
 				this._snackBar.open(
-					'Cadastro bem sucedido (ID: ' + response.id + ')',
+					'Cadastro bem sucedido (ID: ' + response.id.toString().padStart(6, "0") + ')',
 					'Ok'
 				);
 				this.clearCopies();
-				this.router.navigate(['listar-solicitacoes']);
+				this.router.navigate(['minhas-solicitacoes']);
 			},
 			error: (err) => {
 				console.error(err);
