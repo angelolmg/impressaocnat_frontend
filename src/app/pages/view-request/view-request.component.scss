@@ -4,22 +4,25 @@ form {
 	flex-direction: column;
 }
 
-.page-title {
-	margin-bottom: 2rem;
+.table-wrapper {
+	position: relative; /* Define a referência para posicionamento absoluto */
+	display: inline-block; /* Ajusta o tamanho ao conteúdo da tabela */
+	height: 100%;
+	box-shadow: 0 2px 4px rgb(0 0 0 / 12%);
+    border-radius: 1rem;
+	overflow: hidden;
 }
 
-.my-steps {
-	height: 100%;
-	p {
-		margin-bottom: 1rem;
-	}
-	div {
-		margin-bottom: 1rem;
+.page-title {
+	font-size: 1.1rem;
+	color: #555;
+}
 
-		&:last-child {
-			margin: 0;
-		}
-	}
+.content {
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	height: 100%;
 }
 
 h2,
@@ -51,7 +54,7 @@ h3 {
 }
 
 .copy-summary {
-	margin-bottom: 2rem;
+	margin: 1rem 0;
 	mat-chip {
 		background-color: white;
 	}

@@ -43,7 +43,7 @@ import {
 	Subscription,
 	switchMap,
 	takeUntil,
-	tap,
+	tap
 } from 'rxjs';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
 import { RequestInterface } from '../../models/request.interface';
@@ -179,7 +179,10 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 				takeUntil(this.ngUnsubscribe),
 				debounceTime(500),
 				switchMap((params) =>
-					this.requestService.getAllRequests({ filtering: this.filtering, ...params })
+					this.requestService.getAllRequests({
+						filtering: this.filtering,
+						...params,
+					})
 				)
 			)
 			.subscribe({
@@ -230,7 +233,9 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 						// Após a mudança, atualiza a lista de solicitações
 						switchMap((response) => {
 							this._snackBar.open(response.message, 'Ok');
-							return this.requestService.getAllRequests({ filtering: this.filtering });
+							return this.requestService.getAllRequests({
+								filtering: this.filtering,
+							});
 						}),
 						tap((requests) => {
 							this.requests.data = requests;
@@ -272,7 +277,11 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 					)
 				),
 				// Após a exclusão, atualiza a lista de solicitações
-				switchMap(() => this.requestService.getAllRequests({ filtering: this.filtering })),
+				switchMap(() =>
+					this.requestService.getAllRequests({
+						filtering: this.filtering,
+					})
+				),
 				tap((requests) => {
 					this.requests.data = requests;
 				}),

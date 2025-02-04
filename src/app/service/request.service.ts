@@ -1,6 +1,6 @@
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
-import { EMPTY, map, Observable, throwError } from 'rxjs';
+import { EMPTY, map, Observable, of, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { RequestInterface } from '../models/request.interface';
 import { CopyInterface } from './../models/copy.interface';
@@ -158,6 +158,19 @@ export class RequestService {
 		}
 	
 		return this.http.get<RequestInterface[]>(this.requestUrl, { params: httpParams });
+	}
+
+	getCopiesByRequestId(requestId?: number, query?: string): Observable<CopyInterface[]> {
+
+		if (!requestId){
+			console.warn("[request.service] Nenhum 'requestId' definido.");
+			return of([]);
+		}
+
+		let httpParams = new HttpParams();
+		if (query) httpParams = httpParams.set('query', query);
+		
+		return this.http.get<CopyInterface[]>(this.copyUrl + '/' + requestId, { params: httpParams });
 	}
 
 	getRequestById(id: number): Observable<RequestInterface> {

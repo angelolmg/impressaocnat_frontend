@@ -1,6 +1,14 @@
-import { Component, inject, OnInit, signal, ViewChild } from '@angular/core';
+import {
+	ChangeDetectionStrategy,
+	Component,
+	inject,
+	OnInit,
+	signal,
+	ViewChild,
+} from '@angular/core';
 import {
 	FormControl,
+	FormGroup,
 	FormGroupDirective,
 	FormsModule,
 	NgForm,
@@ -25,7 +33,16 @@ import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { ActivatedRoute, Router } from '@angular/router';
-import { concat, finalize, Subject, takeUntil } from 'rxjs';
+import {
+	concat,
+	debounceTime,
+	filter,
+	finalize,
+	map,
+	Subject,
+	switchMap,
+	takeUntil
+} from 'rxjs';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
 import { RequestInterface } from '../../models/request.interface';
 import { IconPipe } from '../../pipes/icon.pipe';
@@ -65,6 +82,7 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
 	],
 	templateUrl: './view-request.component.html',
 	styleUrl: './view-request.component.scss',
+	changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ViewRequestComponent implements OnInit {
 	private ngUnsubscribe = new Subject<void>();
@@ -97,6 +115,10 @@ export class ViewRequestComponent implements OnInit {
 		'actions',
 	];
 
+	queryForm = new FormGroup({
+		query: new FormControl(),
+	});
+
 	ngOnInit() {
 		this.requestId = +this.route.snapshot.paramMap.get('id')!;
 
@@ -125,6 +147,29 @@ export class ViewRequestComponent implements OnInit {
 				this.copies.sort = this.sort;
 				this.copies.paginator = this.paginator;
 				this.updateTable(request.copies);
+			});
+
+		this.queryForm.valueChanges
+			.pipe(
+				takeUntil(this.ngUnsubscribe),
+				debounceTime(500),
+				map(params => params.query?.trim() || ''), // Remover espaços em branco e tornar em string
+    			filter(query => query.length == 0 || query.length >= 3), // Continuar apenas se a query tiver 0 ou 3+ caracteres
+				switchMap((query) =>
+					this.requestService.getCopiesByRequestId(
+						this.requestId,
+						query
+					)
+				)
+			)
+			.subscribe({
+				next: (copies: CopyInterface[]) => (this.copies.data = copies),
+				error: (error) => {
+					this._snackBar.open(
+						`Erro ao buscar solicitações: ${error}`,
+						'Ok'
+					);
+				},
 			});
 	}
 

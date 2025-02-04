@@ -1,75 +1,92 @@
-<form class="my-steps">
-	<h2 class="page-title">
-		Solicitação Nº {{ requestId }}
-		{{ myRequest?.conclusionDate ? "(FECHADA)" : "" }}
-	</h2>
+<div class="content">
+	<div class="top-shelf">
+		<h2 class="page-title">
+			Solicitação Nº {{ requestId }}
+			{{ myRequest?.conclusionDate ? "(FECHADA)" : "" }}
+		</h2>
+		<form [formGroup]="queryForm">
+			<mat-form-field class="search-bar">
+				<mat-label>Filtrar</mat-label>
+				<input matInput placeholder="Nome do Arquivo" formControlName="query"/>
+				<mat-icon matSuffix>search</mat-icon>
+			</mat-form-field>
+		</form>
+	</div>
+	<div class="table-wrapper">
+		<table
+			mat-table
+			[dataSource]="copies"
+			matSort
+			class="mat-elevation-z8"
+			[style.height.%]="
+				10 +
+				9 *
+					(paginator.pageSize / paginator.length != 1 &&
+					paginator.pageIndex == paginator.getNumberOfPages() - 1
+						? paginator.length % paginator.pageSize
+						: paginator.pageSize)
+			"
+		>
+			<ng-container matColumnDef="id">
+				<th mat-header-cell *matHeaderCellDef>ID</th>
+				<td mat-cell *matCellDef="let element">
+					{{ element.id.toString().padStart(6, "0") }}
+				</td>
+			</ng-container>
 
-	<mat-form-field class="search-bar">
-		<mat-label>Filtrar</mat-label>
-		<input matInput placeholder="Nome do Arquivo" value="" />
-		<mat-icon matSuffix>search</mat-icon>
-	</mat-form-field>
+			<ng-container matColumnDef="fileName">
+				<th mat-header-cell *matHeaderCellDef style="width: 50%">
+					Arquivo
+				</th>
+				<td mat-cell *matCellDef="let element" style="width: 50%">
+					{{ element.fileName }}
+				</td>
+			</ng-container>
 
-	<table mat-table [dataSource]="copies" matSort class="mat-elevation-z8">
-		<ng-container matColumnDef="id">
-			<th mat-header-cell *matHeaderCellDef>ID</th>
-			<td mat-cell *matCellDef="let element">
-				{{ element.id.toString().padStart(6, "0") }}
-			</td>
-		</ng-container>
+			<ng-container matColumnDef="pageCount">
+				<th mat-header-cell *matHeaderCellDef>Páginas</th>
+				<td mat-cell *matCellDef="let element">
+					{{ element.pageCount }}
+				</td>
+			</ng-container>
 
-		<ng-container matColumnDef="fileName">
-			<th mat-header-cell *matHeaderCellDef style="width: 50%">
-				Arquivo
-			</th>
-			<td mat-cell *matCellDef="let element" style="width: 50%">
-				{{ element.fileName }}
-			</td>
-		</ng-container>
+			<ng-container matColumnDef="copyCount">
+				<th mat-header-cell *matHeaderCellDef>Nº Cópias</th>
+				<td mat-cell *matCellDef="let element">
+					{{ element.copyCount }}
+				</td>
+			</ng-container>
 
-		<ng-container matColumnDef="pageCount">
-			<th mat-header-cell *matHeaderCellDef>Páginas</th>
-			<td mat-cell *matCellDef="let element">
-				{{ element.pageCount }}
-			</td>
-		</ng-container>
+			<ng-container matColumnDef="actions">
+				<th mat-header-cell *matHeaderCellDef>Ações</th>
+				<td mat-cell *matCellDef="let element">
+					@for (action of allowedActions; track $index) {
+					<button
+						[disabled]="
+							actionService.disabledHandler(
+								'view-request',
+								undefined,
+								action,
+								myRequest
+							)
+						"
+						mat-icon-button
+						matTooltip="{{ action }}"
+						aria-label="Action button"
+						(click)="actionService.callbackHandler(action, element)"
+					>
+						<mat-icon>{{ action | icon }}</mat-icon>
+					</button>
+					}
+				</td>
+			</ng-container>
 
-		<ng-container matColumnDef="copyCount">
-			<th mat-header-cell *matHeaderCellDef>Nº Cópias</th>
-			<td mat-cell *matCellDef="let element">
-				{{ element.copyCount }}
-			</td>
-		</ng-container>
+			<tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+			<tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+		</table>
+	</div>
 
-		<ng-container matColumnDef="actions">
-			<th mat-header-cell *matHeaderCellDef>Ações</th>
-			<td mat-cell *matCellDef="let element">
-				@for (action of allowedActions; track $index) {
-				<button
-					[disabled]="
-						actionService.disabledHandler(
-							'view-request',
-							undefined,
-							action,
-							myRequest
-						)
-					"
-					mat-icon-button
-					matTooltip="{{ action }}"
-					aria-label="Action button"
-					(click)="actionService.callbackHandler(action, element)"
-				>
-					<mat-icon>{{ action | icon }}</mat-icon>
-				</button>
-				}
-			</td>
-		</ng-container>
-
-		<tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-		<tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
-	</table>
-
-	<div class="copy-summary" style="margin-bottom: 2rem">
+	<div class="copy-summary">
 		<mat-chip-set aria-label="Sumário de cópias">
 			<mat-chip>Arquivos: {{ fileCount() }}</mat-chip>
 			<mat-chip>Contagem de folhas: {{ requestPageCounter() }}</mat-chip>
@@ -85,6 +102,7 @@
 	</div>
 
 	<mat-paginator
+		#paginator
 		showFirstLastButtons
 		[length]="100"
 		[pageSize]="10"
@@ -92,4 +110,4 @@
 		aria-label="Select page"
 	>
 	</mat-paginator>
-</form>
+</div>
