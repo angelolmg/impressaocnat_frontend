@@ -210,26 +210,59 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 			.subscribe((result) => {
 				if (result) {
 					let file: File = result.file;
-					const reader = new FileReader();
-					reader.readAsArrayBuffer(result.file);
-					reader.onloadend = () => {
-						if (reader.result) {
-							const pdf = PDFDocument.load(reader.result);
-							pdf.then((document: PDFDocument) => {
-								this.copies.data.push({
-									fileName: file.name,
-									fileType: file.type,
-									pageCount: document.getPageCount() ?? 0,
-									copyCount: result.control.value,
-								});
+					let existingCopyIndex = this.copies.data.findIndex(
+						(copy) => copy.fileName === file.name
+					);
 
-								this.files.push(file);
-								this.refreshTable();
-							});
-						} else {
-							console.error('Não foi possível ler arquivo');
-						}
+					const processFile = (index?: number) => {
+						const reader = new FileReader();
+						reader.readAsArrayBuffer(file);
+						reader.onloadend = () => {
+							if (reader.result) {
+								PDFDocument.load(reader.result).then(
+									(document: PDFDocument) => {
+										const newCopy = {
+											fileName: file.name,
+											fileType: file.type,
+											pageCount:
+												document.getPageCount() ?? 0,
+											copyCount: result.control.value,
+										};
+
+										if (index !== undefined) {
+											this.copies.data[index] = newCopy;
+											this.files[index] = file;
+										} else {
+											this.copies.data.push(newCopy);
+											this.files.push(file);
+										}
+
+										this.refreshTable();
+									}
+								);
+							} else {
+								console.error('Não foi possível ler arquivo');
+							}
+						};
 					};
+
+					if (existingCopyIndex !== -1) {
+						this.dialogService
+							.openDialog(DialogBoxComponent, {
+								title: 'Sobreescrever cópia',
+								message: `Já existe uma cópia com o nome '${this.copies.data[existingCopyIndex].fileName}' nesta solicitação. Deseja sobreescrever?`,
+								warning: 'Esta ação é permanente',
+								positive_label: 'Sim',
+								negative_label: 'Não',
+							})
+							.afterClosed()
+							.subscribe((shouldRewrite: boolean) => {
+								if (shouldRewrite)
+									processFile(existingCopyIndex);
+							});
+					} else {
+						processFile();
+					}
 				}
 			});
 	}
@@ -316,7 +349,9 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 		).subscribe({
 			next: (response) => {
 				this._snackBar.open(
-					'Cadastro bem sucedido (ID: ' + response.id.toString().padStart(6, "0") + ')',
+					'Cadastro bem sucedido (ID: ' +
+						response.id.toString().padStart(6, '0') +
+						')',
 					'Ok'
 				);
 				this.clearCopies();
