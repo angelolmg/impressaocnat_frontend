@@ -5,11 +5,24 @@
 		<form [formGroup]="queryForm" class="my-options">
 			<button
 				mat-icon-button
-				matTooltip="Baixar .csv"
-				aria-label="Download button"
+				matTooltip="Abrir relatório"
+				aria-label="Generate report button"
 				(click)="generateReport()"
+				[matBadge]="
+					requests.data.length < 99 ? requests.data.length : '99+'
+				"
+				[matBadgeHidden]="requests.data.length <= 0"
 			>
 				<mat-icon>download</mat-icon>
+			</button>
+
+			<button
+				mat-icon-button
+				[matTooltip]="getConclusionTooltip()"
+				aria-label="Conclusion filter check"
+				(click)="toggleConclusionFilter()"
+			>
+				<mat-icon>{{ getConclusionIcon() }}</mat-icon>
 			</button>
 
 			<mat-form-field>

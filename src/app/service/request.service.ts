@@ -142,11 +142,15 @@ export class RequestService {
 		);
 	}
 
-	getAllRequests(params?: Partial<{ filtering: boolean | null; startDate: Date | null; endDate: Date | null; query: string | null }>): Observable<RequestInterface[]> {
+	getAllRequests(params?: Partial<{ filtering: boolean | null; concluded: boolean | null; startDate: Date | null; endDate: Date | null; query: string | null }>): Observable<RequestInterface[]> {
 		let httpParams = new HttpParams();
 	
 		if (params?.filtering) {
 			httpParams = httpParams.set('filtering', params.filtering.toString());
+		}
+		// Diferente pois são 3 estados possiveis de filtragem (true, false e null)
+		if (params?.concluded != null) {
+			httpParams = httpParams.set('concluded', params.concluded);
 		}
 		if (params?.startDate) {
 			httpParams = httpParams.set('startDate', params.startDate.getTime().toString());

@@ -43,7 +43,7 @@ import {
 	Subscription,
 	switchMap,
 	takeUntil,
-	tap
+	tap,
 } from 'rxjs';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
 import { RequestInterface } from '../../models/request.interface';
@@ -105,7 +105,7 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 
 	pageType = PageType.viewAllRequests;
 	filtering = true;
-
+	
 	requests = new MatTableDataSource<RequestInterface>();
 	loadingData = signal(true);
 
@@ -115,6 +115,7 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 	subscriptions: Subscription[] = [];
 
 	queryForm = new FormGroup({
+		concluded: new FormControl<boolean | null>(null),
 		startDate: new FormControl<Date | null>(null),
 		endDate: new FormControl<Date | null>(null),
 		query: new FormControl(),
@@ -155,7 +156,9 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 		if (this.filtering) this.pageType = PageType.viewMyRequests;
 
 		this.requestService
-			.getAllRequests({ filtering: this.filtering })
+			.getAllRequests({
+				filtering: this.filtering,
+			})
 			.pipe(
 				finalize(() => {
 					this.loadingData.set(false);
@@ -181,6 +184,7 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 				switchMap((params) =>
 					this.requestService.getAllRequests({
 						filtering: this.filtering,
+						concluded: this.queryForm.get('concluded')?.value,
 						...params,
 					})
 				)
@@ -197,20 +201,78 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 			});
 	}
 
+	// Varia o filtro de conclusão de solicitações
+	// Possíveis estados:
+	// 'Abertos' (false), 'Concluidos' (true), 'Todos' (null)
+	// 'null' funciona como valor intermediário, representando ausencia de filtro de conclusão
+	toggleConclusionFilter() {
+		const currentValue = this.queryForm.get('concluded')?.value;
+		const nextValue =
+			currentValue === null ? true : currentValue ? false : null;
+		this.queryForm.get('concluded')?.setValue(nextValue);
+	}
+
+	// Returns the tooltip text based on the current state
+	getConclusionTooltip(): string {
+		const value = this.queryForm.get('concluded')?.value;
+		return value === null
+			? 'Apenas Concluídos'
+			: value
+			? 'Apenas Em Aberto'
+			: 'Todos';
+	}
+
+	// Returns the icon name based on the current state
+	getConclusionIcon(): string {
+		const value = this.queryForm.get('concluded')?.value;
+		return value === null
+			? 'indeterminate_check_box'
+			: value
+			? 'check_box'
+			: 'check_box_outline_blank';
+	}
+
 	generateReport() {
-		this.requestService.generateReport(this.requests.data).subscribe(
-			(reportHtml: string) => {
-				// Open the report in a new window
-				const newWindow = window.open();
-				if (newWindow) {
-					newWindow.document.write(reportHtml); // Write the HTML content to the new window
-					newWindow.document.close(); // Close the document for rendering
-				}
-			},
-			(error) => {
-				console.error('Error generating report:', error);
-			}
-		);
+		if (this.requests.data.length > 0) {
+			this.dialogService
+				.openDialog(DialogBoxComponent, {
+					title: `Abrir relatório`,
+					message: `Deseja abrir um relatório das (${this.requests.data.length}) solicitações selecionadas?`,
+					warning: 'Será aberta uma nova aba',
+					positive_label: 'Sim',
+					negative_label: 'Não',
+				})
+				.afterClosed()
+				.pipe(
+					// Continua somente se o usuário confirmar a alteração
+					filter((confirmed) => confirmed),
+					// Mapeia para a operação de alteração
+					switchMap(() => {
+						return this.requestService.generateReport(
+							this.requests.data
+						);
+					})
+				)
+				.subscribe({
+					next: (reportHtml: string) => {
+						// Open the report in a new window
+						const newWindow = window.open();
+						if (newWindow) {
+							newWindow.document.write(reportHtml); // Write the HTML content to the new window
+							newWindow.document.close(); // Close the document for rendering
+						}
+					},
+					error: (err) => {
+						console.error(err);
+						this._snackBar.open(err, 'Ok');
+					},
+				});
+		} else {
+			this._snackBar.open(
+				`Nenhuma solicitação encontrada. Ajuste os filtros de pesquisa.`,
+				'Ok'
+			);
+		}
 	}
 
 	getRowCount(): number {
@@ -251,6 +313,8 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 							this._snackBar.open(response.message, 'Ok');
 							return this.requestService.getAllRequests({
 								filtering: this.filtering,
+								concluded:
+									this.queryForm.get('concluded')?.value,
 							});
 						}),
 						tap((requests) => {
@@ -296,6 +360,7 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 				switchMap(() =>
 					this.requestService.getAllRequests({
 						filtering: this.filtering,
+						concluded: this.queryForm.get('concluded')?.value,
 					})
 				),
 				tap((requests) => {
