@@ -31,8 +31,8 @@ import {
 	PageType,
 } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
-import { AddCopyComponent } from '../add-copy/add-copy.component';
-import { EditCopyComponent } from '../edit-copy/edit-copy.component';
+import { AddCopyBoxComponent } from '../../components/add-copy-box/add-copy-box.component';
+import { EditCopyBoxComponent } from '../../components/edit-copy-box/edit-copy-box.component';
 
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -180,7 +180,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 
 	editCopyDialog(copy: CopyInterface) {
 		this.dialogService
-			.openDialog(EditCopyComponent, {
+			.openDialog(EditCopyBoxComponent, {
 				title: 'Editar cópia',
 				message: 'Defina o número de cópias',
 				data: copy,
@@ -202,7 +202,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 
 	addCopyDialog() {
 		this.dialogService
-			.openDialog(AddCopyComponent, {
+			.openDialog(AddCopyBoxComponent, {
 				title: 'Adicionar Nova Cópia',
 				positive_label: 'Adicionar',
 			})

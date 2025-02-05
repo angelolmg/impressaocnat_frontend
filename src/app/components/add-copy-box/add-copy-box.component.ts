@@ -18,7 +18,7 @@ import {
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { DialogData } from '../../models/dialogData.interface';
-import { MyErrorStateMatcher } from '../request-form/request-form.component';
+import { MyErrorStateMatcher } from '../../pages/request-form/request-form.component';
 
 @Component({
 	selector: 'app-add-copy',
@@ -37,11 +37,11 @@ import { MyErrorStateMatcher } from '../request-form/request-form.component';
 		MatInputModule,
 		ReactiveFormsModule,
 	],
-	templateUrl: './add-copy.component.html',
-	styleUrl: './add-copy.component.scss',
+	templateUrl: './add-copy-box.component.html',
+	styleUrl: './add-copy-box.component.scss',
 })
-export class AddCopyComponent {
-	readonly dialogRef = inject(MatDialogRef<AddCopyComponent>);
+export class AddCopyBoxComponent {
+	readonly dialogRef = inject(MatDialogRef<AddCopyBoxComponent>);
 	readonly data = inject<DialogData>(MAT_DIALOG_DATA);
 	matcher = new MyErrorStateMatcher();
 	selectedFile: any = null;

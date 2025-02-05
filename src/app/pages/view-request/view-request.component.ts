@@ -25,7 +25,7 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { actions, ActionService } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
-import { EditCopyComponent } from '../edit-copy/edit-copy.component';
+import { EditCopyBoxComponent } from '../../components/edit-copy-box/edit-copy-box.component';
 import { CopyInterface } from './../../models/copy.interface';
 import { PageType } from './../../service/action.service';
 
@@ -224,7 +224,7 @@ export class ViewRequestComponent implements OnInit {
 
 	editCopyDialog(copy: CopyInterface) {
 		this.dialogService
-			.openDialog(EditCopyComponent, {
+			.openDialog(EditCopyBoxComponent, {
 				title: 'Editar cópia',
 				message: 'Defina o número de cópias',
 				data: copy,

@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AddCopyComponent } from './add-copy.component';
+import { EditCopyBoxComponent } from './edit-copy-box.component';
 
-describe('AddCopyComponent', () => {
-  let component: AddCopyComponent;
-  let fixture: ComponentFixture<AddCopyComponent>;
+describe('EditCopyBoxComponent', () => {
+  let component: EditCopyBoxComponent;
+  let fixture: ComponentFixture<EditCopyBoxComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AddCopyComponent]
+      imports: [EditCopyBoxComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(AddCopyComponent);
+    fixture = TestBed.createComponent(EditCopyBoxComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

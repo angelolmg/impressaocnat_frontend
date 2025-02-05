@@ -18,7 +18,7 @@ import {
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { DialogData } from '../../models/dialogData.interface';
-import { MyErrorStateMatcher } from '../request-form/request-form.component';
+import { MyErrorStateMatcher } from '../../pages/request-form/request-form.component';
 import { CopyInterface } from '../../models/copy.interface';
 
 @Component({
@@ -38,11 +38,11 @@ import { CopyInterface } from '../../models/copy.interface';
 		MatInputModule,
 		ReactiveFormsModule,
 	],
-	templateUrl: './edit-copy.component.html',
-	styleUrl: './edit-copy.component.scss',
+	templateUrl: './edit-copy-box.component.html',
+	styleUrl: './edit-copy-box.component.scss',
 })
-export class EditCopyComponent {
-	readonly dialogRef = inject(MatDialogRef<EditCopyComponent>);
+export class EditCopyBoxComponent {
+	readonly dialogRef = inject(MatDialogRef<EditCopyBoxComponent>);
 	readonly data = inject<DialogData>(MAT_DIALOG_DATA);
 	
 
