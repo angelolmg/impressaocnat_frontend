@@ -197,6 +197,22 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 			});
 	}
 
+	generateReport() {
+		this.requestService.generateReport(this.requests.data).subscribe(
+			(reportHtml: string) => {
+				// Open the report in a new window
+				const newWindow = window.open();
+				if (newWindow) {
+					newWindow.document.write(reportHtml); // Write the HTML content to the new window
+					newWindow.document.close(); // Close the document for rendering
+				}
+			},
+			(error) => {
+				console.error('Error generating report:', error);
+			}
+		);
+	}
+
 	getRowCount(): number {
 		const isLastPage =
 			this.paginator.pageIndex === this.paginator.getNumberOfPages() - 1;

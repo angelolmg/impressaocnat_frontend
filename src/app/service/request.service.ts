@@ -14,6 +14,7 @@ export class RequestService {
 	http: HttpClient = inject(HttpClient);
 	requestUrl = `${environment.API_URL}/solicitacoes`;
 	copyUrl = `${environment.API_URL}/copias`;
+	apiUrl = `${environment.API_URL}/api`
 
 	editRequest(
 		id: number,
@@ -254,5 +255,9 @@ export class RequestService {
 				data: response
 			};
 		}));
+	}
+
+	generateReport(requests: RequestInterface[]) {
+		return this.http.post(this.apiUrl + '/relatorio', requests, { responseType: 'text' });
 	}
 }
