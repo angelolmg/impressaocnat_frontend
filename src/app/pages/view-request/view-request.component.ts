@@ -176,7 +176,7 @@ export class ViewRequestComponent implements OnInit {
 	removeCopy(copy: CopyInterface) {
 		let isLastCopy = this.copies.data.length == 1;
 		let lastCopyMessage = isLastCopy
-			? 'Esta é a única cópia e a solicitação também será excluída'
+			? 'Esta é a única cópia e a solicitação também será excluída. '
 			: '';
 
 		this.dialogService
@@ -185,9 +185,8 @@ export class ViewRequestComponent implements OnInit {
 				message:
 					"Deseja realmente excluir cópia de '" +
 					copy.fileName +
-					"'? " +
-					lastCopyMessage,
-				warning: 'Esta ação é permanente',
+					"'?",
+				warning: lastCopyMessage + 'Esta ação é permanente',
 				positive_label: 'Sim',
 				negative_label: 'Não',
 			})

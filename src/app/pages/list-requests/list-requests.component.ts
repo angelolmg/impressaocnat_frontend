@@ -56,6 +56,7 @@ import {
 } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
 import { RequestService } from '../../service/request.service';
+import { MatSelectModule } from '@angular/material/select';
 
 @Component({
 	selector: 'app-list-requests',
@@ -76,6 +77,7 @@ import { RequestService } from '../../service/request.service';
 		MatBadgeModule,
 		MatProgressSpinnerModule,
 		ReactiveFormsModule,
+		MatSelectModule
 	],
 	templateUrl: './list-requests.component.html',
 	styleUrl: './list-requests.component.scss',
@@ -201,36 +203,6 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 			});
 	}
 
-	// Varia o filtro de conclusão de solicitações
-	// Possíveis estados:
-	// 'Abertos' (false), 'Concluidos' (true), 'Todos' (null)
-	// 'null' funciona como valor intermediário, representando ausencia de filtro de conclusão
-	toggleConclusionFilter() {
-		const currentValue = this.queryForm.get('concluded')?.value;
-		const nextValue =
-			currentValue === null ? true : currentValue ? false : null;
-		this.queryForm.get('concluded')?.setValue(nextValue);
-	}
-
-	// Returns the tooltip text based on the current state
-	getConclusionTooltip(): string {
-		const value = this.queryForm.get('concluded')?.value;
-		return value === null
-			? 'Apenas Concluídos'
-			: value
-			? 'Apenas Em Aberto'
-			: 'Todos';
-	}
-
-	// Returns the icon name based on the current state
-	getConclusionIcon(): string {
-		const value = this.queryForm.get('concluded')?.value;
-		return value === null
-			? 'indeterminate_check_box'
-			: value
-			? 'check_box'
-			: 'check_box_outline_blank';
-	}
 
 	generateReport() {
 		if (this.requests.data.length > 0) {
