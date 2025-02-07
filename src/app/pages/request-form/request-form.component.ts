@@ -23,6 +23,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { AddCopyBoxComponent } from '../../components/add-copy-box/add-copy-box.component';
+import { EditCopyBoxComponent } from '../../components/edit-copy-box/edit-copy-box.component';
 import { CopyInterface } from '../../models/copy.interface';
 import {
 	actions,
@@ -31,13 +33,16 @@ import {
 	PageType,
 } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
-import { AddCopyBoxComponent } from '../../components/add-copy-box/add-copy-box.component';
-import { EditCopyBoxComponent } from '../../components/edit-copy-box/edit-copy-box.component';
 
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PDFDocument } from 'pdf-lib';
-import { finalize, Observable, Subscription } from 'rxjs';
+import {
+	finalize,
+	Observable,
+	Subject,
+	takeUntil
+} from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
 import { IconPipe } from '../../pipes/icon.pipe';
@@ -79,6 +84,8 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
 	styleUrl: './request-form.component.scss',
 })
 export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
+	private ngUnsubscribe = new Subject<void>();
+
 	actionService = inject(ActionService);
 	dialogService = inject(DialogService);
 	requestService = inject(RequestService);
@@ -92,7 +99,6 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 	files: File[] = [];
 	copies = new MatTableDataSource<CopyInterface>();
 	allowedActions: ActionType[] = [];
-	subscriptions: Subscription[] = [];
 
 	fileCount = signal(0);
 	requestPageCounter = signal(0);
@@ -109,6 +115,8 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 
 	matcher = new MyErrorStateMatcher();
 
+	loadingData = signal(false);
+
 	ngOnInit(): void {
 		// Definir tipo de formulário: edição ou criação
 		this.pageType =
@@ -118,17 +126,19 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 		if (this.pageType == PageType.editRequest) {
 			this.editRequestId = +this.route.snapshot.paramMap.get('id')!;
 			this.pageTitle = this.pageType + ' Nº ' + this.editRequestId;
-			this.subscriptions.push(
-				this.requestService
-					.getRequestById(this.editRequestId)
-					.subscribe((request) => {
-						this.copies.data = request.copies!;
-						this.selectedTermControl.setValue(
-							request.term / (60 * 60)
-						);
-						this.refreshTable();
+			this.loadingData.set(true);
+			this.requestService
+				.getRequestById(this.editRequestId)
+				.pipe(
+					finalize(() => {
+						this.loadingData.set(false);
 					})
-			);
+				)
+				.subscribe((request) => {
+					this.copies.data = request.copies!;
+					this.selectedTermControl.setValue(request.term / (60 * 60));
+					this.refreshTable();
+				});
 		}
 	}
 
@@ -139,17 +149,18 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 		else this.allowedActions = actions.allowedActionsforEditRequest;
 
 		// Observar eventos de deleção e edição
-		this.subscriptions.push(
-			this.actionService.deleteCopy.subscribe((copy) => {
-				this.removeCopy(copy);
-			})
-		);
 
-		this.subscriptions.push(
-			this.actionService.editCopy.subscribe((copy) => {
+		this.actionService.deleteCopy
+			.pipe(takeUntil(this.ngUnsubscribe))
+			.subscribe((copy) => {
+				this.removeCopy(copy);
+			});
+
+		this.actionService.editCopy
+			.pipe(takeUntil(this.ngUnsubscribe))
+			.subscribe((copy) => {
 				this.editCopyDialog(copy);
-			})
-		);
+			});
 	}
 
 	removeCopy(copy: CopyInterface) {
@@ -369,9 +380,8 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 	}
 
 	// Unsubscribe para prevenir memory leak
-	ngOnDestroy(): void {
-		this.subscriptions.forEach((subscription) => {
-			subscription.unsubscribe();
-		});
+	ngOnDestroy() {
+		this.ngUnsubscribe.next();
+		this.ngUnsubscribe.complete();
 	}
 }

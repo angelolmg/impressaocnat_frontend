@@ -10,7 +10,7 @@
 		<button type="button" mat-button (click)="clearCopiesDialog()">Limpar</button>
 	</div>
 
-	<div class="file-table" style="margin-bottom: 2rem">
+	<div class="file-table table-wrapper" style="margin-bottom: 2rem">
 		<table mat-table [dataSource]="copies" matSort class="mat-elevation-z8">
 			<ng-container matColumnDef="id">
 				<th mat-header-cell *matHeaderCellDef>ID</th>
@@ -74,6 +74,12 @@
 			<tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
 			<tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
 		</table>
+
+		@if(loadingData()) {
+			<div class="overlay">
+				<mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+			</div>
+			}
 	</div>
 
 	<div class="copy-summary" style="margin-bottom: 2rem">

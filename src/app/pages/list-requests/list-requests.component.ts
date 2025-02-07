@@ -172,7 +172,6 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 					this.requests.data = requests;
 					this.requests.sort = this.sort;
 					this.requests.paginator = this.paginator;
-					this.loadingData.set(false);
 				},
 				error: (err) => {
 					console.error(err);

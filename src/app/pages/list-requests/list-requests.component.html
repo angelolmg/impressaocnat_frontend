@@ -70,7 +70,7 @@
 			[style.height.%]="
 				10 +
 				9 *
-					(paginator.pageSize / paginator.length != 1 &&
+					(paginator.length % paginator.pageSize != 0 &&
 					paginator.pageIndex == paginator.getNumberOfPages() - 1
 						? paginator.length % paginator.pageSize
 						: paginator.pageSize)
