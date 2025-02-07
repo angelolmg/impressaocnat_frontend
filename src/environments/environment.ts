@@ -6,5 +6,6 @@ export const environment = {
 
 	API_URL: 'http://localhost:8080',
 
-	DEFAULT_TERM_VALUE: 24
+	DEFAULT_TERM_VALUE: 24,
+	MAX_FILE_SIZE_MB: 10
 };

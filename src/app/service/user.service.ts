@@ -31,10 +31,11 @@ export class UserService {
 
 	logoutUser() {
 		let token = this.authService.client.getToken();
-		if (token) {
-			token.revoke();
-			localStorage.removeItem('suapAdmin');
-		} else console.warn('No token set');
+		if (token) token.revoke(); 
+		else console.warn('No token set');
+
+		localStorage.removeItem('suapToken');
+		localStorage.removeItem('suapAdmin');
 
 		this.router.navigate(['']);
 	}

@@ -196,7 +196,6 @@ class SuapClient {
 			this.clientID +
 			'&scope=' +
 			this.scope;
-		'&redirect_uri=' + this.redirectURI;
 		return loginUrl;
 	}
 
@@ -280,20 +279,9 @@ class Token {
 		this.expirationTimeInSeconds = undefined;
 		this.scope = undefined;
 
-		if (localStorage.getItem('suapToken')) {
-			localStorage.removeItem('suapToken');
-		}
-
-		if (localStorage.getItem('suapTokenStartTime')) {
-			localStorage.removeItem('suapTokenStartTime');
-		}
-
-		if (localStorage.getItem('suapTokenExpirationTime')) {
-			localStorage.removeItem('suapTokenExpirationTime');
-		}
-
-		if (localStorage.getItem('suapScope')) {
-			localStorage.removeItem('suapScope');
-		}
+		localStorage.removeItem('suapToken');
+		localStorage.removeItem('suapTokenStartTime');
+		localStorage.removeItem('suapTokenExpirationTime');
+		localStorage.removeItem('suapScope');
 	}
 }

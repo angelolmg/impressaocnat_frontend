@@ -2,30 +2,38 @@
 
 @if (data.message) {
 <mat-dialog-content>{{ data.message }}</mat-dialog-content>
-}
-@if (data.warning) {
-<mat-dialog-content class="warning"><strong>{{ data.warning }}</strong></mat-dialog-content>
+} @if (data.warning) {
+<mat-dialog-content class="warning"
+	><strong>{{ data.warning }}</strong></mat-dialog-content
+>
 }
 
 <mat-dialog-content class="file-input">
 	<p>1. Escolha seu arquivo (.pdf)</p>
 
-	<div class="file-input-field">
-		<button type="button" mat-stroked-button (click)="fileInput.click()">
-			Escolher arquivo...
-		</button>
-		<input
-			hidden
-			(change)="onFileSelected($event)"
-			#fileInput
-			type="file"
-			accept="application/pdf"
-		/>
-		<div class="file-name">
-			<span>
-				{{ selectedFile?.name }}
-			</span>
+	<div class="file-input">
+		<div class="file-input-field">
+			<button 
+				type="button"
+				mat-stroked-button
+				(click)="fileInput.click()"
+			>
+				Escolher arquivo...
+			</button>
+			<input
+				hidden
+				(change)="onFileSelected($event)"
+				#fileInput
+				type="file"
+				accept="application/pdf"
+			/>
+			<div class="file-name">
+				<span>
+					{{ selectedFile?.name }}
+				</span>
+			</div>
 		</div>
+		<p class="hint">Tamanho máximo: {{maxFileSize}}MB</p>
 	</div>
 </mat-dialog-content>
 
@@ -51,8 +59,10 @@
 </mat-dialog-content>
 
 <mat-dialog-actions>
-	<button mat-button (click)="onNoClick()">{{ data.negative_label || 'Cancelar' }}</button>
+	<button mat-button (click)="onNoClick()">
+		{{ data.negative_label || "Cancelar" }}
+	</button>
 	<button mat-button [mat-dialog-close]="newCopyData()" cdkFocusInitial>
-		{{ data.positive_label || 'Confirmar' }}
+		{{ data.positive_label || "Confirmar" }}
 	</button>
 </mat-dialog-actions>
