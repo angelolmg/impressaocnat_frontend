@@ -1,5 +1,4 @@
 import { Routes } from '@angular/router';
-import { EditCopyBoxComponent } from './components/edit-copy-box/edit-copy-box.component';
 import { ListRequestsComponent } from './pages/list-requests/list-requests.component';
 import { RedirectComponent } from './pages/redirect/redirect.component';
 import { RequestFormComponent } from './pages/request-form/request-form.component';

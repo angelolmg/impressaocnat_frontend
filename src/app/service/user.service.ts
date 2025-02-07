@@ -39,6 +39,13 @@ export class UserService {
 		this.router.navigate(['']);
 	}
 
+	isLoggedIn() {
+		return (
+			this.authService.client.getToken() != undefined &&
+			localStorage.getItem('suapToken') != null
+		);
+	}
+
 	// Busca dados do usuário no SUAP, depois usa matrícula para averiguar e atualizar permissões
 	fetchUserData(): Observable<boolean> {
 		let token = this.authService.client.getToken();

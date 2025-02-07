@@ -7,9 +7,12 @@ import { DialogData } from '../models/dialogData.interface';
 })
 export class DialogService {
 	readonly dialog = inject(MatDialog);
-	
-	openDialog(dialogBoxComponent: any, data?: DialogData): MatDialogRef<any> {
-		
+
+	openDialog(
+		dialogBoxComponent: any,
+		data?: DialogData,
+		disableClose: boolean = false
+	): MatDialogRef<any> {
 		// Remover foco do botão de abrir modal
 		// Previnir conflito com aria-hidden='true' no app-root
 		const buttonElement = document.activeElement as HTMLElement;
@@ -17,6 +20,7 @@ export class DialogService {
 
 		return this.dialog.open(dialogBoxComponent, {
 			data: data,
+			disableClose: disableClose,
 		});
 	}
 }

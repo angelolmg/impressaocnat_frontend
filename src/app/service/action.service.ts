@@ -3,6 +3,47 @@ import { CopyInterface } from '../models/copy.interface';
 import { RequestInterface } from './../models/request.interface';
 import { UserService } from './user.service';
 
+// Gerencia botões e rotas da barra de navegação, além do display padrão do usuário
+
+export interface Option {
+	icon: string;
+	text: string;
+	routerLink: string;
+}
+
+export interface User {
+	registration: string;
+	name: string;
+	pfp: string;
+}
+
+export const DEFAULT_USER_INFO: User = {
+	registration: '-',
+	name: '-',
+	pfp: 'assets/user-01.svg',
+};
+
+export const DEFAULT_USER_OPTIONS: Option[] = [
+	{
+		icon: 'add_circle',
+		text: 'Nova Solicitação',
+		routerLink: 'nova-solicitacao',
+	},
+	{
+		icon: 'list',
+		text: 'Minhas Solicitações',
+		routerLink: 'minhas-solicitacoes',
+	},
+];
+
+export const ADMIN_USER_OPTIONS: Option[] = [
+	{
+		icon: 'receipt_long',
+		text: 'Todas as Solicitações',
+		routerLink: 'solicitacoes',
+	},
+];
+
 // Gerencia o estado dos botões de ação em componentes de listagem. Define quais botões estarão habilitados, ocultos ou inativos,
 // e especifica as ações que cada botão realizará, levando em consideração o componente em questão, o estado atual da página,
 // a ação a ser executada e o elemento selecionado.

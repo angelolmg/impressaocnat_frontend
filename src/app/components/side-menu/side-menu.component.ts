@@ -1,24 +1,15 @@
 import { AfterViewInit, Component, inject, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
-import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { DialogService } from '../../service/dialog.service';
-import { LoginBoxComponent } from '../login-box/login-box.component';
+import { Router, RouterLink } from '@angular/router';
+import { Subject, takeUntil } from 'rxjs';
 import { userData } from '../../models/userData.interface';
+import { ActionService, Option, User } from '../../service/action.service';
+import { DialogService } from '../../service/dialog.service';
 import { UserService } from '../../service/user.service';
-
-interface Option {
-	icon: string;
-	text: string;
-	routerLink: string;
-}
-
-interface User {
-	registration: string;
-	name: string;
-	pfp: string;
-}
+import { LoginBoxComponent } from '../login-box/login-box.component';
+import { ADMIN_USER_OPTIONS, DEFAULT_USER_INFO, DEFAULT_USER_OPTIONS } from './../../service/action.service';
 
 @Component({
 	selector: 'app-side-menu',
@@ -27,48 +18,33 @@ interface User {
 	styleUrl: './side-menu.component.scss',
 })
 export class SideMenuComponent implements AfterViewInit {
+	private ngUnsubscribe = new Subject<void>();
 	dialogService = inject(DialogService);
 	userService = inject(UserService);
+	actionService = inject(ActionService);
 	router = inject(Router);
 
-	defaultUser = {
-		registration: '123456',
-		name: 'Fulano de Tal',
-		pfp: 'assets/user-01.svg',
-	};
+	// Projetar constante para poder usar no template
+	defaultUserInfo = DEFAULT_USER_INFO;
 
-	userSignal = signal<User>(this.defaultUser);
+	userSignal = signal<User>(this.defaultUserInfo);
 	options = signal<Option[]>([]);
 
 	ngAfterViewInit(): void {
-		this.options.set([
-			{
-				icon: 'add_circle',
-				text: 'Nova Solicitação',
-				routerLink: 'nova-solicitacao',
-			},
-			{
-				icon: 'list',
-				text: 'Minhas Solicitações',
-				routerLink: 'minhas-solicitacoes',
-			},
-		]);
+		this.setOptionsDefault();
 
-		this.userService.userUpdate.subscribe((data) => {
-			this.updateUser(data);
-			if (this.userService.getCurrentUser()?.is_admin) {
-				
-				this.options.update((curr) =>
-					curr.concat([
-						{
-							icon: 'receipt_long',
-							text: 'Todas as Solicitações',
-							routerLink: 'solicitacoes',
-						},
-					])
-				);
-			}
-		});
+		this.userService.userUpdate
+			.pipe(takeUntil(this.ngUnsubscribe))
+			.subscribe((data) => {
+				this.updateUser(data);
+				if (this.userService.getCurrentUser()?.is_admin) {
+					this.options.update((curr) => curr.concat(ADMIN_USER_OPTIONS));
+				}
+			});
+	}
+
+	setOptionsDefault() {
+		this.options.set(DEFAULT_USER_OPTIONS);
 	}
 
 	loginDialog() {
@@ -90,7 +66,14 @@ export class SideMenuComponent implements AfterViewInit {
 				pfp: user.url_foto_75x100,
 			});
 		} else {
-			this.userSignal.set(this.defaultUser);
+			this.userSignal.set(DEFAULT_USER_INFO);
+			this.setOptionsDefault();
 		}
+	}
+
+	// Unsubscribe para prevenir memory leak
+	ngOnDestroy() {
+		this.ngUnsubscribe.next();
+		this.ngUnsubscribe.complete();
 	}
 }

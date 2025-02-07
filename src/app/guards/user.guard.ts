@@ -1,6 +1,6 @@
 import { ActivatedRouteSnapshot, CanActivateFn, RouterStateSnapshot } from '@angular/router';
 
-export const userGuard: CanActivateFn = (
+export const UserGuard: CanActivateFn = (
   next: ActivatedRouteSnapshot,
   state: RouterStateSnapshot
 ) => {
