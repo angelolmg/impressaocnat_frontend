@@ -1,6 +1,13 @@
-import { AfterViewInit, Component, inject, signal } from '@angular/core';
+import {
+	AfterViewInit,
+	Component,
+	inject,
+	signal,
+	ViewChild
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router, RouterLink } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
@@ -9,11 +16,21 @@ import { ActionService, Option, User } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
 import { UserService } from '../../service/user.service';
 import { LoginBoxComponent } from '../login-box/login-box.component';
-import { ADMIN_USER_OPTIONS, DEFAULT_USER_INFO, DEFAULT_USER_OPTIONS } from './../../service/action.service';
+import {
+	ADMIN_USER_OPTIONS,
+	DEFAULT_USER_INFO,
+	DEFAULT_USER_OPTIONS,
+} from './../../service/action.service';
 
 @Component({
 	selector: 'app-side-menu',
-	imports: [RouterLink, MatIconModule, MatButtonModule, MatTooltipModule],
+	imports: [
+		RouterLink,
+		MatIconModule,
+		MatButtonModule,
+		MatTooltipModule,
+		MatSidenavModule,
+	],
 	templateUrl: './side-menu.component.html',
 	styleUrl: './side-menu.component.scss',
 })
@@ -30,6 +47,8 @@ export class SideMenuComponent implements AfterViewInit {
 	userSignal = signal<User>(this.defaultUserInfo);
 	options = signal<Option[]>([]);
 
+	@ViewChild(MatDrawer) drawer!: MatDrawer;
+
 	ngAfterViewInit(): void {
 		this.setOptionsDefault();
 
@@ -38,9 +57,21 @@ export class SideMenuComponent implements AfterViewInit {
 			.subscribe((data) => {
 				this.updateUser(data);
 				if (this.userService.getCurrentUser()?.is_admin) {
-					this.options.update((curr) => curr.concat(ADMIN_USER_OPTIONS));
+					this.options.update((curr) =>
+						curr.concat(ADMIN_USER_OPTIONS)
+					);
 				}
 			});
+
+		this.actionService.toggleSideMenuUI
+			.pipe(takeUntil(this.ngUnsubscribe))
+			.subscribe(() => {
+				this.toggleDrawer();
+			});
+	}
+
+	toggleDrawer() {
+		this.drawer.toggle();
 	}
 
 	setOptionsDefault() {

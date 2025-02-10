@@ -13,10 +13,11 @@ import { LoginBoxComponent } from './components/login-box/login-box.component';
 import { SideMenuComponent } from './components/side-menu/side-menu.component';
 import { DialogService } from './service/dialog.service';
 import { UserService } from './service/user.service';
+import { NavbarComponent } from './components/navbar/navbar.component';
 
 @Component({
 	selector: 'app-root',
-	imports: [RouterOutlet, SideMenuComponent],
+	imports: [RouterOutlet, SideMenuComponent, NavbarComponent],
 	templateUrl: './app.component.html',
 	styleUrl: './app.component.scss',
 })

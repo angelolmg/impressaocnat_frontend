@@ -9,13 +9,11 @@ form {
 }
 
 .my-steps {
-	height: 100%;
 	p {
 		margin-bottom: 1rem;
 	}
 	div {
 		margin-bottom: 1rem;
-
 		&:last-child {
 			margin: 0;
 		}
@@ -133,6 +131,7 @@ table {
 	display: flex;
 	gap: 1rem;
 	align-items: center;
+	padding: 1rem 0;
 }
 
 .table-wrapper {

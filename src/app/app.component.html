@@ -1,7 +1,9 @@
 <div class="main-container">
-  
-  <app-side-menu></app-side-menu>
-</div>
-<div class="content">
-  <router-outlet></router-outlet>
+  <app-navbar></app-navbar>
+  <div class="content">
+    <app-side-menu></app-side-menu>
+    <div class="my-content">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
 </div>

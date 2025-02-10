@@ -1,47 +1,35 @@
 <div class="main-container">
-	<div class="base-container">
-		<div class="header">
-			<img
-				routerLink=""
-				src="assets/printer-01.svg"
-				alt="logo"
-				class="header-logo"
-			/>
-			<h1>Solicitação de Cópias - CNAT</h1>
-		</div>
+	<mat-drawer-container autosize>
+		<mat-drawer #drawer mode="side" opened="true">
+			<h2>Solicitações</h2>
 
-		<h2>Solicitações</h2>
+			<ul class="options-list">
+				@for (option of options(); track $index) {
+				<button mat-fab extended [routerLink]="option.routerLink">
+					<mat-icon>{{ option.icon }}</mat-icon>
+					{{ option.text }}
+				</button>
+				}
+			</ul>
+			<div class="user-container">
+				<div class="user-card">
+					<img [src]="userSignal().pfp" alt="user" class="user-pp" />
 
-		<ul class="options-list">
-			@for (option of options(); track $index) {
-			<button mat-fab extended [routerLink]="option.routerLink">
-				<mat-icon>{{ option.icon }}</mat-icon>
-				{{ option.text }}
-			</button>
-			}
-		</ul>
-	</div>
-	<div class="user-container">
-		<div class="user-card">
-			<img
-				[src]="userSignal().pfp"
-				alt="user"
-				class="user-pp"
-			/>
-
-			<div class="user-info">
-				<span>{{ userSignal().name }}</span>
-				<span>{{ userSignal().registration }}</span>
+					<div class="user-info">
+						<span>{{ userSignal().name }}</span>
+						<span>{{ userSignal().registration }}</span>
+					</div>
+					<button
+						mat-icon-button
+						matTooltip="Sair"
+						aria-label="Download button"
+						(click)="logoutUser()"
+						[disabled]="userSignal() == defaultUserInfo"
+					>
+						<mat-icon>logout</mat-icon>
+					</button>
+				</div>
 			</div>
-			<button
-				mat-icon-button
-				matTooltip="Sair"
-				aria-label="Download button"
-				(click)="logoutUser()"
-				[disabled]="userSignal() == defaultUserInfo"
-			>
-				<mat-icon>logout</mat-icon>
-			</button>
-		</div>
-	</div>
+		</mat-drawer>
+	</mat-drawer-container>
 </div>

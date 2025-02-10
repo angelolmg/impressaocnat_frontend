@@ -99,6 +99,8 @@ export class ActionService {
 	openRequest = new EventEmitter<RequestInterface>();
 	toggleRequest = new EventEmitter<RequestInterface>();
 
+	toggleSideMenuUI = new EventEmitter();
+
 	userService = inject(UserService);
 
 	constructor() {}

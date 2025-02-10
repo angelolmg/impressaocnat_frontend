@@ -7,7 +7,9 @@
 		<button type="button" mat-flat-button (click)="addCopyDialog()">
 			Adicionar nova cópia
 		</button>
-		<button type="button" mat-button (click)="clearCopiesDialog()">Limpar</button>
+		<button type="button" mat-button (click)="clearCopiesDialog()">
+			Limpar
+		</button>
 	</div>
 
 	<div class="file-table table-wrapper" style="margin-bottom: 2rem">
@@ -58,12 +60,7 @@
 						mat-icon-button
 						matTooltip="{{ action }}"
 						aria-label="Action Button"
-						(click)="
-							actionService.callbackHandler(
-								action,
-								element
-							)
-						"
+						(click)="actionService.callbackHandler(action, element)"
 					>
 						<mat-icon>{{ action | icon }}</mat-icon>
 					</button>
@@ -76,10 +73,10 @@
 		</table>
 
 		@if(loadingData()) {
-			<div class="overlay">
-				<mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
-			</div>
-			}
+		<div class="overlay">
+			<mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+		</div>
+		}
 	</div>
 
 	<div class="copy-summary" style="margin-bottom: 2rem">
@@ -120,9 +117,18 @@
 	</div>
 
 	<div class="confirm-button">
-		<button type="button" mat-flat-button (click)="submitRequest()" [disabled]="uploading()">
+		<button
+			type="button"
+			mat-flat-button
+			(click)="submitRequest()"
+			[disabled]="uploading()"
+		>
 			Enviar Solicitação
 		</button>
-		<mat-progress-spinner mode="indeterminate" diameter="30" [style.visibility]="uploading()? 'visible': 'hidden'"></mat-progress-spinner>
+		<mat-progress-spinner
+			mode="indeterminate"
+			diameter="30"
+			[style.visibility]="uploading() ? 'visible' : 'hidden'"
+		></mat-progress-spinner>
 	</div>
 </form>

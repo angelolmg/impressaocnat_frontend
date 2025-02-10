@@ -1,13 +1,19 @@
 .main-container {
 	display: flex;
 	flex-direction: column;
-	background-color: #e0f2f7;
-	border-radius: 1rem;
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 	font-family: "Arial", sans-serif;
 	height: 100%;
 
 	justify-content: space-between;
+}
+
+mat-drawer-container {
+	height: 100%;
+	background-color: transparent;
+	mat-drawer {
+		background-color: transparent;
+		padding: 0 0 1rem 1rem;
+	}
 }
 
 .user-pp {
@@ -16,30 +22,7 @@
 
 .base-container,
 .user-container {
-	padding: 1.5rem;
-}
-
-.header {
-	display: flex;
-	align-items: center;
-	margin-bottom: 3rem;
-	text-align: left; /* Reset text alignment for header content */
-
-	img {
-		cursor: pointer;
-	}
-}
-
-.header-logo {
-	width: 55px;
-	margin: 0 1rem 0 1rem;
-}
-
-.header h1 {
-	font-size: 1.35rem;
-	color: #333;
-	flex-grow: 1;
-	text-align: center;
+	padding: 1rem;
 }
 
 h2 {
@@ -65,10 +48,6 @@ h2 {
 	}
 }
 
-button:hover {
-	transform: scale(1.02);
-	box-shadow: 0 4px 6px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.08);
-}
 
 .user-card {
 	display: flex;

@@ -53,8 +53,6 @@ export class UserService {
 	}
 
 	isLoggedIn() {
-		console.log(this.authService.client.getToken());
-
 		return (
 			this.authService.client.getToken() != undefined &&
 			localStorage.getItem('suapToken') != null
