@@ -29,6 +29,18 @@ export class UserService {
 		location.href = this.authService.client.getLoginURL();
 	}
 
+	isTokenExpired() {
+		let token = this.authService.client.getToken();
+		let currentTime = new Date().getTime();
+
+		if(!token) return true;
+
+		let tokenStartTime = token.startTime || 0;
+		let tokenExpirationTime = token.expirationTimeInSeconds || 0;
+
+		return currentTime > tokenStartTime + tokenExpirationTime * 1000;
+	}
+
 	logoutUser() {
 		let token = this.authService.client.getToken();
 		if (token) token.revoke(); 
@@ -41,6 +53,8 @@ export class UserService {
 	}
 
 	isLoggedIn() {
+		console.log(this.authService.client.getToken());
+
 		return (
 			this.authService.client.getToken() != undefined &&
 			localStorage.getItem('suapToken') != null

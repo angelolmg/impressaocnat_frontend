@@ -31,12 +31,18 @@ export class AppComponent implements AfterViewInit, OnInit {
 	ngOnInit() {
 		this.router.events.subscribe((event) => {
 			if (event instanceof NavigationEnd) {
+				
+				// Caso token esteja expirado, desconectar usuário automaticamente
+				if (this.userService.isTokenExpired())
+					this.userService.logoutUser()
+				
 				// Abrir dialogo de login caso o usuário não esteja logado
 				// Não abrir dialogo na tela de redirecionamento
 				if (
 					event.url != '/redirect' &&
 					!this.userService.isLoggedIn()
 				) {
+		
 					this.dialogService.openDialog(LoginBoxComponent, {}, true);
 				}
 			}
