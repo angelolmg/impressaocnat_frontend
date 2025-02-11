@@ -41,12 +41,13 @@ import {
 	map,
 	Subject,
 	switchMap,
-	takeUntil
+	takeUntil,
 } from 'rxjs';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
 import { RequestInterface } from '../../models/request.interface';
 import { IconPipe } from '../../pipes/icon.pipe';
 import { RequestService } from '../../service/request.service';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class MyErrorStateMatcher implements ErrorStateMatcher {
@@ -79,6 +80,7 @@ export class MyErrorStateMatcher implements ErrorStateMatcher {
 		MatSelectModule,
 		MatChipsModule,
 		IconPipe,
+		MatProgressSpinnerModule,
 	],
 	templateUrl: './view-request.component.html',
 	styleUrl: './view-request.component.scss',
@@ -95,6 +97,7 @@ export class ViewRequestComponent implements OnInit {
 	files: any[] = [];
 	fileCount = signal(0);
 	requestPageCounter = signal(0);
+	loadingData = signal(false);
 
 	matcher = new MyErrorStateMatcher();
 	copies = new MatTableDataSource<CopyInterface>();
@@ -140,27 +143,39 @@ export class ViewRequestComponent implements OnInit {
 				this.downloadFile(copy);
 			});
 
+		// Busca a solicicitação no view inite e carrega os dados da tabela de cópias
+		this.loadingData.set(true);
 		this.requestService
 			.getRequestById(this.requestId)
-			.subscribe((request) => {
-				this.myRequest = request;
-				this.copies.sort = this.sort;
-				this.copies.paginator = this.paginator;
-				this.updateTable(request.copies);
+			.pipe(finalize(() => this.loadingData.set(false)))
+			.subscribe({
+				next: (request: RequestInterface) => {
+					this.myRequest = request;
+					this.copies.sort = this.sort;
+					this.copies.paginator = this.paginator;
+					this.updateTable(request.copies);
+				},
+				error: (error) => {
+					this._snackBar.open(
+						`Erro ao buscar solicitação: ${error}`,
+						'Ok'
+					);
+				},
 			});
 
+		// Atualiza lista de cópias passando filtro de nome de arquivo
 		this.queryForm.valueChanges
 			.pipe(
 				takeUntil(this.ngUnsubscribe),
 				debounceTime(500),
-				map(params => params.query?.trim() || ''), // Remover espaços em branco e tornar em string
-    			filter(query => query.length == 0 || query.length >= 3), // Continuar apenas se a query tiver 0 ou 3+ caracteres
-				switchMap((query) =>
-					this.requestService.getCopiesByRequestId(
-						this.requestId,
-						query
-					)
-				)
+				map((params) => params.query?.trim() || ''), // Remover espaços em branco e tornar em string
+				filter((query) => query.length == 0 || query.length >= 3), // Continuar apenas se a query tiver 0 ou 3+ caracteres
+				switchMap((query) => {
+					this.loadingData.set(true);
+					return this.requestService
+						.getCopiesByRequestId(this.requestId, query)
+						.pipe(finalize(() => this.loadingData.set(false)));
+				})
 			)
 			.subscribe({
 				next: (copies: CopyInterface[]) => (this.copies.data = copies),
@@ -252,25 +267,87 @@ export class ViewRequestComponent implements OnInit {
 	}
 
 	downloadFile(copy: CopyInterface) {
-		if (copy.fileInDisk && this.requestId)
+		if (copy.fileInDisk && this.requestId) {
+			this.loadingData.set(true);
+
+			// Abrir uma janela em branco para exibir conteúdo do pdf
+			const newWindow = window.open('', '_blank');
+
+			if (!newWindow) {
+				// Checar se popup foi bloqueado
+				this._snackBar.open(
+					'Popup boqueado! Por favor permita popups para este site.',
+					'Ok'
+				);
+				this.loadingData.set(false);
+				return;
+			}
+
+			// Tela default de carregamento de arquivo
+			newWindow.document.write(`
+				<!DOCTYPE html>
+				<html>
+					<head>
+						<title>Por favor aguarde...</title>
+					</head>
+					<body>
+						<h1 style="margin: 1rem">Carregando seu arquivo...</h1>
+					</body>
+				</html>
+			`);
+
 			this.requestService
 				.downloadFile(this.requestId, copy.fileName)
 				.pipe(
 					finalize(() => {
+						this.loadingData.set(false);
 						console.log('Download finalizado.');
 					})
 				)
 				.subscribe({
 					next: (response) => {
-						var url = window.URL.createObjectURL(response.data);
-						window.open(url);
+						// Garantir que nova janela ainda está aberta
+						if (newWindow) {
+							const url = window.URL.createObjectURL(
+								response.data
+							);
+
+							// Injetar conteúdo na nova janela (usando iframe)
+							newWindow.document.open();
+							newWindow.document.write(`
+							<html>
+								<head>
+									<title>${copy.fileName}</title>
+									<style>
+										body, html {
+											margin: 0;
+										}
+										iframe {
+											width: 100%;
+											height: 100%;
+											border: none;
+										}
+									</style>
+								</head>
+								<body>
+									<iframe src="${url}"></iframe>
+								</body>
+							</html>`);
+
+							newWindow.document.close();
+						}
 					},
 					error: (err) => {
 						this._snackBar.open(err, 'Ok');
 						console.error(err);
+						if (newWindow) {
+							newWindow.close(); // Fechar janela caso dê erro
+						}
 					},
 				});
-		else this._snackBar.open('Arquivo não disponível.', 'Ok');
+		} else {
+			this._snackBar.open('Arquivo não disponível.', 'Ok');
+		}
 	}
 
 	clearCopies() {

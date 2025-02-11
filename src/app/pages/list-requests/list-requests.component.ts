@@ -77,7 +77,7 @@ import { MatSelectModule } from '@angular/material/select';
 		MatBadgeModule,
 		MatProgressSpinnerModule,
 		ReactiveFormsModule,
-		MatSelectModule
+		MatSelectModule,
 	],
 	templateUrl: './list-requests.component.html',
 	styleUrl: './list-requests.component.scss',
@@ -107,7 +107,7 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 
 	pageType = PageType.viewAllRequests;
 	filtering = true;
-	
+
 	requests = new MatTableDataSource<RequestInterface>();
 	loadingData = signal(true);
 
@@ -182,17 +182,21 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 			.pipe(
 				takeUntil(this.ngUnsubscribe),
 				debounceTime(500),
-				switchMap((params) =>
-					this.requestService.getAllRequests({
-						filtering: this.filtering,
-						concluded: this.queryForm.get('concluded')?.value,
-						...params,
-					})
-				)
+				switchMap((params) => {
+					this.loadingData.set(true);
+					return this.requestService
+						.getAllRequests({
+							filtering: this.filtering,
+							concluded: this.queryForm.get('concluded')?.value,
+							...params,
+						})
+						.pipe(finalize(() => this.loadingData.set(false)));
+				})
 			)
 			.subscribe({
-				next: (requests: RequestInterface[]) =>
-					(this.requests.data = requests),
+				next: (requests: RequestInterface[]) => {
+					this.requests.data = requests;
+				},
 				error: (error) => {
 					this._snackBar.open(
 						`Erro ao buscar solicitações: ${error}`,
@@ -201,7 +205,6 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 				},
 			});
 	}
-
 
 	generateReport() {
 		if (this.requests.data.length > 0) {

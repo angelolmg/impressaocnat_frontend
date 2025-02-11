@@ -113,3 +113,27 @@ th:last-child {
 			opacity: 30%;
 		}
 }
+
+.table-wrapper {
+	position: relative; /* Define a referência para posicionamento absoluto */
+	display: inline-block; /* Ajusta o tamanho ao conteúdo da tabela */
+	height: 100%;
+	box-shadow: 0 2px 4px rgb(0 0 0 / 12%);
+	border-radius: 1rem;
+	overflow: hidden;
+}
+
+.overlay {
+	position: absolute; /* Posiciona a div relativa ao wrapper */
+	top: 0; /* Alinhado ao topo da tabela */
+	left: 0; /* Alinhado à esquerda da tabela */
+	width: 100%; /* Tamanho igual à tabela */
+	height: 100%; /* Altura igual à tabela */
+	background-color: var(--transparent-overlay); /* Fundo semitransparente */
+	border-radius: 1rem;
+	display: flex; /* Alinhamento central */
+	justify-content: center;
+	align-items: center;
+	z-index: 10; /* Garante que a div esteja acima da tabela */
+	// pointer-events: none; /* Permite clicar nos elementos da tabela abaixo */
+}

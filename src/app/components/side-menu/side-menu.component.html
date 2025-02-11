@@ -6,7 +6,12 @@
 
 				<ul class="options-list">
 					@for (option of options(); track $index) {
-					<button mat-fab extended [routerLink]="option.routerLink">
+					<button
+						mat-fab
+						extended
+						[routerLink]="option.routerLink"
+						[class.selected]="option.routerLink == currentRoute"
+					>
 						<mat-icon>{{ option.icon }}</mat-icon>
 						{{ option.text }}
 					</button>

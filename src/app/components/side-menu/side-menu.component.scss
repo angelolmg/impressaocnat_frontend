@@ -49,6 +49,15 @@ h2 {
 		border-radius: 0.5rem;
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 		background-color: var(--side-menu-buttons);
+		
+		&:hover {
+			background-color: var(--table-header);
+		}
+
+	}
+	.selected {
+		font-weight: bold;
+		background-color: var(--table-header);
 	}
 }
 

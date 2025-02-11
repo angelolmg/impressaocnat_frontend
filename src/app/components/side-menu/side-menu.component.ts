@@ -3,20 +3,20 @@ import {
 	Component,
 	inject,
 	signal,
-	ViewChild
+	ViewChild,
 } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatDrawer, MatSidenavModule } from '@angular/material/sidenav';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Router, RouterLink } from '@angular/router';
+import { NavigationEnd, Router, RouterLink } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { ActionService, Option } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
 import { UserService } from '../../service/user.service';
 import {
 	ADMIN_USER_OPTIONS,
-	DEFAULT_USER_OPTIONS
+	DEFAULT_USER_OPTIONS,
 } from './../../service/action.service';
 
 @Component({
@@ -37,12 +37,19 @@ export class SideMenuComponent implements AfterViewInit {
 	userService = inject(UserService);
 	actionService = inject(ActionService);
 	router = inject(Router);
+	currentRoute: string = '';
 
 	options = signal<Option[]>([]);
 
 	@ViewChild(MatDrawer) drawer!: MatDrawer;
 
 	ngAfterViewInit(): void {
+		this.router.events.subscribe((event) => {
+			if (event instanceof NavigationEnd) {
+				this.currentRoute = event.url.slice(1);
+			}
+		});
+
 		this.setOptionsDefault();
 
 		this.userService.userUpdate

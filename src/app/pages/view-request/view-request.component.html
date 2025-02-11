@@ -84,6 +84,12 @@
 			<tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
 			<tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
 		</table>
+
+		@if(loadingData()) {
+			<div class="overlay">
+				<mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+			</div>
+			}
 	</div>
 
 	<div class="copy-summary">

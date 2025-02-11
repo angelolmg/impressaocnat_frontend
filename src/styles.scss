@@ -31,8 +31,11 @@
 			panel-background-color: white,
 		)
 	);
-}
 
+  @include mat.progress-spinner-overrides((
+    active-indicator-color: var(--spinner),
+  ));
+}
 :root {
 	// --white: #fff;
 	// --grey-200: #eee;
@@ -52,7 +55,7 @@
 	--background: #e8f0e3;
 	--main: #ffffff;
 	--button: #387652;
-	--table-header: #a7d1ab;
+	--table-header: rgb(167, 209, 171);
 	--table-row: #ffffff;
 	--table-row-concluded: #e8f0e3;
 	--side-menu-buttons: white;
@@ -62,6 +65,8 @@
 	--accent: #66b3ff;
 	--summary-chip: #ffffff;
 	--font-family-primary: Roboto, "Helvetica Neue", sans-serif;
+  --transparent-overlay: rgba(56, 118, 82, 0.1);
+  --spinner: #387652;
 
 }
 
@@ -86,7 +91,7 @@ body {
 }
 body {
 	margin: 0;
-	font-family: Roboto, "Helvetica Neue", sans-serif;
+	font-family: var(--font-family-primary);
 }
 
 mat-icon {
