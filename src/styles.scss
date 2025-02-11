@@ -1,64 +1,93 @@
-
-@use '@angular/material' as mat;
+@use "@angular/material" as mat;
 
 // Customize the entire app. Change :root to your selector if you want to scope the styles.
 :root {
-  @include mat.table-overrides((
-    background-color: trasparent,
-  ));
-  @include mat.sort-overrides((
-    
-  ));
-  @include mat.paginator-overrides((
-    container-background-color: transparent,
-  ));
+	@include mat.table-overrides(
+		(
+			background-color: trasparent,
+		)
+	);
+	@include mat.sort-overrides(());
+	@include mat.paginator-overrides(
+		(
+			container-background-color: transparent,
+		)
+	);
 
-  @include mat.fab-overrides((
-    container-color: white,
-  ));
+	@include mat.fab-overrides(
+		(
+			container-color: white,
+		)
+	);
 
-  @include mat.form-field-overrides((
-    filled-container-color: white,
-  ));
+	@include mat.form-field-overrides(
+		(
+			filled-container-color: white,
+		)
+	);
 
-  @include mat.select-overrides((
-    panel-background-color: white,
-  ));
+	@include mat.select-overrides(
+		(
+			panel-background-color: white,
+		)
+	);
 }
 
 :root {
-  --white: #fff;
-  --grey-200: #eee;
-  --grey-400: #ccc;
-  --grey-500: #999;
-  --grey-600: #666;
-  --black: #292929;
-  --primary: #347b3e;
-  --secondary: #75ad0a;
-  --success: #198754;
-  --login-black: #112828;
-  --login-primary: #37FFAC;
-  --login-primary-rgb: 55, 255, 172;
-  --login-secondary: #376F6C;
-  --login-tertiary: #0D3433;
+	// --white: #fff;
+	// --grey-200: #eee;
+	// --grey-400: #ccc;
+	// --grey-500: #999;
+	// --grey-600: #666;
+	// --black: #292929;
+	// --primary: #347b3e;
+	// --secondary: #75ad0a;
+	// --success: #198754;
+	// --login-black: #112828;
+	// --login-primary: #37FFAC;
+	// --login-primary-rgb: 55, 255, 172;
+	// --login-secondary: #376F6C;
+	// --login-tertiary: #0D3433;
+
+	--background: #e8f0e3;
+	--main: #ffffff;
+	--button: #387652;
+	--table-header: #a7d1ab;
+	--table-row: #ffffff;
+	--table-row-concluded: #e8f0e3;
+	--side-menu-buttons: white;
+	--user-card: #ffffff;
+	--border: #d0d5d9;
+	--text-color: #333;
+	--accent: #66b3ff;
+	--summary-chip: #ffffff;
+	--font-family-primary: Roboto, "Helvetica Neue", sans-serif;
+
 }
 
 * {
 	margin: 0;
 	padding: 0;
-	font-family: Roboto, "Helvetica Neue", sans-serif;
+	font-family: var(--font-family-primary);
 }
 
-html, body {
+html,
+body {
 	height: 100vh;
-} 
+}
 
 app-root {
 	display: flex;
 	height: 100%;
 }
-html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+html,
+body {
+	height: 100%;
+}
+body {
+	margin: 0;
+	font-family: Roboto, "Helvetica Neue", sans-serif;
+}
 
 mat-icon {
 	cursor: pointer;

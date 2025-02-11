@@ -41,7 +41,7 @@
 
 .page-title {
 	font-size: 1.1rem;
-	color: #555;
+	color: var(--text-color);
 }
 
 table {
@@ -49,16 +49,16 @@ table {
 	margin-bottom: 1rem;
 	
 	th {
-		background-color: #e0f2f7;
+		background-color: var(--table-header);
 	}
 	
 	tr {
-		background-color: white;
+		background-color: var(--table-row);
 		border-radius: 1rem;
 	}
 
 	.concluded {
-		background-color: rgb(236, 236, 236);
+		background-color: var(--table-row-concluded);
 		text-decoration: line-through;
 	}
 

@@ -1,9 +1,9 @@
 .header {
 	display: flex;
 	align-items: center;
-    margin: 1rem;
+	margin: 1rem;
 	text-align: left;
-    gap: .6rem;
+	gap: 0.6rem;
 	img {
 		cursor: pointer;
 	}
@@ -11,10 +11,15 @@
 
 .header-logo {
 	width: 1.8rem;
+	font-size: xx-large;
+	margin-right: 0.8rem;
+	cursor: pointer;
+	filter: drop-shadow(0 0 0.1rem black);
 }
 
 .header p {
-    font-weight:500;
+	font-weight: 500;
 	font-size: 1.35rem;
-	color: #333;
+	color: var(--text-color);
+	font-family: var(--font-family-primary);
 }

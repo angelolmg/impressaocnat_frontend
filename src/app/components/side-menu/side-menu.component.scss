@@ -13,6 +13,7 @@ mat-drawer-container {
 	mat-drawer {
 		background-color: transparent;
 		padding: 0 0 1rem 1rem;
+		width: 15vw;
 	}
 }
 
@@ -20,14 +21,16 @@ mat-drawer-container {
 	border-radius: 50%;
 }
 
-.base-container,
-.user-container {
-	padding: 1rem;
+.side-menu {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
 }
 
 h2 {
 	font-size: 1.1rem;
-	color: #555;
+	color: var(--text-color);
+	font-family: var(--font-family-primary);
 	margin-bottom: 1rem;
 }
 
@@ -45,15 +48,15 @@ h2 {
 		height: 3.5rem;
 		border-radius: 0.5rem;
 		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+		background-color: var(--side-menu-buttons);
 	}
 }
-
 
 .user-card {
 	display: flex;
 	align-items: center;
 	gap: 0.5rem;
-	background-color: white;
+	background-color: var(--user-card);
 	margin-top: auto;
 	padding: 2rem 1rem;
 	border-radius: 0.5rem;
@@ -70,9 +73,9 @@ h2 {
 }
 
 .user-pp {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    border: 1px solid #000000;
+	width: 60px;
+	height: 60px;
+	border-radius: 50%;
+	border: 1px solid #000000;
 	cursor: pointer;
 }

@@ -4,7 +4,7 @@
     height: 100%;
     width: 100%;
     font-family: "Arial", sans-serif;
-    background-color: bisque;
+    background-color: var(--background);
     app-navbar {
         height: 8%;
     }
@@ -16,7 +16,7 @@
 }
 
 .my-content {
-    background-color: #e0f2f7;
+    background-color: var(--main);
 	border-radius: 1rem;
 	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     padding: 1rem;

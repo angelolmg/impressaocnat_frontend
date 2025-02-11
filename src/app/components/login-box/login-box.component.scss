@@ -19,13 +19,13 @@ mat-dialog-content {
 	  h1 {
 		font-size: 1.8rem;
 		font-weight: 600;
-		color: #333;
+		color: var(--text-color);
 		margin: 0;
 	  }
 	}
   
 	.button-content {
-	  background-color: var(--primary);
+	  background-color: var(--button);
 	  border-radius: 2rem;
 	  padding: 1rem 2rem;
 	  display: flex;
@@ -43,6 +43,7 @@ mat-dialog-content {
   
 	  span {
 		font-size: 1.2rem;
+		color: white;
 	  }
   
 	  &:hover {

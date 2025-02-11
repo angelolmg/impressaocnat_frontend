@@ -15,7 +15,7 @@ form {
 
 .page-title {
 	font-size: 1.1rem;
-	color: #555;
+	color: var(--text-color);
 }
 
 .content {
@@ -28,7 +28,7 @@ form {
 h2,
 h3 {
 	font-size: 1.1rem;
-	color: #555;
+	color: var(--text-color);
 }
 
 .file-name {
@@ -56,7 +56,7 @@ h3 {
 .copy-summary {
 	margin: 1rem 0;
 	mat-chip {
-		background-color: white;
+		background-color: var(--summary-chip);
 	}
 }
 
@@ -68,10 +68,10 @@ table {
 	margin-bottom: 1rem;
 
 	th {
-		background-color: #e0f2f7;
+		background-color: var(--table-header);
 	}
 	tr {
-		background-color: white;
+		background-color: var(--table-row);
 	}
 
 	tr:last-child td:first-child {
