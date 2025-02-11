@@ -13,6 +13,10 @@ export class DialogService {
 		data?: DialogData,
 		disableClose: boolean = false
 	): MatDialogRef<any> {
+
+		// Fechar todos os dialogos antes de abrir um novo
+		this.dialog.closeAll();
+
 		// Remover foco do botão de abrir modal
 		// Previnir conflito com aria-hidden='true' no app-root
 		const buttonElement = document.activeElement as HTMLElement;

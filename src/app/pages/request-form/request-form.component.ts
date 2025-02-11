@@ -37,12 +37,7 @@ import { DialogService } from '../../service/dialog.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PDFDocument } from 'pdf-lib';
-import {
-	finalize,
-	Observable,
-	Subject,
-	takeUntil
-} from 'rxjs';
+import { finalize, Observable, Subject, takeUntil } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
 import { IconPipe } from '../../pipes/icon.pipe';
@@ -93,9 +88,8 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 	route = inject(ActivatedRoute);
 	router = inject(Router);
 
-	pageType = '';
+	pageType = PageType.newRequest;
 	pageTitle: string = PageType.newRequest;
-
 	files: File[] = [];
 	copies = new MatTableDataSource<CopyInterface>();
 	allowedActions: ActionType[] = [];
@@ -112,17 +106,15 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 	];
 	editRequestId: number | undefined;
 	uploading = signal(false);
-
 	matcher = new MyErrorStateMatcher();
-
 	loadingData = signal(false);
 
 	ngOnInit(): void {
 		// Definir tipo de formulário: edição ou criação
-		this.pageType =
+			this.pageType =
 			this.route.snapshot.url[0].path == 'editar-solicitacao'
-				? PageType.editRequest
-				: PageType.newRequest;
+					? PageType.editRequest
+					: PageType.newRequest;
 		if (this.pageType == PageType.editRequest) {
 			this.editRequestId = +this.route.snapshot.paramMap.get('id')!;
 			this.pageTitle = this.pageType + ' Nº ' + this.editRequestId;

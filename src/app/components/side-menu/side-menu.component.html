@@ -12,24 +12,6 @@
 					</button>
 					}
 				</ul>
-
-				<div class="user-card">
-					<img [src]="userSignal().pfp" alt="user" class="user-pp" />
-
-					<div class="user-info">
-						<span>{{ userSignal().name }}</span>
-						<span>{{ userSignal().registration }}</span>
-					</div>
-					<button
-						mat-icon-button
-						matTooltip="Sair"
-						aria-label="Download button"
-						(click)="logoutUser()"
-						[disabled]="userSignal() == defaultUserInfo"
-					>
-						<mat-icon>logout</mat-icon>
-					</button>
-				</div>
 			</div>
 		</mat-drawer>
 	</mat-drawer-container>

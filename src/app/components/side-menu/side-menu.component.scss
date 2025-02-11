@@ -52,30 +52,3 @@ h2 {
 	}
 }
 
-.user-card {
-	display: flex;
-	align-items: center;
-	gap: 0.5rem;
-	background-color: var(--user-card);
-	margin-top: auto;
-	padding: 2rem 1rem;
-	border-radius: 0.5rem;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-	justify-content: space-between; /* Distribute space more evenly */
-}
-
-.user-info {
-	display: flex;
-	flex-direction: column;
-	flex-wrap: wrap; /* Added flex-wrap for responsiveness */
-	text-align: left;
-	row-gap: 0.3rem;
-}
-
-.user-pp {
-	width: 60px;
-	height: 60px;
-	border-radius: 50%;
-	border: 1px solid #000000;
-	cursor: pointer;
-}

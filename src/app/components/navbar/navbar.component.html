@@ -1,10 +1,35 @@
-<div class="header">
-	<button
-		mat-icon-button
-		(click)="toggleDrawer()"
-	>
-		<mat-icon>menu</mat-icon>
-	</button>
-	<span [routerLink]="['/minhas-solicitacoes']" class="header-logo">🖨️</span>
-	<p>Solicitação de Cópias - CNAT</p>
-</div>
+<nav class="header">
+	<div class="page-title">
+		<button mat-icon-button (click)="toggleDrawer()">
+			<mat-icon>menu</mat-icon>
+		</button>
+		<span [routerLink]="['/minhas-solicitacoes']" class="header-logo"
+			>🖨️</span
+		>
+		<p>Solicitação de Cópias - CNAT</p>
+	</div>
+
+	<div class="user-card">
+		@if(userSignal() != defaultUserInfo) {
+		<p>Bem vindo, {{ userSignal().name }}</p>
+		<img
+			[matTooltip]="userSignal().name + ' - ' + userSignal().registration"
+			[src]="userSignal().pfp"
+			alt="user-pfp"
+			class="user-pp shadow-border"
+		/>
+		} @else {
+			<mat-icon class="user-default shadow-border">person</mat-icon>
+		}
+
+		<button
+			mat-icon-button
+			matTooltip="Sair"
+			aria-label="Download button"
+			(click)="logoutUser()"
+			[disabled]="userSignal() == defaultUserInfo"
+		>
+			<mat-icon>logout</mat-icon>
+		</button>
+	</div>
+</nav>
