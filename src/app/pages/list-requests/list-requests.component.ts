@@ -38,6 +38,7 @@ import {
 	EMPTY,
 	filter,
 	finalize,
+	map,
 	of,
 	Subject,
 	Subscription,
@@ -218,27 +219,61 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 				})
 				.afterClosed()
 				.pipe(
-					// Continua somente se o usuário confirmar a alteração
+					// Continua somente se o usuário confirmar a ação
 					filter((confirmed) => confirmed),
-					// Mapeia para a operação de alteração
 					switchMap(() => {
-						return this.requestService.generateReport(
-							this.requests.data
+						this.loadingData.set(true);
+	
+						// Abre uma nova janela
+						const newWindow = window.open('', '_blank');
+	
+						if (!newWindow) {
+							this._snackBar.open(
+								'Popup bloqueado! Por favor, permita popups para este site.',
+								'Ok'
+							);
+							this.loadingData.set(false);
+							return EMPTY;
+						}
+	
+						// Tela de carregamento padrão
+						newWindow.document.write(`
+							<!DOCTYPE html>
+							<html>
+								<head>
+									<title>Por favor aguarde...</title>
+								</head>
+								<body>
+									<h1 style="margin: 1rem">Carregando seu arquivo...</h1>
+								</body>
+							</html>
+						`);
+	
+						return this.requestService.generateReport(this.requests.data).pipe(
+							map((reportHtml) => ({ reportHtml, newWindow })) // Passa ambos para o próximo operador
 						);
 					})
 				)
 				.subscribe({
-					next: (reportHtml: string) => {
-						// Open the report in a new window
-						const newWindow = window.open();
-						if (newWindow) {
-							newWindow.document.write(reportHtml); // Write the HTML content to the new window
-							newWindow.document.close(); // Close the document for rendering
+					next: ({ reportHtml, newWindow }) => {
+						// Verifica se a nova aba ainda está aberta antes de escrever o relatório
+						if (newWindow && !newWindow.closed) {
+							newWindow.document.open();
+							newWindow.document.write(reportHtml);
+							newWindow.document.close();
+						} else {
+							this._snackBar.open(
+								'Não foi possível abrir o relatório. Verifique as configurações de popups do navegador.',
+								'Ok'
+							);
 						}
 					},
 					error: (err) => {
 						console.error(err);
 						this._snackBar.open(err, 'Ok');
+					},
+					complete: () => {
+						this.loadingData.set(false);
 					},
 				});
 		} else {
@@ -367,6 +402,10 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 		// Refresh the data source object
 		// Angular Material is weird
 		this.requests.data = this.requests.data;
+	}
+
+	clearFilters() {
+		this.queryForm.reset();
 	}
 
 	// Unsubscribe para prevenir memory leak

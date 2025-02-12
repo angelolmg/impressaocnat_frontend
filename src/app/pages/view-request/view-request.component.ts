@@ -143,7 +143,7 @@ export class ViewRequestComponent implements OnInit {
 				this.downloadFile(copy);
 			});
 
-		// Busca a solicicitação no view inite e carrega os dados da tabela de cópias
+		// Busca a solicicitação no view init e carrega os dados da tabela de cópias
 		this.loadingData.set(true);
 		this.requestService
 			.getRequestById(this.requestId)
@@ -371,6 +371,10 @@ export class ViewRequestComponent implements OnInit {
 		});
 
 		this.requestPageCounter.set(counter);
+	}
+
+	clearFilters() {
+		this.queryForm.reset();
 	}
 
 	// Unsubscribe para prevenir memory leak

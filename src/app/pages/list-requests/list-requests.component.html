@@ -3,30 +3,6 @@
 		<h2 class="page-title">{{ pageType }}</h2>
 
 		<form [formGroup]="queryForm" class="my-options">
-			<button
-				mat-icon-button
-				matTooltip="Abrir relatório"
-				aria-label="Generate report button"
-				(click)="generateReport()"
-				[matBadge]="
-					requests.data.length < 99 ? requests.data.length : '99+'
-				"
-				[matBadgeHidden]="requests.data.length <= 0"
-			>
-				<mat-icon>download</mat-icon>
-			</button>
-
-			<mat-form-field>
-				<mat-label>Filtro por Conclusão</mat-label>
-				<mat-select formControlName="concluded">
-					<mat-option [value]="null">Todos</mat-option>
-					<mat-option [value]="true">Apenas Concluídos</mat-option>
-					<mat-option [value]="false"
-						>Apenas Não Concluídos</mat-option
-					>
-				</mat-select>
-			</mat-form-field>
-
 			<mat-form-field>
 				<mat-label>Filtrar por Criação</mat-label>
 				<mat-date-range-input [rangePicker]="picker">
@@ -50,6 +26,17 @@
 			</mat-form-field>
 
 			<mat-form-field>
+				<mat-label>Filtro por Conclusão</mat-label>
+				<mat-select formControlName="concluded">
+					<mat-option [value]="null">Todos</mat-option>
+					<mat-option [value]="true">Apenas Concluídos</mat-option>
+					<mat-option [value]="false"
+						>Apenas Não Concluídos</mat-option
+					>
+				</mat-select>
+			</mat-form-field>
+
+			<mat-form-field style="width: 25%;">
 				<mat-label>Filtrar por Atributo</mat-label>
 				<input
 					matInput
@@ -58,6 +45,23 @@
 				/>
 				<mat-icon matSuffix>search</mat-icon>
 			</mat-form-field>
+
+			<button mat-button (click)="clearFilters()">Limpar Filtros</button>
+
+			<div class="extra-opts">
+				<button
+					mat-icon-button
+					matTooltip="Abrir relatório"
+					aria-label="Generate report button"
+					(click)="generateReport()"
+					[matBadge]="
+						requests.data.length < 99 ? requests.data.length : '99+'
+					"
+					[matBadgeHidden]="requests.data.length <= 0"
+				>
+					<mat-icon>download</mat-icon>
+				</button>
+			</div>
 		</form>
 	</div>
 
