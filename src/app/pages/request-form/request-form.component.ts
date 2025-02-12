@@ -30,7 +30,7 @@ import {
 	actions,
 	ActionService,
 	ActionType,
-	PageType,
+	PageType
 } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
 
@@ -109,6 +109,10 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 	matcher = new MyErrorStateMatcher();
 	loadingData = signal(false);
 
+	public get editRequest() : PageType {
+		return PageType.editRequest;
+	}
+	
 	ngOnInit(): void {
 		// Definir tipo de formulário: edição ou criação
 			this.pageType =
@@ -117,7 +121,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 					: PageType.newRequest;
 		if (this.pageType == PageType.editRequest) {
 			this.editRequestId = +this.route.snapshot.paramMap.get('id')!;
-			this.pageTitle = this.pageType + ' Nº ' + this.editRequestId;
+			this.pageTitle = this.pageType + ' Nº ' + this.editRequestId.toString().padStart(6, '0');
 			this.loadingData.set(true);
 			this.requestService
 				.getRequestById(this.editRequestId)
@@ -369,6 +373,14 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 
 	anyCopies() {
 		return this.copies.data.length > 0;
+	}
+
+	getPageType(asRoute: boolean = true): string | null{
+		return this.actionService.getPageType(asRoute);
+	}
+
+	navigateTo(route: string | null) {
+		if (route) this.router.navigate([route]);
 	}
 
 	// Unsubscribe para prevenir memory leak

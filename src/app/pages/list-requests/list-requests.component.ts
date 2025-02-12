@@ -161,6 +161,7 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 		this.requestService
 			.getAllRequests({
 				filtering: this.filtering,
+				...this.queryForm.value
 			})
 			.pipe(
 				finalize(() => {
@@ -188,7 +189,6 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 					return this.requestService
 						.getAllRequests({
 							filtering: this.filtering,
-							concluded: this.queryForm.get('concluded')?.value,
 							...params,
 						})
 						.pipe(finalize(() => this.loadingData.set(false)));
@@ -322,8 +322,7 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 							this._snackBar.open(response.message, 'Ok');
 							return this.requestService.getAllRequests({
 								filtering: this.filtering,
-								concluded:
-									this.queryForm.get('concluded')?.value,
+								...this.queryForm.value
 							});
 						}),
 						tap((requests) => {
@@ -369,7 +368,7 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 				switchMap(() =>
 					this.requestService.getAllRequests({
 						filtering: this.filtering,
-						concluded: this.queryForm.get('concluded')?.value,
+						...this.queryForm.value
 					})
 				),
 				tap((requests) => {
@@ -387,14 +386,10 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 	}
 
 	editRequestRedirect(request: RequestInterface) {
-		console.log('Editando solicitação...');
-		console.log(request);
 		this.router.navigate(['/editar-solicitacao', request.id]);
 	}
 
 	viewRequestRedirect(request: RequestInterface) {
-		console.log('Ver solicitação...');
-		console.log(request);
 		this.router.navigate(['/ver-solicitacao', request.id]);
 	}
 

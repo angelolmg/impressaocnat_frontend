@@ -3,47 +3,6 @@ import { CopyInterface } from '../models/copy.interface';
 import { RequestInterface } from './../models/request.interface';
 import { UserService } from './user.service';
 
-// Gerencia botões e rotas da barra de navegação, além do display padrão do usuário
-
-export interface Option {
-	icon: string;
-	text: string;
-	routerLink: string;
-}
-
-export interface User {
-	registration: string;
-	name: string;
-	pfp: string;
-}
-
-export const DEFAULT_USER_INFO: User = {
-	registration: '-',
-	name: '-',
-	pfp: 'assets/user-01.svg',
-};
-
-export const DEFAULT_USER_OPTIONS: Option[] = [
-	{
-		icon: 'add_circle',
-		text: 'Nova Solicitação',
-		routerLink: 'nova-solicitacao',
-	},
-	{
-		icon: 'list',
-		text: 'Minhas Solicitações',
-		routerLink: 'minhas-solicitacoes',
-	},
-];
-
-export const ADMIN_USER_OPTIONS: Option[] = [
-	{
-		icon: 'receipt_long',
-		text: 'Todas as Solicitações',
-		routerLink: 'solicitacoes',
-	},
-];
-
 // Gerencia o estado dos botões de ação em componentes de listagem. Define quais botões estarão habilitados, ocultos ou inativos,
 // e especifica as ações que cada botão realizará, levando em consideração o componente em questão, o estado atual da página,
 // a ação a ser executada e o elemento selecionado.
@@ -55,6 +14,14 @@ export enum PageType {
 	viewAllRequests = 'Todas as Solicitações',
 	viewMyRequests = 'Minhas Solicitações',
 }
+
+export const pageTypeRoutes: { [key in PageType]: string } = {
+	[PageType.viewRequest]: 'ver-solicitacao/:id',
+	[PageType.newRequest]: 'nova-solicitacao',
+	[PageType.editRequest]: 'editar-solicitacao/:id',
+	[PageType.viewAllRequests]: 'solicitacoes',
+	[PageType.viewMyRequests]: 'minhas-solicitacoes',
+};
 
 export enum ActionType {
 	VISUALIZAR = 'Visualizar',
@@ -83,6 +50,47 @@ export const actions = {
 	],
 };
 
+// Gerencia botões e rotas da barra de navegação, além do display padrão do usuário
+
+export interface Option {
+	icon: string;
+	text: string;
+	routerLink: string;
+}
+
+export interface User {
+	registration: string;
+	name: string;
+	pfp: string;
+}
+
+export const DEFAULT_USER_INFO: User = {
+	registration: '-',
+	name: '-',
+	pfp: 'assets/user-01.svg',
+};
+
+export const DEFAULT_USER_OPTIONS: Option[] = [
+	{
+		icon: 'add_circle',
+		text: PageType.newRequest,
+		routerLink: pageTypeRoutes[PageType.newRequest],
+	},
+	{
+		icon: 'list',
+		text: PageType.viewMyRequests,
+		routerLink: pageTypeRoutes[PageType.viewMyRequests],
+	},
+];
+
+export const ADMIN_USER_OPTIONS: Option[] = [
+	{
+		icon: 'receipt_long',
+		text: PageType.viewAllRequests,
+		routerLink: pageTypeRoutes[PageType.viewAllRequests],
+	},
+];
+
 const CREATION_DATE_KEY = 'creationDate';
 const FILE_NAME_KEY = 'fileName';
 
@@ -102,6 +110,8 @@ export class ActionService {
 	toggleSideMenuUI = new EventEmitter();
 
 	userService = inject(UserService);
+
+	pageType: PageType | undefined;
 
 	constructor() {}
 
@@ -190,11 +200,22 @@ export class ActionService {
 		component?: string,
 		state?: PageType
 	): void {
+		if (state) localStorage.setItem('lastPageState', state);
+
 		if (!element || !action) {
 			console.warn('Ação ou elemento faltando.');
 			return;
 		}
 
 		this.emitAction(action, element);
+	}
+
+	getPageType(asRoute: boolean = true): string | null {
+		let pageState = localStorage.getItem('lastPageState');
+		if (pageState) {
+			if (asRoute) return pageTypeRoutes[pageState as PageType];
+			else return pageState;
+		}
+		return null;
 	}
 }

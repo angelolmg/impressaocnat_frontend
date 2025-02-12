@@ -1,5 +1,10 @@
 <form class="my-steps">
-	<h2 class="page-title">{{ pageTitle }}</h2>
+	<h2 class="page-title">
+		@if(getPageType() && pageType == editRequest) {
+		<span (click)="navigateTo(getPageType())" >{{ getPageType(false) }}</span>
+		<mat-icon>chevron_right</mat-icon>
+		}
+		{{ pageTitle }}</h2>
 
 	<p>1. Anexe cópias à solicitação</p>
 
@@ -60,7 +65,14 @@
 						mat-icon-button
 						matTooltip="{{ action }}"
 						aria-label="Action Button"
-						(click)="actionService.callbackHandler(action, element)"
+						(click)="
+							actionService.callbackHandler(
+								action,
+								element,
+								'request-form',
+								pageType
+							)
+						"
 					>
 						<mat-icon>{{ action | icon }}</mat-icon>
 					</button>

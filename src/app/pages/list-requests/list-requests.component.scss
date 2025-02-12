@@ -67,7 +67,8 @@ table {
 
 	.concluded {
 		background-color: var(--table-row-concluded);
-		text-decoration: line-through;
+		// text-decoration: line-through;
+		color: gray;
 	}
 
 	th:first-child {

@@ -36,7 +36,7 @@
 				</mat-select>
 			</mat-form-field>
 
-			<mat-form-field style="width: 25%;">
+			<mat-form-field style="width: 25%">
 				<mat-label>Filtrar por Atributo</mat-label>
 				<input
 					matInput
@@ -210,7 +210,14 @@
 						mat-icon-button
 						matTooltip="{{ action }}"
 						aria-label="Action button"
-						(click)="actionService.callbackHandler(action, element)"
+						(click)="
+							actionService.callbackHandler(
+								action,
+								element,
+								'list-requests',
+								pageType
+							)
+						"
 					>
 						<mat-icon>{{ action | icon }}</mat-icon>
 					</button>

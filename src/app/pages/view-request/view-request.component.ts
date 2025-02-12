@@ -23,13 +23,14 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { EditCopyBoxComponent } from '../../components/edit-copy-box/edit-copy-box.component';
 import { actions, ActionService } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
-import { EditCopyBoxComponent } from '../../components/edit-copy-box/edit-copy-box.component';
 import { CopyInterface } from './../../models/copy.interface';
 import { PageType } from './../../service/action.service';
 
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -47,7 +48,6 @@ import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.compo
 import { RequestInterface } from '../../models/request.interface';
 import { IconPipe } from '../../pipes/icon.pipe';
 import { RequestService } from '../../service/request.service';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class MyErrorStateMatcher implements ErrorStateMatcher {
@@ -110,6 +110,7 @@ export class ViewRequestComponent implements OnInit {
 
 	allowedActions = actions.allowedActionsforViewRequest;
 	pageType = PageType.viewRequest;
+	previousPage: string | undefined = '';
 
 	displayedColumns: string[] = [
 		'fileName',
@@ -375,6 +376,14 @@ export class ViewRequestComponent implements OnInit {
 
 	clearFilters() {
 		this.queryForm.reset();
+	}
+
+	navigateTo(route: string | null) {
+		if (route) this.router.navigate([route]);
+	}
+
+	getPageType(asRoute: boolean = true) {
+		return this.actionService.getPageType(asRoute);
 	}
 
 	// Unsubscribe para prevenir memory leak

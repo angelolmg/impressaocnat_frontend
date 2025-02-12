@@ -1,8 +1,14 @@
 <div class="content">
 	<div class="top-shelf">
 		<h2 class="page-title">
-			Solicitação Nº {{ requestId }}
-			{{ myRequest?.conclusionDate ? "(FECHADA)" : "" }}
+			@if(getPageType()) {
+			<span (click)="navigateTo(getPageType())">{{ getPageType(false) }}</span>
+			<mat-icon>chevron_right</mat-icon>
+			}
+			<span
+				>Solicitação Nº {{ requestId!.toString().padStart(6, "0") }}
+				{{ myRequest?.conclusionDate ? "(FECHADA)" : "" }}</span
+			>
 		</h2>
 		<form [formGroup]="queryForm">
 			<mat-form-field class="search-bar">
@@ -105,7 +111,14 @@
 						mat-icon-button
 						matTooltip="{{ action }}"
 						aria-label="Action button"
-						(click)="actionService.callbackHandler(action, element)"
+						(click)="
+							actionService.callbackHandler(
+								action,
+								element,
+								'view-request',
+								pageType
+							)
+						"
 					>
 						<mat-icon>{{ action | icon }}</mat-icon>
 					</button>

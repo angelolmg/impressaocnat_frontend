@@ -3,6 +3,7 @@ import { ListRequestsComponent } from './pages/list-requests/list-requests.compo
 import { RedirectComponent } from './pages/redirect/redirect.component';
 import { RequestFormComponent } from './pages/request-form/request-form.component';
 import { ViewRequestComponent } from './pages/view-request/view-request.component';
+import { pageTypeRoutes, PageType } from './service/action.service';
 
 export const routes: Routes = [
     {
@@ -11,23 +12,23 @@ export const routes: Routes = [
         component: RequestFormComponent
     },
     {
-        path: 'minhas-solicitacoes',
+        path: pageTypeRoutes[PageType.viewMyRequests],
         component: ListRequestsComponent
     },
     {
-        path: 'solicitacoes',
+        path: pageTypeRoutes[PageType.viewAllRequests],
         component: ListRequestsComponent
     },
     {
-        path: 'nova-solicitacao',
+        path: pageTypeRoutes[PageType.newRequest],
         component: RequestFormComponent,
     },
     {
-        path: 'editar-solicitacao/:id',
+        path: pageTypeRoutes[PageType.editRequest],
         component: RequestFormComponent,
     },
     {
-        path: 'ver-solicitacao/:id',
+        path: pageTypeRoutes[PageType.viewRequest],
         component: ViewRequestComponent
     },
     {
@@ -36,6 +37,6 @@ export const routes: Routes = [
     },
     {
         path: '**',
-        redirectTo: 'nova-solicitacao'
+        redirectTo: pageTypeRoutes[PageType.newRequest]
     }
 ];
