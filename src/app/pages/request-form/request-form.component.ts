@@ -115,10 +115,10 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 	
 	ngOnInit(): void {
 		// Definir tipo de formulário: edição ou criação
-			this.pageType =
-			this.route.snapshot.url[0].path == 'editar-solicitacao'
-					? PageType.editRequest
-					: PageType.newRequest;
+		this.pageType =
+		this.route.snapshot.url[0].path == 'editar'
+				? PageType.editRequest
+				: PageType.newRequest;
 		if (this.pageType == PageType.editRequest) {
 			this.editRequestId = +this.route.snapshot.paramMap.get('id')!;
 			this.pageTitle = this.pageType + ' Nº ' + this.editRequestId.toString().padStart(6, '0');
@@ -375,8 +375,8 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 		return this.copies.data.length > 0;
 	}
 
-	getPageType(asRoute: boolean = true): string | null{
-		return this.actionService.getPageType(asRoute);
+	getLastPageState(asRoute?: boolean): string | null{
+		return this.actionService.getLastPageState(asRoute);
 	}
 
 	navigateTo(route: string | null) {

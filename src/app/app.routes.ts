@@ -13,11 +13,37 @@ export const routes: Routes = [
     },
     {
         path: pageTypeRoutes[PageType.viewMyRequests],
-        component: ListRequestsComponent
+        children: [
+            {
+                path: '',
+                component: ListRequestsComponent,
+            },
+            {
+                path: pageTypeRoutes[PageType.editRequest],
+                component: RequestFormComponent,
+            },
+            {
+                path: pageTypeRoutes[PageType.viewRequest],
+                component: ViewRequestComponent
+            },
+        ]
     },
     {
         path: pageTypeRoutes[PageType.viewAllRequests],
-        component: ListRequestsComponent
+        children: [
+            {
+                path: '',
+                component: ListRequestsComponent,
+            },
+            {
+                path: pageTypeRoutes[PageType.editRequest],
+                component: RequestFormComponent,
+            },
+            {
+                path: pageTypeRoutes[PageType.viewRequest],
+                component: ViewRequestComponent
+            },
+        ]
     },
     {
         path: pageTypeRoutes[PageType.newRequest],

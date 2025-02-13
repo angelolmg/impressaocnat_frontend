@@ -153,15 +153,18 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 		// Admins: filtra entre as próprias ou todas as solicitações, a depender da rota '/minhas-solicitacoes' vs '/solicitacoes'
 		// Bug: Caso retorne erro, OnInit chamado 2 vezes
 		// https://stackoverflow.com/questions/38787795/why-is-ngoninit-called-twice
+
 		this.filtering =
-			this.activatedRoute.snapshot.url[0].path == 'minhas-solicitacoes';
+			this.activatedRoute.snapshot.parent != null &&
+			this.activatedRoute.snapshot.parent.url[0].path ==
+				'minhas-solicitacoes';
 
 		if (this.filtering) this.pageType = PageType.viewMyRequests;
 
 		this.requestService
 			.getAllRequests({
 				filtering: this.filtering,
-				...this.queryForm.value
+				...this.queryForm.value,
 			})
 			.pipe(
 				finalize(() => {
@@ -223,10 +226,10 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 					filter((confirmed) => confirmed),
 					switchMap(() => {
 						this.loadingData.set(true);
-	
+
 						// Abre uma nova janela
 						const newWindow = window.open('', '_blank');
-	
+
 						if (!newWindow) {
 							this._snackBar.open(
 								'Popup bloqueado! Por favor, permita popups para este site.',
@@ -235,7 +238,7 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 							this.loadingData.set(false);
 							return EMPTY;
 						}
-	
+
 						// Tela de carregamento padrão
 						newWindow.document.write(`
 							<!DOCTYPE html>
@@ -248,10 +251,12 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 								</body>
 							</html>
 						`);
-	
-						return this.requestService.generateReport(this.requests.data).pipe(
-							map((reportHtml) => ({ reportHtml, newWindow })) // Passa ambos para o próximo operador
-						);
+
+						return this.requestService
+							.generateReport(this.requests.data)
+							.pipe(
+								map((reportHtml) => ({ reportHtml, newWindow })) // Passa ambos para o próximo operador
+							);
 					})
 				)
 				.subscribe({
@@ -322,7 +327,7 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 							this._snackBar.open(response.message, 'Ok');
 							return this.requestService.getAllRequests({
 								filtering: this.filtering,
-								...this.queryForm.value
+								...this.queryForm.value,
 							});
 						}),
 						tap((requests) => {
@@ -368,7 +373,7 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 				switchMap(() =>
 					this.requestService.getAllRequests({
 						filtering: this.filtering,
-						...this.queryForm.value
+						...this.queryForm.value,
 					})
 				),
 				tap((requests) => {
@@ -386,11 +391,15 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 	}
 
 	editRequestRedirect(request: RequestInterface) {
-		this.router.navigate(['/editar-solicitacao', request.id]);
+		this.router.navigate(['editar', request.id], {
+			relativeTo: this.activatedRoute,
+		});
 	}
 
 	viewRequestRedirect(request: RequestInterface) {
-		this.router.navigate(['/ver-solicitacao', request.id]);
+		this.router.navigate(['ver', request.id], {
+			relativeTo: this.activatedRoute,
+		});
 	}
 
 	refreshTable() {

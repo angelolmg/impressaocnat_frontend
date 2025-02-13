@@ -47,6 +47,8 @@ export class SideMenuComponent implements AfterViewInit {
 		this.router.events.subscribe((event) => {
 			if (event instanceof NavigationEnd) {
 				this.currentRoute = event.url.slice(1);
+				console.log(event);
+				
 			}
 		});
 
@@ -75,6 +77,11 @@ export class SideMenuComponent implements AfterViewInit {
 
 	setOptionsDefault() {
 		this.options.set(DEFAULT_USER_OPTIONS);
+	}
+
+	optionSelected(route: string) {
+		let parentRoute = this.currentRoute.split('/')[0]
+		return parentRoute && route == parentRoute;
 	}
 
 	// Unsubscribe para prevenir memory leak

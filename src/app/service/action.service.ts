@@ -16,11 +16,19 @@ export enum PageType {
 }
 
 export const pageTypeRoutes: { [key in PageType]: string } = {
-	[PageType.viewRequest]: 'ver-solicitacao/:id',
+	[PageType.viewRequest]: 'ver/:id',
 	[PageType.newRequest]: 'nova-solicitacao',
-	[PageType.editRequest]: 'editar-solicitacao/:id',
+	[PageType.editRequest]: 'editar/:id',
 	[PageType.viewAllRequests]: 'solicitacoes',
 	[PageType.viewMyRequests]: 'minhas-solicitacoes',
+};
+
+export const routePageTypes: { [key: string]: PageType | undefined } = {
+	'ver/:id': PageType.viewRequest,
+	'nova-solicitacao': PageType.newRequest,
+	'editar/:id': PageType.editRequest,
+	'solicitacoes': PageType.viewAllRequests,
+	'minhas-solicitacoes': PageType.viewMyRequests,
 };
 
 export enum ActionType {
@@ -200,7 +208,7 @@ export class ActionService {
 		component?: string,
 		state?: PageType
 	): void {
-		if (state) localStorage.setItem('lastPageState', state);
+		if (state) localStorage.setItem('lastPageState', pageTypeRoutes[state]);
 
 		if (!element || !action) {
 			console.warn('Ação ou elemento faltando.');
@@ -210,11 +218,11 @@ export class ActionService {
 		this.emitAction(action, element);
 	}
 
-	getPageType(asRoute: boolean = true): string | null {
+	getLastPageState(asRoute?: boolean): string | null {
 		let pageState = localStorage.getItem('lastPageState');
 		if (pageState) {
-			if (asRoute) return pageTypeRoutes[pageState as PageType];
-			else return pageState;
+			if (asRoute) return pageState;
+			else return routePageTypes[pageState] as string;
 		}
 		return null;
 	}

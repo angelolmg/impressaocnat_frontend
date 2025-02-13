@@ -1,7 +1,7 @@
 <form class="my-steps">
 	<h2 class="page-title">
-		@if(getPageType() && pageType == editRequest) {
-		<span (click)="navigateTo(getPageType())" >{{ getPageType(false) }}</span>
+		@if(getLastPageState() && pageType == editRequest) {
+		<span (click)="navigateTo(getLastPageState(true))" >{{ getLastPageState() }}</span>
 		<mat-icon>chevron_right</mat-icon>
 		}
 		{{ pageTitle }}</h2>

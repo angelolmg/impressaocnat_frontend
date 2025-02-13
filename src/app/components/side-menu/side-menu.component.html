@@ -10,7 +10,7 @@
 						mat-fab
 						extended
 						[routerLink]="option.routerLink"
-						[class.selected]="option.routerLink == currentRoute"
+						[class.selected]="optionSelected(option.routerLink)"
 					>
 						<mat-icon>{{ option.icon }}</mat-icon>
 						{{ option.text }}

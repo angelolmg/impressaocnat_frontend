@@ -382,8 +382,8 @@ export class ViewRequestComponent implements OnInit {
 		if (route) this.router.navigate([route]);
 	}
 
-	getPageType(asRoute: boolean = true) {
-		return this.actionService.getPageType(asRoute);
+	getLastPageState(asRoute?: boolean) {
+		return this.actionService.getLastPageState(asRoute);
 	}
 
 	// Unsubscribe para prevenir memory leak
