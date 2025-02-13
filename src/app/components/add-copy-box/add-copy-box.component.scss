@@ -27,10 +27,40 @@
 
 .file-name {
 	display: flex;
-    width: 10rem;
-    align-items: center;
+	width: 10rem;
+	align-items: center;
 	padding: 0 1rem;
 	overflow: hidden;
+}
+
+.file-checker {
+	display: flex;
+	flex-direction: column;
+	padding-top: 0.5rem;
+	.check-box {
+		display: flex;
+		overflow: hidden;
+		align-items: center;
+		margin-bottom: 0.5rem;
+		mat-form-field {
+			margin-left: 1rem;
+		}
+	}
+	mat-form-field {
+		opacity: 0;
+		transition: opacity 0.3s linear;
+	}
+}
+
+.help-icon {
+	width: 1.25rem;
+	margin-left: 0.5rem;
+	margin-bottom: 0.1rem;
+	opacity: 50%;
+	cursor: pointer;
+	&:hover {
+		opacity: 30%;
+	}
 }
 
 p {

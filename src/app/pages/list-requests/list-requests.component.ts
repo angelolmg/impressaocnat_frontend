@@ -27,6 +27,7 @@ import {
 	PageEvent,
 } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
@@ -57,7 +58,6 @@ import {
 } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
 import { RequestService } from '../../service/request.service';
-import { MatSelectModule } from '@angular/material/select';
 
 @Component({
 	selector: 'app-list-requests',
@@ -78,7 +78,7 @@ import { MatSelectModule } from '@angular/material/select';
 		MatBadgeModule,
 		MatProgressSpinnerModule,
 		ReactiveFormsModule,
-		MatSelectModule,
+		MatSelectModule
 	],
 	templateUrl: './list-requests.component.html',
 	styleUrl: './list-requests.component.scss',

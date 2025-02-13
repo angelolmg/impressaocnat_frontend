@@ -210,7 +210,6 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 	addCopyDialog() {
 		this.dialogService
 			.openDialog(AddCopyBoxComponent, {
-				title: 'Adicionar Nova Cópia',
 				positive_label: 'Adicionar',
 			})
 			.afterClosed()

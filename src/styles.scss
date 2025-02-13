@@ -13,28 +13,31 @@
 			container-background-color: transparent,
 		)
 	);
-
 	@include mat.fab-overrides(
 		(
 			container-color: white,
 		)
 	);
-
 	@include mat.form-field-overrides(
 		(
 			filled-container-color: white,
 		)
 	);
-
 	@include mat.select-overrides(
 		(
 			panel-background-color: white,
 		)
 	);
-
-  @include mat.progress-spinner-overrides((
-    active-indicator-color: var(--spinner),
-  ));
+	@include mat.progress-spinner-overrides(
+		(
+			active-indicator-color: var(--spinner),
+		)
+	);
+	@include mat.checkbox-overrides(
+		(
+			label-text-color: var(--text-color-secondary)
+		)
+	);
 }
 :root {
 	// --white: #fff;
@@ -62,12 +65,12 @@
 	--user-card: #ffffff;
 	--border: #d0d5d9;
 	--text-color: #333;
+	--text-color-secondary: #44474e; // Peguei essa cor no </mat-dialog-content> do angular material (--mat-sys-on-surface-variant)
 	--accent: #66b3ff;
 	--summary-chip: #ffffff;
 	--font-family-primary: Roboto, "Helvetica Neue", sans-serif;
-  --transparent-overlay: rgba(56, 118, 82, 0.1);
-  --spinner: #387652;
-
+	--transparent-overlay: rgba(56, 118, 82, 0.1);
+	--spinner: #387652;
 }
 
 * {
