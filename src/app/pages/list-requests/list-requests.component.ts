@@ -403,7 +403,7 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 	}
 
 	refreshTable() {
-		// Refresh the data source object
+		// Atualizar objeto data source de cópias da tabela
 		// Angular Material is weird
 		this.requests.data = this.requests.data;
 	}

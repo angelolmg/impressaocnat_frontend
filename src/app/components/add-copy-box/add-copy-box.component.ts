@@ -29,11 +29,11 @@ import { environment } from '../../../environments/environment';
 import { DialogData } from '../../models/dialogData.interface';
 import { MyErrorStateMatcher } from '../../pages/request-form/request-form.component';
 
-interface CopyFormData {
+export interface CopyFormData {
 	file: WritableSignal<any>;
 	isPhysical: WritableSignal<boolean>;
-	pageNumControl: WritableSignal<FormControl | null>;
-	copyNumControl: WritableSignal<FormControl | null>;
+	pageNumControl: WritableSignal<FormControl>;
+	copyNumControl: WritableSignal<FormControl>;
 }
 
 @Component({
@@ -79,8 +79,8 @@ export class AddCopyBoxComponent {
 	newCopyData: CopyFormData = {
 		file: signal(null),
 		isPhysical: signal(false),
-		pageNumControl: signal(null),
-		copyNumControl: signal(null),
+		pageNumControl: signal(this.pageNumFormControl),
+		copyNumControl: signal(this.copyNumFormControl),
 	};
 
 	readonly maxFileSize = environment.MAX_FILE_SIZE_MB;

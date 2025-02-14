@@ -29,6 +29,7 @@ import { DialogService } from '../../service/dialog.service';
 import { CopyInterface } from './../../models/copy.interface';
 import { PageType } from './../../service/action.service';
 
+import { HttpErrorResponse } from '@angular/common/http';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -43,11 +44,15 @@ import {
 	Subject,
 	switchMap,
 	takeUntil,
+	throwError
 } from 'rxjs';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
 import { RequestInterface } from '../../models/request.interface';
 import { IconPipe } from '../../pipes/icon.pipe';
-import { RequestService } from '../../service/request.service';
+import {
+	FileDownloadResponse,
+	RequestService,
+} from '../../service/request.service';
 
 /** Error when invalid control is dirty, touched, or submitted. */
 export class MyErrorStateMatcher implements ErrorStateMatcher {
@@ -141,7 +146,7 @@ export class ViewRequestComponent implements OnInit {
 		this.actionService.downloadCopy
 			.pipe(takeUntil(this.ngUnsubscribe))
 			.subscribe((copy: CopyInterface) => {
-				this.downloadFile(copy);
+				this.downloadFileAndOpenInNewWindow(copy);
 			});
 
 		// Busca a solicicitação no view init e carrega os dados da tabela de cópias
@@ -267,83 +272,81 @@ export class ViewRequestComponent implements OnInit {
 			});
 	}
 
-	downloadFile(copy: CopyInterface) {
+	downloadFileAndOpenInNewWindow(copy: CopyInterface): void {
 		if (copy.fileInDisk && this.requestId) {
 			this.loadingData.set(true);
-
-			// Abrir uma janela em branco para exibir conteúdo do pdf
 			const newWindow = window.open('', '_blank');
 
 			if (!newWindow) {
-				// Checar se popup foi bloqueado
+				this.loadingData.set(false);
 				this._snackBar.open(
 					'Popup boqueado! Por favor permita popups para este site.',
 					'Ok'
 				);
-				this.loadingData.set(false);
 				return;
 			}
 
-			// Tela default de carregamento de arquivo
 			newWindow.document.write(`
-				<!DOCTYPE html>
-				<html>
-					<head>
-						<title>Por favor aguarde...</title>
-					</head>
-					<body>
-						<h1 style="margin: 1rem">Carregando seu arquivo...</h1>
-					</body>
-				</html>
-			`);
+			<!DOCTYPE html>
+			<html>
+				<head>
+					<title>Por favor aguarde...</title>
+				</head>
+				<body>
+					<h1 style="margin: 1rem">Carregando seu arquivo...</h1>
+				</body>
+			</html>
+		  `);
 
 			this.requestService
 				.downloadFile(this.requestId, copy.fileName)
 				.pipe(
 					finalize(() => {
 						this.loadingData.set(false);
+						newWindow.document.close();
 						console.log('Download finalizado.');
 					})
 				)
 				.subscribe({
-					next: (response) => {
-						// Garantir que nova janela ainda está aberta
+					next: (response: FileDownloadResponse) => {
 						if (newWindow) {
 							const url = window.URL.createObjectURL(
 								response.data
 							);
-
-							// Injetar conteúdo na nova janela (usando iframe)
 							newWindow.document.open();
 							newWindow.document.write(`
 							<html>
 								<head>
 									<title>${copy.fileName}</title>
 									<style>
-										body, html {
-											margin: 0;
-										}
-										iframe {
-											width: 100%;
-											height: 100%;
-											border: none;
-										}
+										body, html, iframe { margin: 0; width: 100%; height: 100%; border: none; }
 									</style>
 								</head>
 								<body>
 									<iframe src="${url}"></iframe>
 								</body>
-							</html>`);
-
+							</html>
+							`);
 							newWindow.document.close();
 						}
 					},
-					error: (err) => {
-						this._snackBar.open(err, 'Ok');
-						console.error(err);
-						if (newWindow) {
-							newWindow.close(); // Fechar janela caso dê erro
-						}
+
+					error: (error: HttpErrorResponse) => {
+						if (newWindow) newWindow.close();
+
+						const reader = new FileReader();
+						// Ler blob de resposta como texto
+						reader.readAsText(error.error);
+						reader.onload = (event) => {
+							if (event.target) {
+								// Captar mensagem de erro como texto
+								const errorMessage = event.target
+									.result as string;
+								this._snackBar.open(errorMessage, 'Ok');
+								console.error(errorMessage);
+							}
+						};
+						return throwError(() => error);
 					},
 				});
 		} else {
@@ -359,7 +362,7 @@ export class ViewRequestComponent implements OnInit {
 	}
 
 	updateTable(copies?: CopyInterface[]) {
-		// Refresh the data source object
+		// Atualizar objeto data source de cópias da tabela
 		// Angular Material is weird
 		this.copies.data = copies || [];
 

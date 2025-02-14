@@ -23,14 +23,17 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { AddCopyBoxComponent } from '../../components/add-copy-box/add-copy-box.component';
+import {
+	AddCopyBoxComponent,
+	CopyFormData,
+} from '../../components/add-copy-box/add-copy-box.component';
 import { EditCopyBoxComponent } from '../../components/edit-copy-box/edit-copy-box.component';
 import { CopyInterface } from '../../models/copy.interface';
 import {
 	actions,
 	ActionService,
 	ActionType,
-	PageType
+	PageType,
 } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
 
@@ -109,19 +112,22 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 	matcher = new MyErrorStateMatcher();
 	loadingData = signal(false);
 
-	public get editRequest() : PageType {
+	public get editRequest(): PageType {
 		return PageType.editRequest;
 	}
-	
+
 	ngOnInit(): void {
 		// Definir tipo de formulário: edição ou criação
 		this.pageType =
-		this.route.snapshot.url[0].path == 'editar'
+			this.route.snapshot.url[0].path == 'editar'
 				? PageType.editRequest
 				: PageType.newRequest;
 		if (this.pageType == PageType.editRequest) {
 			this.editRequestId = +this.route.snapshot.paramMap.get('id')!;
-			this.pageTitle = this.pageType + ' Nº ' + this.editRequestId.toString().padStart(6, '0');
+			this.pageTitle =
+				this.pageType +
+				' Nº ' +
+				this.editRequestId.toString().padStart(6, '0');
 			this.loadingData.set(true);
 			this.requestService
 				.getRequestById(this.editRequestId)
@@ -209,49 +215,99 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 
 	addCopyDialog() {
 		this.dialogService
-			.openDialog(AddCopyBoxComponent, {
-				positive_label: 'Adicionar',
-			})
+			.openDialog(AddCopyBoxComponent, { positive_label: 'Adicionar' })
 			.afterClosed()
-			.subscribe((result) => {
-				if (result) {
-					let file: File = result.file;
-					let existingCopyIndex = this.copies.data.findIndex(
-						(copy) => copy.fileName === file.name
-					);
+			.subscribe((result: CopyFormData) => {
+				if (!result) return;
 
-					const processFile = (index?: number) => {
+				if (
+					!result.copyNumControl().valid ||
+					!result.pageNumControl().valid
+				) {
+					let msg = 'Erro: Campos inválidos no formulário.';
+					this._snackBar.open(msg, 'Ok');
+					console.error(msg);
+					return;
+				}
+
+				if (!result.isPhysical() && !result.file()) {
+					let msg = 'Erro: Nenhum arquivo anexado.';
+					this._snackBar.open(msg, 'Ok');
+					console.error(msg);
+					return;
+				}
+
+				// Se é arquivo físico, inicializar um arquivo vazio com nome aleatório único
+				// Caso contrário, manter o nome usual
+				let now = new Date().getTime().toString();
+				const file: File = result.isPhysical()
+					? new File([], now)
+					: result.file();
+
+				const fileName = result.isPhysical()
+					? 'Arquivo Físico'
+					: file.name;
+				const fileType = result.isPhysical()
+					? 'Arquivo Físico'
+					: file.type;
+				const copyCount = result.copyNumControl().value;
+				const isPhysical = result.isPhysical();
+
+				const existingCopyIndex = this.copies.data.findIndex(
+					(copy) => copy.fileName === file.name
+				);
+
+				const getPageCount = (file: File): Observable<number> => {
+					return new Observable<number>((observer) => {
 						const reader = new FileReader();
 						reader.readAsArrayBuffer(file);
 						reader.onloadend = () => {
 							if (reader.result) {
-								PDFDocument.load(reader.result).then(
-									(document: PDFDocument) => {
-										const newCopy = {
-											fileName: file.name,
-											fileType: file.type,
-											pageCount:
-												document.getPageCount() ?? 0,
-											copyCount: result.control.value,
-										};
-
-										if (index !== undefined) {
-											this.copies.data[index] = newCopy;
-											this.files[index] = file;
-										} else {
-											this.copies.data.push(newCopy);
-											this.files.push(file);
-										}
-
-										this.refreshTable();
-									}
-								);
+								PDFDocument.load(reader.result)
+									.then((document) => {
+										observer.next(
+											document.getPageCount() ?? 0
+										);
+										observer.complete();
+									})
+									.catch((error) => {
+										console.error(
+											'Erro ao carregar PDF:',
+											error
+										);
+										observer.error(error);
+									});
 							} else {
 								console.error('Não foi possível ler arquivo');
+								observer.error('Não foi possível ler arquivo');
 							}
 						};
+					});
+				};
+
+				const addOrUpdateCopy = (pageCount: number, index?: number) => {
+					const newCopy: CopyInterface = {
+						fileName,
+						fileType,
+						pageCount: isPhysical
+							? result.pageNumControl().value
+							: pageCount,
+						copyCount,
+						isPhysicalFile: isPhysical,
 					};
 
+					if (index !== undefined) {
+						this.copies.data[index] = newCopy;
+						this.files[index] = file;
+					} else {
+						this.copies.data.push(newCopy);
+						this.files.push(file);
+					}
+
+					this.refreshTable();
+				};
+
+				const processCopy = (pageCount: number) => {
 					if (existingCopyIndex !== -1) {
 						this.dialogService
 							.openDialog(DialogBoxComponent, {
@@ -264,11 +320,33 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 							.afterClosed()
 							.subscribe((shouldRewrite: boolean) => {
 								if (shouldRewrite)
-									processFile(existingCopyIndex);
+									addOrUpdateCopy(
+										pageCount,
+										existingCopyIndex
+									);
 							});
 					} else {
-						processFile();
+						addOrUpdateCopy(pageCount);
 					}
+				};
+
+				if (!isPhysical) {
+					getPageCount(file).subscribe({
+						next: (pageCount) => processCopy(pageCount),
+						error: (error) => {
+							console.error(
+								'Erro ao obter número de páginas:',
+								error
+							);
+							this._snackBar.open(
+								'Erro ao obter número de páginas do PDF',
+								'Ok'
+							);
+						},
+					});
+				} else {
+					// Processar objeto de arquivo físico
+					processCopy(0);
 				}
 			});
 	}
@@ -299,7 +377,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 	}
 
 	refreshTable() {
-		// Refresh the data source object
+		// Atualizar objeto data source de cópias da tabela
 		// Angular Material is weird
 		this.copies.data = this.copies.data;
 
@@ -374,7 +452,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 		return this.copies.data.length > 0;
 	}
 
-	getLastPageState(asRoute?: boolean): string | null{
+	getLastPageState(asRoute?: boolean): string | null {
 		return this.actionService.getLastPageState(asRoute);
 	}
 

@@ -5,6 +5,7 @@ export interface CopyInterface {
 	pageCount: number; // Número de páginas
 	copyCount: number; // Número de cópias
 	fileInDisk?: boolean; // Se o arquivo esta salvo no backend
+	isPhysicalFile?: boolean; // Se o arquivo é físico e não foi anexado digitalmente
 	requestId?: number; // ID da solicitação associada
 }
 

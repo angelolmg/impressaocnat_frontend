@@ -27,7 +27,7 @@ export const routePageTypes: { [key: string]: PageType | undefined } = {
 	'ver/:id': PageType.viewRequest,
 	'nova-solicitacao': PageType.newRequest,
 	'editar/:id': PageType.editRequest,
-	'solicitacoes': PageType.viewAllRequests,
+	solicitacoes: PageType.viewAllRequests,
 	'minhas-solicitacoes': PageType.viewMyRequests,
 };
 
@@ -155,12 +155,13 @@ export class ActionService {
 		return false;
 	}
 
-	// Controla se determinadas opções são, ou não, desabilidadas a depender do contexto (tela), ação e elemento a ser modificado
+	// Controla se determinadas opções são, ou não, desabilidadas
+	// a depender do contexto (tela), ação e elemento a ser modificado
 	disabledHandler(
 		component?: string,
 		state?: PageType,
 		action?: ActionType,
-		element?: RequestInterface
+		element?: RequestInterface | CopyInterface
 	) {
 		// Desabilitar botões de 'Concluir' e 'Editar' caso solicitação tenha data de conclusão (solicitação concluída)
 		if (
@@ -169,6 +170,16 @@ export class ActionService {
 			this.instanceOfRequest(element) &&
 			element.conclusionDate &&
 			(action == ActionType.EXCLUIR || action == ActionType.EDITAR)
+		)
+			return true;
+
+		// Desabilitar botão de 'Baixar' (download) para cópia cujo arquivo não está em disco ou é arquivo físico
+		if (
+			component &&
+			['view-request'].includes(component) &&
+			this.instanceOfCopy(element) &&
+			(!element.fileInDisk || element.isPhysicalFile) &&
+			action == ActionType.BAIXAR
 		)
 			return true;
 
@@ -203,12 +214,19 @@ export class ActionService {
 	}
 
 	callbackHandler(
-		action?: ActionType,
-		element?: RequestInterface | CopyInterface,
+		action: ActionType,
+		element: RequestInterface | CopyInterface,
 		component?: string,
 		state?: PageType
 	): void {
-		if (state) localStorage.setItem('lastPageState', pageTypeRoutes[state]);
+		// Mudar última página visitada caso alguma ação de redirecinamento seja acionada
+		// No caso, ações de visualização e edição redirecionam o usuário
+		if (
+			state &&
+			action &&
+			[ActionType.VISUALIZAR, ActionType.EDITAR].includes(action)
+		)
+			localStorage.setItem('lastPageState', pageTypeRoutes[state]);
 
 		if (!element || !action) {
 			console.warn('Ação ou elemento faltando.');

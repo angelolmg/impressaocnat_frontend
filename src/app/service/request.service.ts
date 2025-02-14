@@ -1,10 +1,21 @@
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import {
+	HttpClient,
+	HttpHeaders,
+	HttpParams,
+	HttpResponse
+} from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { EMPTY, map, Observable, of, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { RequestInterface } from '../models/request.interface';
 import { CopyInterface } from './../models/copy.interface';
 import { UserService } from './user.service';
+
+
+export interface FileDownloadResponse {
+	filename: string;
+	data: Blob;
+  }
 
 @Injectable({
 	providedIn: 'root',
@@ -14,7 +25,7 @@ export class RequestService {
 	http: HttpClient = inject(HttpClient);
 	requestUrl = `${environment.API_URL}/solicitacoes`;
 	copyUrl = `${environment.API_URL}/copias`;
-	apiUrl = `${environment.API_URL}/api`
+	apiUrl = `${environment.API_URL}/api`;
 
 	editRequest(
 		id: number,
@@ -142,40 +153,63 @@ export class RequestService {
 		);
 	}
 
-	getAllRequests(params?: Partial<{ filtering: boolean | null; concluded: boolean | null; startDate: Date | null; endDate: Date | null; query: string | null }>): Observable<RequestInterface[]> {
+	getAllRequests(
+		params?: Partial<{
+			filtering: boolean | null;
+			concluded: boolean | null;
+			startDate: Date | null;
+			endDate: Date | null;
+			query: string | null;
+		}>
+	): Observable<RequestInterface[]> {
 		let httpParams = new HttpParams();
-	
+
 		if (params?.filtering) {
-			httpParams = httpParams.set('filtering', params.filtering.toString());
+			httpParams = httpParams.set(
+				'filtering',
+				params.filtering.toString()
+			);
 		}
 		// Diferente pois são 3 estados possiveis de filtragem (true, false e null)
 		if (params?.concluded != null) {
 			httpParams = httpParams.set('concluded', params.concluded);
 		}
 		if (params?.startDate) {
-			httpParams = httpParams.set('startDate', params.startDate.getTime().toString());
+			httpParams = httpParams.set(
+				'startDate',
+				params.startDate.getTime().toString()
+			);
 		}
 		if (params?.endDate) {
-			httpParams = httpParams.set('endDate', params.endDate.getTime().toString());
+			httpParams = httpParams.set(
+				'endDate',
+				params.endDate.getTime().toString()
+			);
 		}
 		if (params?.query) {
 			httpParams = httpParams.set('query', params.query);
 		}
-	
-		return this.http.get<RequestInterface[]>(this.requestUrl, { params: httpParams });
+
+		return this.http.get<RequestInterface[]>(this.requestUrl, {
+			params: httpParams,
+		});
 	}
 
-	getCopiesByRequestId(requestId?: number, query?: string): Observable<CopyInterface[]> {
-
-		if (!requestId){
+	getCopiesByRequestId(
+		requestId?: number,
+		query?: string
+	): Observable<CopyInterface[]> {
+		if (!requestId) {
 			console.warn("[request.service] Nenhum 'requestId' definido.");
 			return of([]);
 		}
 
 		let httpParams = new HttpParams();
 		if (query) httpParams = httpParams.set('query', query);
-		
-		return this.http.get<CopyInterface[]>(this.copyUrl + '/' + requestId, { params: httpParams });
+
+		return this.http.get<CopyInterface[]>(this.copyUrl + '/' + requestId, {
+			params: httpParams,
+		});
 	}
 
 	getRequestById(id: number): Observable<RequestInterface> {
@@ -252,16 +286,19 @@ export class RequestService {
 		);
 	}
 
-	downloadFile(requestId: number, filename: string): Observable<any> {
-		return this.http.get(this.requestUrl + '/' + requestId + '/' + filename, { responseType: 'blob' }).pipe(map((response)=>{
-			return {
-				filename: filename,
-				data: response
-			};
-		}));
-	}
+	downloadFile(requestId: number, filename: string): Observable<FileDownloadResponse> {
+		return this.http.get(this.requestUrl + '/' + requestId + '/' + filename, { observe: 'response', responseType: 'blob' })
+		  .pipe(
+			map((response: HttpResponse<Blob>) => ({
+			  filename: filename,
+			  data: response.body!,
+			}))
+		  );
+	  }
 
 	generateReport(requests: RequestInterface[]) {
-		return this.http.post(this.apiUrl + '/relatorio', requests, { responseType: 'text' });
+		return this.http.post(this.apiUrl + '/relatorio', requests, {
+			responseType: 'text',
+		});
 	}
 }
