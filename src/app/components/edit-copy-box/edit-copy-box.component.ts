@@ -1,4 +1,4 @@
-import { Component, inject, model } from '@angular/core';
+import { Component, inject, model, ModelSignal, OnInit } from '@angular/core';
 import {
 	FormControl,
 	FormsModule,
@@ -41,25 +41,34 @@ import { CopyInterface } from '../../models/copy.interface';
 	templateUrl: './edit-copy-box.component.html',
 	styleUrl: './edit-copy-box.component.scss',
 })
-export class EditCopyBoxComponent {
+export class EditCopyBoxComponent implements OnInit {
+	
 	readonly dialogRef = inject(MatDialogRef<EditCopyBoxComponent>);
 	readonly data = inject<DialogData>(MAT_DIALOG_DATA);
-	
 
-	copy = this.data.data as CopyInterface;
-
-	copyNumFormControl = new FormControl(this.copy.copyCount, [
+	copy!: CopyInterface;
+	copyNumFormControl: FormControl = new FormControl(0, [
 		Validators.required,
 		Validators.min(1),
 	]);
-		
-	readonly formControl = model(this.copyNumFormControl);
+	formControl: ModelSignal<FormControl> = model(this.copyNumFormControl);
+
+	matcher = new MyErrorStateMatcher();
+	
+	ngOnInit(): void {
+		this.copy = this.data.data as CopyInterface;
+
+		if(this.copy) {
+			this.copyNumFormControl = new FormControl(this.copy.copyCount, [
+				Validators.required,
+				Validators.min(1),
+			]);
+				
+			this.formControl.set(this.copyNumFormControl);
+		}
+	}
 
 	onNoClick(): void {
 		this.dialogRef.close();
 	}
-
-	matcher = new MyErrorStateMatcher();
-
-
 }

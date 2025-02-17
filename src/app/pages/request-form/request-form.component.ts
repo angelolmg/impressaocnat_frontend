@@ -118,8 +118,9 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 
 	ngOnInit(): void {
 		// Definir tipo de formulário: edição ou criação
+		let url = this.route.snapshot.url[0];
 		this.pageType =
-			this.route.snapshot.url[0].path == 'editar'
+			url && url.path == 'editar'
 				? PageType.editRequest
 				: PageType.newRequest;
 		if (this.pageType == PageType.editRequest) {
@@ -209,6 +210,10 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 						this.copies.data[copyIndex].copyCount = result.value;
 
 					this.refreshTable();
+				} else {
+					this._snackBar.open(
+						'Erro: Campos inválidos no formulário.'
+					);
 				}
 			});
 	}

@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { RedirectComponent } from './redirect.component';
+import { provideHttpClient } from '@angular/common/http';
 
 describe('RedirectComponent', () => {
   let component: RedirectComponent;
@@ -8,7 +9,8 @@ describe('RedirectComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RedirectComponent]
+      imports: [RedirectComponent],
+      providers: [provideHttpClient()]
     })
     .compileComponents();
 
