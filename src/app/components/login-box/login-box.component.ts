@@ -30,7 +30,7 @@ export class LoginBoxComponent {
 
 	headerLogo: string = '🖨️';
 	loginTitle: string = 'Solicitação de Cópias - CNAT';
-	loginButtonText: string = 'Conectar via SUAP';
+	loginButtonText: string = 'Entrar com SUAP';
 	userService = inject(UserService);
 
 	onNoClick(): void {
