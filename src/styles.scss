@@ -35,7 +35,12 @@
 	);
 	@include mat.checkbox-overrides(
 		(
-			label-text-color: var(--text-color-secondary)
+			label-text-color: var(--text-color-secondary),
+		)
+	);
+	@include mat.dialog-overrides(
+		(
+			container-max-width: 50vw,
 		)
 	);
 }

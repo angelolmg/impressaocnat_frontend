@@ -1,0 +1,113 @@
+.file-input {
+	display: flex;
+	flex-direction: column;
+	width: 50vw;
+
+	.hint {
+		margin: 0.3rem;
+		font-size: small;
+	}
+
+	&-field {
+		display: flex;
+		flex-direction: row;
+	}
+}
+
+mat-accordion {
+	.advanced-options {
+		display: flex;
+		flex-direction: column;
+		.page-range-field {
+			display: flex;
+			gap: 1rem;
+			mat-form-field {
+				width: 100%;
+			}
+		}
+	}
+}
+
+.panel-content {
+	height: 100%;
+}
+
+.example-headers-align .mat-expansion-panel-header-description {
+	justify-content: space-between;
+	align-items: center;
+}
+
+.file-input-field button {
+	height: 3.5rem;
+	border-radius: 0.5rem;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+	background-color: white;
+}
+
+.nav-buttons {
+	margin-top: 1rem;
+}
+
+.second-step {
+	display: flex;
+	flex-direction: column;
+
+	.front-and-back {
+		p {
+			margin: auto 0;
+		}
+		display: flex;
+
+		gap: 2rem;
+	}
+}
+
+.file-name {
+	display: flex;
+	align-items: center;
+	padding: 0 1rem;
+	overflow: hidden;
+	color: var(--text-color);
+}
+
+.file-checker {
+	display: flex;
+	flex-direction: column;
+	padding-top: 0.5rem;
+	.check-box {
+		display: flex;
+		overflow: hidden;
+		align-items: center;
+		margin-bottom: 0.5rem;
+		mat-form-field {
+			margin-left: 1rem;
+		}
+	}
+	mat-form-field {
+		opacity: 0;
+		transition: opacity 0.3s linear;
+	}
+}
+
+.help-icon {
+	width: 1.25rem;
+	margin-left: 0.5rem;
+	margin-bottom: 0.1rem;
+	opacity: 50%;
+	cursor: pointer;
+	&:hover {
+		opacity: 30%;
+	}
+}
+
+.physical_archive_infos {
+	display: flex;
+	gap: 0.5rem;
+	width: 100%;
+	mat-form-field {
+		width: 100%;
+	}
+	.copy-number-input {
+		width: 33%;
+	}
+}

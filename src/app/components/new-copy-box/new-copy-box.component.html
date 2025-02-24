@@ -1,0 +1,379 @@
+<h2 mat-dialog-title>{{ data.title || "Adicionar Novo Arquivo" }}</h2>
+
+@if (data.message) {
+<mat-dialog-content>{{ data.message }}</mat-dialog-content>
+} @if (data.warning) {
+<mat-dialog-content class="warning"
+	><strong>{{ data.warning }}</strong></mat-dialog-content
+>
+}
+
+<mat-dialog-content class="file-input">
+	<mat-stepper #stepper style="height: auto">
+		<mat-step [stepControl]="firstFormGroup">
+			<form [formGroup]="firstFormGroup">
+				<ng-template matStepLabel
+					>Selecionar tipo de arquivo</ng-template
+				>
+				<mat-accordion class="example-headers-align" multi="false">
+					<mat-expansion-panel
+						hideToggle
+						[expanded]="!newCopyData.isPhysical()"
+						(opened)="
+							panelOpenState.set(false);
+							newCopyData.isPhysical.set(false)
+						"
+						(closed)="
+							panelOpenState.set(true);
+							newCopyData.isPhysical.set(true)
+						"
+					>
+						<mat-expansion-panel-header>
+							<mat-panel-title>
+								<mat-checkbox
+									disabled="true"
+									[checked]="!newCopyData.isPhysical()"
+								></mat-checkbox>
+								É arquivo digital
+							</mat-panel-title>
+							<mat-panel-description>
+								<!-- Tamanho máximo: {{ maxFileSize }}MB -->
+							</mat-panel-description>
+						</mat-expansion-panel-header>
+						<p>Selecione seu arquivo em formato .PDF</p>
+						<div class="file-input panel-content">
+							<div class="file-input-field">
+								<button
+									type="button"
+									mat-stroked-button
+									(click)="fileInput.click()"
+									[disabled]="newCopyData.isPhysical()"
+								>
+									Escolher arquivo...
+								</button>
+								<input
+									hidden
+									(change)="onFileSelected($event)"
+									#fileInput
+									type="file"
+									accept="application/pdf"
+								/>
+								<div class="file-name">
+									<span>
+										{{ selectedFile?.name }}
+									</span>
+								</div>
+							</div>
+							<p class="hint">
+								Tamanho máximo: {{ maxFileSize }}MB
+							</p>
+						</div>
+					</mat-expansion-panel>
+
+					<mat-expansion-panel
+						hideToggle
+						[expanded]="newCopyData.isPhysical()"
+						(opened)="
+							panelOpenState.set(true);
+							newCopyData.isPhysical.set(true)
+						"
+						(closed)="
+							panelOpenState.set(false);
+							newCopyData.isPhysical.set(false)
+						"
+					>
+						<mat-expansion-panel-header>
+							<mat-panel-title>
+								<mat-checkbox
+									disabled="true"
+									[checked]="newCopyData.isPhysical()"
+								></mat-checkbox
+								>É arquivo físico
+							</mat-panel-title>
+							<mat-panel-description>
+								<span></span>
+								<mat-icon
+									matTooltip="Arquivos físicos não ficarão disponíveis no sistema. 
+                                 Marque esta opção somente se você tiver o arquivo físico em mãos para copiar imediatamente. 
+                                 Escanear e anexar o arquivo PDF digitalizado é recomendado."
+									matTooltipPosition="before"
+									>question_mark</mat-icon
+								>
+							</mat-panel-description>
+						</mat-expansion-panel-header>
+						<div class="panel-content">
+							<p>
+								Dê um rótulo ao seu arquivo e defina o número de
+								páginas a copiar
+							</p>
+
+							<div class="physical_archive_infos">
+								<mat-form-field>
+									<mat-label
+										>Defina um rótulo para o
+										arquivo</mat-label
+									>
+									<input
+										matInput
+										placeholder="Ex. prova3_2025, anotacoes_aula10, etc"
+										formControlName="firstCtrl"
+										required
+									/>
+								</mat-form-field>
+								<mat-form-field class="copy-number-input">
+									<!-- <mat-form-field [style.opacity]="newCopyData.isPhysical() ? '1' : '0'"> -->
+									<mat-label>Número de páginas</mat-label>
+									<input
+										matInput
+										type="number"
+										[formControl]="pageNumFormControl"
+										[errorStateMatcher]="matcher"
+										placeholder="Ex. 10"
+										(change)="onPageNumChange()"
+									/>
+									@if (pageNumFormControl.hasError('min') &&
+									!pageNumFormControl.hasError('required')) {
+									<mat-error
+										>Insira um valor positivo</mat-error
+									>
+									} @if
+									(pageNumFormControl.hasError('required')) {
+									<mat-error>Campo obrigatório</mat-error>
+									}
+								</mat-form-field>
+							</div>
+						</div>
+					</mat-expansion-panel>
+				</mat-accordion>
+
+				<div class="nav-buttons">
+					<button mat-button disabled="true">Voltar</button>
+					<button mat-button (click)="goForward(stepper)">
+						Próximo
+					</button>
+				</div>
+			</form>
+		</mat-step>
+		<mat-step
+			[stepControl]="secondFormGroup"
+			label="Configurações de impressão"
+		>
+			<form [formGroup]="secondFormGroup" class="second-step">
+				<mat-form-field>
+					<mat-label>Defina o número de cópias</mat-label>
+					<input
+						matInput
+						type="number"
+						class="copy-number-input"
+						[formControl]="copyNumFormControl"
+						[errorStateMatcher]="matcher"
+						placeholder="Ex. 10"
+						(change)="onCopyNumChange()"
+					/>
+					@if (copyNumFormControl.hasError('min') &&
+					!copyNumFormControl.hasError('required')) {
+					<mat-error>Insira um valor positivo</mat-error>
+					} @if (copyNumFormControl.hasError('required')) {
+					<mat-error>Campo <strong>obrigatório</strong></mat-error>
+					}
+				</mat-form-field>
+
+				<mat-accordion class="example-headers-align" multi="false">
+					<mat-expansion-panel
+						[expanded]="false"
+						[disabled]="newCopyData.isPhysical()"
+					>
+						<mat-expansion-panel-header>
+							<mat-panel-title> Avançado </mat-panel-title>
+						</mat-expansion-panel-header>
+
+						<div class="advanced-options">
+							<div class="page-range-field">
+								<mat-form-field>
+									<mat-label>Intervalo de páginas</mat-label>
+									<mat-select
+										#pageSelect
+										formControlName="pages"
+										(valueChange)="pageRangeDefine($event)"
+									>
+										<mat-option [value]="'Todas'"
+											>Todas</mat-option
+										>
+										<mat-option [value]="'Personalizado'"
+											>Personalizado</mat-option
+										>
+									</mat-select>
+								</mat-form-field>
+
+								<mat-form-field>
+									<mat-label>Defina o intervalo</mat-label>
+									<input
+										[required]="
+											pageSelect.value === 'Personalizado'
+										"
+										formControlName="pageRange"
+										matInput
+										placeholder="por exemplo, 1-5, 8, 11-13"
+									/>
+								</mat-form-field>
+							</div>
+
+							<mat-form-field>
+								<mat-label>Páginas por folha</mat-label>
+								<mat-select formControlName="pagesForSheet">
+									<mat-option [value]="1">1</mat-option>
+									<mat-option [value]="2">2</mat-option>
+									<mat-option [value]="4">4</mat-option>
+								</mat-select>
+							</mat-form-field>
+
+							<mat-form-field>
+								<mat-label>Layout</mat-label>
+								<mat-select
+									formControlName="pagesLayout"
+									required
+								>
+									<mat-option value="Retrato"
+										>Retrato</mat-option
+									>
+									<mat-option value="Paisagem"
+										>Paisagem</mat-option
+									>
+								</mat-select>
+							</mat-form-field>
+
+							<div class="front-and-back">
+								<p>Frente e verso</p>
+								<mat-checkbox
+									[checked]="
+										secondFormGroup.get('frontAndBack')
+											?.value
+									"
+									formControlName="frontAndBack"
+									>Imprimir dos dois lados</mat-checkbox
+								>
+							</div>
+						</div>
+					</mat-expansion-panel>
+				</mat-accordion>
+
+				<div class="nav-buttons">
+					<button mat-button (click)="goBack(stepper)">Voltar</button>
+					<button mat-button (click)="goForward(stepper)">
+						Próximo
+					</button>
+				</div>
+			</form>
+		</mat-step>
+		<mat-step>
+			<ng-template matStepLabel>Resumo</ng-template>
+			<p>You are now done.</p>
+			<div class="nav-buttons">
+				<button mat-button (click)="goBack(stepper)">Voltar</button>
+				<button mat-button disabled="true">Próximo</button>
+			</div>
+		</mat-step>
+	</mat-stepper>
+
+	<!-- <p>1. Escolha seu arquivo (.pdf)</p>
+
+	<div class="file-input">
+		<div class="file-input-field">
+			<button
+				type="button"
+				mat-stroked-button
+				(click)="fileInput.click()"
+				[disabled]="newCopyData.isPhysical()"
+			>
+				Escolher arquivo...
+			</button>
+			<input
+				hidden
+				(change)="onFileSelected($event)"
+				#fileInput
+				type="file"
+				accept="application/pdf"
+			/>
+			<div class="file-name">
+				<span>
+					{{ selectedFile?.name }}
+				</span>
+			</div>
+		</div>
+		<p class="hint">Tamanho máximo: {{ maxFileSize }}MB</p>
+	</div> -->
+</mat-dialog-content>
+
+<!-- <mat-dialog-content class="file-checker">
+	<div class="check-box">
+		<mat-checkbox (change)="isPhysical($event.checked)"
+			>É arquivo físico</mat-checkbox
+		>
+		<img
+			matTooltip="Arquivos físicos não ficarão disponíveis no sistema. 
+			Marque esta opção somente se você tiver o arquivo físico em mãos para copiar imediatamente. 
+			Escanear e anexar o arquivo PDF digitalizado é recomendado."
+			matTooltipPosition="after"
+			class="help-icon"
+			src="assets/help.svg"
+			alt="Ícone de Ajuda"
+		/>
+	</div>
+	<div>
+		<mat-form-field [style.opacity]="newCopyData.isPhysical() ? '1' : '0'">
+			<mat-label>Número de páginas</mat-label>
+			<input
+				matInput
+				type="number"
+				class="copy-number-input"
+				[formControl]="pageNumFormControl"
+				[errorStateMatcher]="matcher"
+				placeholder="Ex. 10"
+				(change)="onPageNumChange()"
+			/>
+			@if (pageNumFormControl.hasError('min') &&
+			!pageNumFormControl.hasError('required')) {
+			<mat-error>Insira um valor positivo</mat-error>
+			} @if (pageNumFormControl.hasError('required')) {
+			<mat-error>Campo <strong>obrigatório</strong></mat-error>
+			}
+		</mat-form-field>
+	</div>
+</mat-dialog-content>
+
+<mat-dialog-content class="copynum-input">
+	<p>2. Defina o número de cópias</p>
+	<mat-form-field>
+		<mat-label>Número de cópias</mat-label>
+		<input
+			matInput
+			type="number"
+			class="copy-number-input"
+			[formControl]="copyNumFormControl"
+			[errorStateMatcher]="matcher"
+			placeholder="Ex. 10"
+			(change)="onCopyNumChange()"
+		/>
+		@if (copyNumFormControl.hasError('min') &&
+		!copyNumFormControl.hasError('required')) {
+		<mat-error>Insira um valor positivo</mat-error>
+		} @if (copyNumFormControl.hasError('required')) {
+		<mat-error>Campo <strong>obrigatório</strong></mat-error>
+		}
+	</mat-form-field>
+</mat-dialog-content> -->
+
+<mat-dialog-actions>
+	<button mat-button (click)="onNoClick()">
+		{{ data.negative_label || "Cancelar" }}
+	</button>
+	<button mat-button (click)="stepper.reset()">Limpar</button>
+	<button
+		mat-button
+		[mat-dialog-close]="newCopyData"
+		cdkFocusInitial
+		[disabled]="stepper.selectedIndex !== stepper.steps.length - 1"
+	>
+		{{ data.positive_label || "Confirmar" }}
+	</button>
+</mat-dialog-actions>

@@ -1,10 +1,19 @@
+import { Component, inject, signal, WritableSignal } from '@angular/core';
 import {
-	Component,
-	inject,
-	signal,
-	WritableSignal
-} from '@angular/core';
+	MatDialogRef,
+	MAT_DIALOG_DATA,
+	MatDialogActions,
+	MatDialogClose,
+	MatDialogContent,
+	MatDialogModule,
+	MatDialogTitle,
+} from '@angular/material/dialog';
+import { DialogData } from '../../models/dialogData.interface';
+import { MyErrorStateMatcher } from '../../pages/request-form/request-form.component';
+import { AddCopyBoxComponent } from '../add-copy-box/add-copy-box.component';
+import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import {
+	FormBuilder,
 	FormControl,
 	FormsModule,
 	ReactiveFormsModule,
@@ -12,22 +21,14 @@ import {
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import {
-	MAT_DIALOG_DATA,
-	MatDialogActions,
-	MatDialogClose,
-	MatDialogContent,
-	MatDialogModule,
-	MatDialogRef,
-	MatDialogTitle,
-} from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { environment } from '../../../environments/environment';
-import { DialogData } from '../../models/dialogData.interface';
-import { MyErrorStateMatcher } from '../../pages/request-form/request-form.component';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSelectModule } from '@angular/material/select';
 
 export interface CopyFormData {
 	file: WritableSignal<any>;
@@ -37,8 +38,9 @@ export interface CopyFormData {
 }
 
 @Component({
-	selector: 'app-add-copy',
+	selector: 'app-new-copy-box',
 	imports: [
+		MatStepperModule,
 		MatDialogModule,
 		MatFormFieldModule,
 		MatInputModule,
@@ -53,27 +55,34 @@ export interface CopyFormData {
 		ReactiveFormsModule,
 		MatCheckboxModule,
 		MatTooltipModule,
+		MatExpansionModule,
+		MatIconModule,
+		MatSelectModule,
+		MatInputModule,
+		MatFormFieldModule,
 	],
-	templateUrl: './add-copy-box.component.html',
-	styleUrl: './add-copy-box.component.scss',
+	templateUrl: './new-copy-box.component.html',
+	styleUrl: './new-copy-box.component.scss',
 })
-
-export class AddCopyBoxComponent {
+export class NewCopyBoxComponent {
 	readonly dialogRef = inject(MatDialogRef<AddCopyBoxComponent>);
 	readonly data = inject<DialogData>(MAT_DIALOG_DATA);
 	matcher = new MyErrorStateMatcher();
+	readonly panelOpenState = signal(false);
 	selectedFile: any = null;
 	_snackBar = inject(MatSnackBar);
 
-	copyNumFormControl = new FormControl(5, [
+	copyNumFormControl = new FormControl(null, [
 		Validators.required,
 		Validators.min(1),
 	]);
 
-	pageNumFormControl = new FormControl(1, [
+	pageNumFormControl = new FormControl(null, [
 		Validators.required,
 		Validators.min(1),
 	]);
+
+	readonly maxFileSize = environment.MAX_FILE_SIZE_MB;
 
 	newCopyData: CopyFormData = {
 		file: signal(null),
@@ -82,7 +91,19 @@ export class AddCopyBoxComponent {
 		copyNumControl: signal(this.copyNumFormControl),
 	};
 
-	readonly maxFileSize = environment.MAX_FILE_SIZE_MB;
+	private _formBuilder = inject(FormBuilder);
+
+	firstFormGroup = this._formBuilder.group({
+		firstCtrl: ['', Validators.required],
+	});
+
+	secondFormGroup = this._formBuilder.group({
+		pages: ['Todas', Validators.required],
+		pageRange: [{value: null, disabled: true}],
+        pagesForSheet: [1, Validators.required],
+        pagesLayout: ['Retrato', Validators.required],
+		frontAndBack: [false, Validators.required],
+	});
 
 	onFileSelected(event: any): void {
 		this.selectedFile = event.target.files[0] ?? null;
@@ -127,4 +148,18 @@ export class AddCopyBoxComponent {
 	isPhysical(checked: boolean) {
 		this.newCopyData.isPhysical.set(checked);
 	}
+
+	goBack(stepper: MatStepper) {
+		stepper.previous();
+	}
+
+	goForward(stepper: MatStepper) {
+		stepper.next();
+	}
+    pageRangeDefine(val: any) {
+        if(val === "Personalizado") {
+            this.secondFormGroup.get('pageRange')?.enable()
+        } else this.secondFormGroup.get('pageRange')?.disable()
+        
+    }
 }

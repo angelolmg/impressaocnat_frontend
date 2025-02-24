@@ -24,8 +24,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import {
-	AddCopyBoxComponent,
-	CopyFormData,
+	CopyFormData
 } from '../../components/add-copy-box/add-copy-box.component';
 import { EditCopyBoxComponent } from '../../components/edit-copy-box/edit-copy-box.component';
 import { CopyInterface } from '../../models/copy.interface';
@@ -43,6 +42,7 @@ import { PDFDocument } from 'pdf-lib';
 import { finalize, Observable, Subject, takeUntil } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
+import { NewCopyBoxComponent } from '../../components/new-copy-box/new-copy-box.component';
 import { IconPipe } from '../../pipes/icon.pipe';
 import { RequestService } from '../../service/request.service';
 
@@ -220,7 +220,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 
 	addCopyDialog() {
 		this.dialogService
-			.openDialog(AddCopyBoxComponent, { positive_label: 'Adicionar' })
+			.openDialog(NewCopyBoxComponent, { positive_label: 'Adicionar' })
 			.afterClosed()
 			.subscribe((result: CopyFormData) => {
 				if (!result) return;
