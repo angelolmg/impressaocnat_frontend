@@ -26,15 +26,22 @@ mat-accordion {
 			}
 		}
 	}
+
+	mat-expansion-panel p {
+		margin-bottom: 0.5rem;
+	}
 }
 
 .panel-content {
 	height: 100%;
 }
 
-.example-headers-align .mat-expansion-panel-header-description {
-	justify-content: space-between;
-	align-items: center;
+.example-headers-align {
+	margin-top: 0.5rem;
+	.mat-expansion-panel-header-description {
+		justify-content: space-between;
+		align-items: center;
+	}
 }
 
 .file-input-field button {
