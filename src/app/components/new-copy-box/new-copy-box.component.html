@@ -10,27 +10,31 @@
 
 <mat-dialog-content class="file-input">
 	<mat-stepper #stepper style="height: auto" [linear]="true">
-		<mat-step label="Selecionar tipo de arquivo" [completed]="fistStepValid()">
-			<form>
+		<mat-step
+			label="Selecionar tipo de arquivo"
+			[stepControl]="firstStepForm"
+		>
+			<form [formGroup]="firstStepForm">
 				<mat-accordion class="example-headers-align" multi="false">
 					<mat-expansion-panel
 						hideToggle
-						[expanded]="!newCopyData.isPhysical()"
-						(opened)="newCopyData.isPhysical.set(false)"
+						[expanded]="!firstStepForm.get('isPhysical')?.value"
+						(opened)="
+							firstStepForm.get('isPhysical')?.setValue(false)
+						"
 						(closed)="
-							selectedFile = null;
 							fileInput.value = '';
-							newCopyData.isPhysical.set(true);
-							newCopyData.file.set(null);
-							newCopyData.fileName().reset();
-							newCopyData.pageNumControl().reset()
+							firstStepForm.reset();
+							firstStepForm.get('isPhysical')?.setValue(true)
 						"
 					>
 						<mat-expansion-panel-header>
 							<mat-panel-title>
 								<mat-checkbox
 									disabled="true"
-									[checked]="!newCopyData.isPhysical()"
+									[checked]="
+										!firstStepForm.get('isPhysical')?.value
+									"
 								></mat-checkbox>
 								É arquivo digital
 							</mat-panel-title>
@@ -45,7 +49,9 @@
 									type="button"
 									mat-stroked-button
 									(click)="fileInput.click()"
-									[disabled]="newCopyData.isPhysical()"
+									[disabled]="
+										firstStepForm.get('isPhysical')?.value
+									"
 								>
 									Escolher arquivo...
 								</button>
@@ -58,7 +64,9 @@
 								/>
 								<div class="file-name">
 									<span>
-										{{ selectedFile?.name }}
+										{{
+											firstStepForm.get("fileName")?.value
+										}}
 									</span>
 								</div>
 							</div>
@@ -70,22 +78,23 @@
 
 					<mat-expansion-panel
 						hideToggle
-						[expanded]="newCopyData.isPhysical()"
-						(opened)="newCopyData.isPhysical.set(true)"
+						[expanded]="firstStepForm.get('isPhysical')?.value"
+						(opened)="
+							firstStepForm.get('isPhysical')?.setValue(true)
+						"
 						(closed)="
-							selectedFile = null;
 							fileInput.value = '';
-							newCopyData.isPhysical.set(false);
-							newCopyData.file.set(null);
-							newCopyData.fileName().reset();
-							newCopyData.pageNumControl().reset()
+							firstStepForm.reset();
+							firstStepForm.get('isPhysical')?.setValue(false)
 						"
 					>
 						<mat-expansion-panel-header>
 							<mat-panel-title>
 								<mat-checkbox
 									disabled="true"
-									[checked]="newCopyData.isPhysical()"
+									[checked]="
+										firstStepForm.get('isPhysical')?.value
+									"
 								></mat-checkbox
 								>É arquivo físico
 							</mat-panel-title>
@@ -115,24 +124,24 @@
 									<input
 										matInput
 										placeholder="Ex. prova3_2025, anotacoes_aula10, etc"
-										[formControl]="newCopyData.fileName()"
+										formControlName="fileName"
 										(change)="logme($event)"
 									/>
 									@if
-									((newCopyData.fileName().hasError('minlength')
+									((firstStepForm.get('fileName')?.hasError('minlength')
 									||
-									newCopyData.fileName().hasError('maxlength'))
+									firstStepForm.get('fileName')?.hasError('maxlength'))
 									&&
-									!newCopyData.fileName().hasError('required'))
+									!firstStepForm.get('fileName')?.hasError('required'))
 									{
 									<mat-error
 										>O rótulo deve conter no mínimo 3
 										dígitos</mat-error
 									>
 									} @else if
-									(newCopyData.fileName().hasError('pattern')
+									(firstStepForm.get('fileName')?.hasError('pattern')
 									&&
-									!newCopyData.fileName().hasError('required'))
+									!firstStepForm.get('fileName')?.hasError('required'))
 									{
 									<mat-error
 										>O rótulo não pode conter os caracteres
@@ -140,33 +149,30 @@
 										branco</mat-error
 									>
 									} @else if
-									(newCopyData.fileName().hasError('required'))
+									(firstStepForm.get('fileName')?.hasError('required'))
 									{
 									<mat-error>Campo obrigatório</mat-error>
 									}
 								</mat-form-field>
 								<mat-form-field class="copy-number-input">
-									<!-- <mat-form-field [style.opacity]="newCopyData.isPhysical() ? '1' : '0'"> -->
 									<mat-label>Número de páginas</mat-label>
 									<input
 										matInput
 										type="number"
-										[formControl]="
-											newCopyData.pageNumControl()
-										"
+										formControlName="pageNum"
 										[errorStateMatcher]="matcher"
 										placeholder="Ex. 10"
 									/>
 									@if
-									(newCopyData.pageNumControl().hasError('min')
+									(firstStepForm.get('pageNum')?.hasError('min')
 									&&
-									!newCopyData.pageNumControl().hasError('required'))
+									!firstStepForm.get('pageNum')?.hasError('required'))
 									{
 									<mat-error
 										>Insira um valor positivo</mat-error
 									>
 									} @if
-									(newCopyData.pageNumControl().hasError('required'))
+									(firstStepForm.get('pageNum')?.hasError('required'))
 									{
 									<mat-error>Campo obrigatório</mat-error>
 									}
@@ -177,36 +183,35 @@
 				</mat-accordion>
 
 				<div class="nav-buttons">
-					<!-- <button mat-button disabled="true">Voltar</button> -->
 					<button
 						mat-button
+						matStepperNext
 						[disabled]="!fistStepValid()"
-						(click)="goForward(stepper)"
 					>
 						Próximo
 					</button>
 				</div>
 			</form>
 		</mat-step>
-		<mat-step label="Configurações de impressão" [completed]="fistStepValid() && secondStepValid()">
-			<form class="second-step">
+		<mat-step
+			label="Configurações de impressão"
+			[stepControl]="secondStepForm"
+			[completed]="fistStepValid() && secondStepValid()"
+		>
+			<form [formGroup]="secondStepForm" class="second-step">
 				<mat-form-field>
 					<mat-label>Defina o número de cópias</mat-label>
 					<input
 						matInput
 						type="number"
 						class="copy-number-input"
-						[formControl]="newCopyData.printConfig.copyNumControl()"
-						[errorStateMatcher]="matcher"
+						formControlName="copyNum"
 						placeholder="Ex. 10"
 					/>
-					@if
-					(newCopyData.printConfig.copyNumControl().hasError('min') &&
-					!newCopyData.printConfig.copyNumControl().hasError('required'))
-					{
+					@if (secondStepForm.get('copyNum')?.hasError('min') &&
+					!secondStepForm.get('copyNum')?.hasError('required')) {
 					<mat-error>Insira um valor positivo</mat-error>
-					} @if
-					(newCopyData.printConfig.copyNumControl().hasError('required'))
+					} @if (secondStepForm.get('copyNum')?.hasError('required'))
 					{
 					<mat-error>Campo obrigatório</mat-error>
 					}
@@ -215,7 +220,7 @@
 				<mat-accordion class="example-headers-align" multi="false">
 					<mat-expansion-panel
 						[expanded]="false"
-						[disabled]="newCopyData.isPhysical()"
+						[disabled]="firstStepForm.get('isPhysical')?.value"
 					>
 						<mat-expansion-panel-header>
 							<mat-panel-title> Avançado </mat-panel-title>
@@ -227,9 +232,7 @@
 									<mat-label>Páginas</mat-label>
 									<mat-select
 										#pageSelect
-										[formControl]="
-											newCopyData.printConfig.pageInterval()
-										"
+										formControlName="pages"
 									>
 										<mat-option [value]="'Todas'"
 											>Todas</mat-option
@@ -243,16 +246,14 @@
 								<mat-form-field>
 									<mat-label>Defina as páginas</mat-label>
 									<input
+										matInput
 										[required]="
 											pageSelect.value === 'Personalizado'
 										"
-										[formControl]="
-											newCopyData.printConfig.pageRange()
-										"
-										matInput
+										formControlName="pageIntervals"
 										placeholder="por exemplo, 1-5, 8, 11-13"
 									/>
-									@if(newCopyData.printConfig.pageRange().invalid)
+									@if(secondStepForm.get('pageIntervals')?.invalid)
 									{
 									<mat-error>{{
 										getPageRangeErrorMessage()
@@ -263,11 +264,7 @@
 
 							<mat-form-field>
 								<mat-label>Páginas por folha</mat-label>
-								<mat-select
-									[formControl]="
-										newCopyData.printConfig.pagesPerSheet()
-									"
-								>
+								<mat-select formControlName="pagesPerSheet">
 									<mat-option [value]="1">1</mat-option>
 									<mat-option [value]="2">2</mat-option>
 									<mat-option [value]="4">4</mat-option>
@@ -276,12 +273,7 @@
 
 							<mat-form-field>
 								<mat-label>Layout</mat-label>
-								<mat-select
-									[formControl]="
-										newCopyData.printConfig.layout()
-									"
-									required
-								>
+								<mat-select formControlName="layout">
 									<mat-option value="Retrato"
 										>Retrato</mat-option
 									>
@@ -295,8 +287,8 @@
 								<p>Frente e verso</p>
 								<mat-checkbox
 									[checked]="
-										newCopyData.printConfig.frontAndBack()
-											.value
+										secondStepForm.get('frontAndBack')
+											?.value
 									"
 									>Imprimir dos dois lados</mat-checkbox
 								>
@@ -306,8 +298,12 @@
 				</mat-accordion>
 
 				<div class="nav-buttons">
-					<button mat-button (click)="goBack(stepper)">Voltar</button>
-					<button mat-button [disabled]="!fistStepValid() || !secondStepValid()" (click)="goForward(stepper)">
+					<button mat-button matStepperPrevious>Voltar</button>
+					<button
+						mat-button
+						matStepperNext
+						[disabled]="!secondStepValid()"
+					>
 						Próximo
 					</button>
 				</div>
@@ -315,111 +311,32 @@
 		</mat-step>
 		<mat-step>
 			<ng-template matStepLabel>Resumo</ng-template>
-			<mat-form-field style="width: 100%;">
+			<mat-form-field style="width: 100%">
 				<mat-label>Adicione uma observação (opcional)</mat-label>
-				<textarea #textArea matInput maxlength="300" style="height: 6rem; resize: none;"></textarea>
+				<textarea
+					#textArea
+					matInput
+					maxlength="300"
+					style="height: 6rem; resize: none"
+				></textarea>
 			</mat-form-field>
-			<mat-hint>Caracteres: {{textArea.value.length || 0}}/300</mat-hint>
+			<mat-hint
+				>Caracteres: {{ textArea.value.length || 0 }}/300</mat-hint
+			>
 			<div class="nav-buttons">
-				<button mat-button (click)="goBack(stepper)">Voltar</button>
-				<!-- <button mat-button disabled="true">Próximo</button> -->
+				<button mat-button matStepperPrevious>Voltar</button>
 			</div>
 		</mat-step>
 	</mat-stepper>
-
-	<!-- <p>1. Escolha seu arquivo (.pdf)</p>
-
-	<div class="file-input">
-		<div class="file-input-field">
-			<button
-				type="button"
-				mat-stroked-button
-				(click)="fileInput.click()"
-				[disabled]="newCopyData.isPhysical()"
-			>
-				Escolher arquivo...
-			</button>
-			<input
-				hidden
-				(change)="onFileSelected($event)"
-				#fileInput
-				type="file"
-				accept="application/pdf"
-			/>
-			<div class="file-name">
-				<span>
-					{{ selectedFile?.name }}
-				</span>
-			</div>
-		</div>
-		<p class="hint">Tamanho máximo: {{ maxFileSize }}MB</p>
-	</div> -->
 </mat-dialog-content>
-
-<!-- <mat-dialog-content class="file-checker">
-	<div class="check-box">
-		<mat-checkbox (change)="isPhysical($event.checked)"
-			>É arquivo físico</mat-checkbox
-		>
-		<img
-			matTooltip="Arquivos físicos não ficarão disponíveis no sistema. 
-			Marque esta opção somente se você tiver o arquivo físico em mãos para copiar imediatamente. 
-			Escanear e anexar o arquivo PDF digitalizado é recomendado."
-			matTooltipPosition="after"
-			class="help-icon"
-			src="assets/help.svg"
-			alt="Ícone de Ajuda"
-		/>
-	</div>
-	<div>
-		<mat-form-field [style.opacity]="newCopyData.isPhysical() ? '1' : '0'">
-			<mat-label>Número de páginas</mat-label>
-			<input
-				matInput
-				type="number"
-				class="copy-number-input"
-				[formControl]="pageNumFormControl"
-				[errorStateMatcher]="matcher"
-				placeholder="Ex. 10"
-				(change)="onPageNumChange()"
-			/>
-			@if (pageNumFormControl.hasError('min') &&
-			!pageNumFormControl.hasError('required')) {
-			<mat-error>Insira um valor positivo</mat-error>
-			} @if (pageNumFormControl.hasError('required')) {
-			<mat-error>Campo <strong>obrigatório</strong></mat-error>
-			}
-		</mat-form-field>
-	</div>
-</mat-dialog-content>
-
-<mat-dialog-content class="copynum-input">
-	<p>2. Defina o número de cópias</p>
-	<mat-form-field>
-		<mat-label>Número de cópias</mat-label>
-		<input
-			matInput
-			type="number"
-			class="copy-number-input"
-			[formControl]="copyNumFormControl"
-			[errorStateMatcher]="matcher"
-			placeholder="Ex. 10"
-			(change)="onCopyNumChange()"
-		/>
-		@if (copyNumFormControl.hasError('min') &&
-		!copyNumFormControl.hasError('required')) {
-		<mat-error>Insira um valor positivo</mat-error>
-		} @if (copyNumFormControl.hasError('required')) {
-		<mat-error>Campo <strong>obrigatório</strong></mat-error>
-		}
-	</mat-form-field>
-</mat-dialog-content> -->
 
 <mat-dialog-actions>
 	<button mat-button (click)="onNoClick()">
 		{{ data.negative_label || "Cancelar" }}
 	</button>
-	<button mat-button (click)="stepper.reset()">Limpar</button>
+	<button mat-button (click)="stepper.reset(); fileInput.value = ''">
+		Limpar
+	</button>
 	<button
 		mat-button
 		[mat-dialog-close]="newCopyData"
