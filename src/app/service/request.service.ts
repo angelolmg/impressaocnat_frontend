@@ -11,6 +11,24 @@ import { RequestInterface } from '../models/request.interface';
 import { CopyInterface } from './../models/copy.interface';
 import { UserService } from './user.service';
 
+export interface PrintConfig {
+	copyNum: number;
+	pages: 'Todas' | 'Personalizado';
+	pageInterval: string;
+	pagesPerSheet: 1 | 2 | 4;
+	layout: 'Retrato' | 'Paisagem';
+	frontAndBack: boolean;
+}
+
+export interface NewCopyFormData {
+	file: File | null;
+	fileName: string;
+	isPhysical: boolean;
+	pageNum: number;
+	printConfig: PrintConfig;
+	requestTotalSheets: number;
+	notes: string;
+}
 
 export interface FileDownloadResponse {
 	filename: string;

@@ -1,4 +1,4 @@
-import { Component, inject, signal, WritableSignal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import {
 	AbstractControl,
 	FormControl,
@@ -25,32 +25,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatStepper, MatStepperModule } from '@angular/material/stepper';
+import { MatStepperModule } from '@angular/material/stepper';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { PDFDocument } from 'pdf-lib';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { DialogData } from '../../models/dialogData.interface';
-import { MyErrorStateMatcher } from '../../pages/request-form/request-form.component';
-import { AddCopyBoxComponent } from '../add-copy-box/add-copy-box.component';
-
-export interface PrintConfig {
-	copyNumControl: WritableSignal<FormControl>;
-	pageInterval: WritableSignal<FormControl>;
-	pageRange: WritableSignal<FormControl>;
-	pagesPerSheet: WritableSignal<FormControl>;
-	layout: WritableSignal<FormControl>;
-	frontAndBack: WritableSignal<FormControl>;
-}
-
-export interface CopyFormData {
-	file: WritableSignal<any>;
-	fileName: WritableSignal<FormControl>;
-	isPhysical: WritableSignal<boolean>;
-	pageNumControl: WritableSignal<FormControl>;
-	printConfig: PrintConfig;
-	notes: WritableSignal<FormControl>;
-}
+import { NewCopyFormData, PrintConfig } from '../../service/request.service';
 
 interface FileProfile {
 	pageCount: number;
@@ -135,14 +116,13 @@ export function pageRangeValidator(
 })
 export class NewCopyBoxComponent {
 	readonly maxFileSize = environment.MAX_FILE_SIZE_MB;
-	readonly dialogRef = inject(MatDialogRef<AddCopyBoxComponent>);
+	readonly dialogRef = inject(MatDialogRef<NewCopyBoxComponent>);
 	readonly data = inject<DialogData>(MAT_DIALOG_DATA);
-	matcher = new MyErrorStateMatcher();
 	_snackBar = inject(MatSnackBar);
 
 	newCopyForm = new FormGroup({
 		firstStepForm: new FormGroup({
-			file: new FormControl<any>(null),
+			file: new FormControl<File | null>(null),
 			fileName: new FormControl<string>('', [
 				Validators.required,
 				Validators.minLength(3),
@@ -161,67 +141,29 @@ export class NewCopyBoxComponent {
 				Validators.required,
 				Validators.min(1),
 			]),
-			pages: new FormControl<'Todas' | 'Personalizado'>('Todas', [
-				Validators.required,
-			]),
-			pageIntervals: new FormControl<string>({
-				value: '',
+			pages: new FormControl<'Todas' | 'Personalizado'>('Todas', {
+				nonNullable: true,
+				validators: [Validators.required],
+			}),
+			pageIntervals: new FormControl<string | null>({
+				value: null,
 				disabled: true,
 			}),
-			pagesPerSheet: new FormControl<number>(1, [
-				Validators.required,
-				Validators.min(1),
-			]),
-			layout: new FormControl<'Retrato' | 'Paisagem'>('Retrato', [
-				Validators.required,
-			]),
+			pagesPerSheet: new FormControl<number>(1, {
+				nonNullable: true,
+				validators: [Validators.required, Validators.min(1)],
+			}),
+			layout: new FormControl<'Retrato' | 'Paisagem'>('Retrato', {
+				nonNullable: true,
+				validators: [Validators.required],
+			}),
 			frontAndBack: new FormControl<boolean>(false, [
 				Validators.required,
 			]),
 		}),
-
-		test: new FormGroup({
-			copyNum: new FormControl<number>(0, [
-				Validators.required,
-				Validators.min(1),
-			]),
-		}),
+		requestTotalSheets: new FormControl<number>(0),
+		notes: new FormControl<string>(''),
 	});
-
-	printConfig: PrintConfig = {
-		copyNumControl: signal(
-			new FormControl(null, [Validators.required, Validators.min(1)])
-		),
-		pageInterval: signal(new FormControl('Todas', [Validators.required])),
-		pageRange: signal(new FormControl({ value: null, disabled: true })),
-		pagesPerSheet: signal(
-			new FormControl(1, [Validators.required, Validators.min(1)])
-		),
-		layout: signal(new FormControl('Retrato', [Validators.required])),
-		frontAndBack: signal(new FormControl(false, [Validators.required])),
-	};
-
-	newCopyData: CopyFormData = {
-		file: signal(null),
-		fileName: signal(
-			new FormControl(null, [
-				Validators.required,
-				Validators.minLength(3),
-				Validators.maxLength(255),
-				Validators.pattern(/^(?!\s*$)[^\\/:*?"<>|]*$/),
-			])
-		),
-		isPhysical: signal(false),
-		pageNumControl: signal(
-			new FormControl(null, [Validators.required, Validators.min(1)])
-		),
-		printConfig: this.printConfig,
-		notes: signal(new FormControl(null)),
-	};
-
-	logme(event: any) {
-		console.log(event);
-	}
 
 	get firstStepForm(): FormGroup {
 		return this.newCopyForm.get('firstStepForm') as FormGroup;
@@ -229,6 +171,61 @@ export class NewCopyBoxComponent {
 
 	get secondStepForm(): FormGroup {
 		return this.newCopyForm.get('secondStepForm') as FormGroup;
+	}
+
+	get notesControl(): FormControl<string> {
+		return this.newCopyForm.get('notes') as FormControl;
+	}
+
+	get sheetsTotal(): number {
+		const calcPagesByInterval = (interval: string): number => {
+			if (!interval || interval.trim() === '') {
+				return 0;
+			}
+
+			let totalPages = 0;
+			const ranges = interval.split(',');
+
+			for (const range of ranges) {
+				const parts = range.trim().split('-');
+
+				if (parts.length === 2) {
+					// Handle range like "1-5"
+					const start = parseInt(parts[0], 10);
+					const end = parseInt(parts[1], 10);
+
+					if (!isNaN(start) && !isNaN(end) && start <= end) {
+						totalPages += end - start + 1;
+					}
+				} else if (parts.length === 1) {
+					// Handle single page like "8"
+					const page = parseInt(parts[0], 10);
+
+					if (!isNaN(page)) {
+						totalPages += 1;
+					}
+				}
+			}
+
+			return totalPages;
+		};
+
+		const shouldPrintAllPages: boolean =
+			this.secondStepForm.get('pages')?.value === 'Todas';
+
+		const totalPages = shouldPrintAllPages
+			? this.firstStepForm.get('pageNum')?.value
+			: calcPagesByInterval(
+					this.secondStepForm.get('pageIntervals')?.value
+			  );
+		const copyNum = this.secondStepForm.get('copyNum')?.value;
+		const frontAndBack = this.secondStepForm.get('frontAndBack')?.value;
+		const pagesPerSheet = this.secondStepForm.get('pagesPerSheet')?.value;
+
+		var subtotal =
+			(totalPages * copyNum) / ((frontAndBack ? 2 : 1) * pagesPerSheet);
+		this.newCopyForm.get('requestTotalSheets')?.setValue(subtotal);
+		return Math.ceil(subtotal);
 	}
 
 	ngOnInit(): void {
@@ -251,10 +248,7 @@ export class NewCopyBoxComponent {
 	onFileSelected(event: any): void {
 		const selectedFile = event.target.files[0] ?? null;
 
-		console.log(selectedFile);
-		
-
-		if (this.newCopyData.isPhysical()) {
+		if (this.firstStepForm.get('isPhysical')?.value) {
 			let msg = `Não é possivel selecionar arquivo. Desmarque a opção de arquivo físico.`;
 			this._snackBar.open(msg, 'Ok');
 			console.error(msg);
@@ -318,10 +312,6 @@ export class NewCopyBoxComponent {
 		return '';
 	}
 
-	onNoClick(): void {
-		this.dialogRef.close();
-	}
-
 	getPageCount(file: File): Observable<FileProfile> {
 		return new Observable<FileProfile>((observer) => {
 			const reader = new FileReader();
@@ -362,10 +352,40 @@ export class NewCopyBoxComponent {
 		return (
 			copyNumControl?.valid &&
 			(isPhysical?.value ||
-				(pages?.value === 'Todas' && intervals?.value === "") ||
+				(pages?.value === 'Todas' && intervals?.value === null) ||
 				(pages?.value === 'Personalizado' &&
-					intervals?.value !== "" &&
+					intervals?.value !== null &&
 					intervals?.valid))
 		);
+	}
+
+	requestInfo(): NewCopyFormData | null {
+		if (this.newCopyForm.invalid) return null;
+
+		var printConfig: PrintConfig = {
+			copyNum: this.secondStepForm.get('copyNum')?.value,
+			pages: this.secondStepForm.get('pages')?.value,
+			pageInterval: this.secondStepForm.get('pageInterval')?.value,
+			pagesPerSheet: this.secondStepForm.get('pagesPerSheet')?.value,
+			layout: this.secondStepForm.get('layout')?.value,
+			frontAndBack: this.secondStepForm.get('frontAndBack')?.value,
+		};
+
+		var newCopyData: NewCopyFormData = {
+			file: this.firstStepForm.get('file')?.value,
+			fileName: this.firstStepForm.get('fileName')?.value,
+			isPhysical: this.firstStepForm.get('isPhysical')?.value,
+			pageNum: this.firstStepForm.get('pageNum')?.value,
+			printConfig: printConfig,
+			requestTotalSheets:
+				this.firstStepForm.get('requestTotalSheets')?.value,
+			notes: this.firstStepForm.get('notes')?.value,
+		};
+
+		return newCopyData;
+	}
+
+	onNoClick(): void {
+		this.dialogRef.close();
 	}
 }

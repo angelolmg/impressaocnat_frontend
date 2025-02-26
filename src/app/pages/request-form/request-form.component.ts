@@ -23,9 +23,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import {
-	CopyFormData
-} from '../../components/add-copy-box/add-copy-box.component';
+import { CopyFormData } from '../../components/add-copy-box/add-copy-box.component';
 import { EditCopyBoxComponent } from '../../components/edit-copy-box/edit-copy-box.component';
 import { CopyInterface } from '../../models/copy.interface';
 import {
@@ -220,9 +218,9 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 
 	addCopyDialog() {
 		this.dialogService
-			.openDialog(NewCopyBoxComponent, { positive_label: 'Adicionar' })
+			.openDialog(NewCopyBoxComponent, { positive_label: 'Finalizar' })
 			.afterClosed()
-			.subscribe((result: CopyFormData) => {
+			.subscribe((result: CopyFormData | null) => {
 				if (!result) return;
 
 				if (

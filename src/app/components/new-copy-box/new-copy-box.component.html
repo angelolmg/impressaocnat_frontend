@@ -24,8 +24,9 @@
 						"
 						(closed)="
 							fileInput.value = '';
-							firstStepForm.reset();
-							firstStepForm.get('isPhysical')?.setValue(true)
+							newCopyForm.reset();
+							firstStepForm.get('isPhysical')?.setValue(true);
+							advanced_options.close();
 						"
 					>
 						<mat-expansion-panel-header>
@@ -84,8 +85,9 @@
 						"
 						(closed)="
 							fileInput.value = '';
-							firstStepForm.reset();
-							firstStepForm.get('isPhysical')?.setValue(false)
+							newCopyForm.reset();
+							firstStepForm.get('isPhysical')?.setValue(false);
+							advanced_options.close();
 						"
 					>
 						<mat-expansion-panel-header>
@@ -125,7 +127,6 @@
 										matInput
 										placeholder="Ex. prova3_2025, anotacoes_aula10, etc"
 										formControlName="fileName"
-										(change)="logme($event)"
 									/>
 									@if
 									((firstStepForm.get('fileName')?.hasError('minlength')
@@ -160,7 +161,6 @@
 										matInput
 										type="number"
 										formControlName="pageNum"
-										[errorStateMatcher]="matcher"
 										placeholder="Ex. 10"
 									/>
 									@if
@@ -219,6 +219,7 @@
 
 				<mat-accordion class="example-headers-align" multi="false">
 					<mat-expansion-panel
+						#advanced_options
 						[expanded]="false"
 						[disabled]="firstStepForm.get('isPhysical')?.value"
 					>
@@ -286,6 +287,7 @@
 							<div class="front-and-back">
 								<p>Frente e verso</p>
 								<mat-checkbox
+									formControlName="frontAndBack"
 									[checked]="
 										secondStepForm.get('frontAndBack')
 											?.value
@@ -309,20 +311,62 @@
 				</div>
 			</form>
 		</mat-step>
-		<mat-step>
-			<ng-template matStepLabel>Resumo</ng-template>
-			<mat-form-field style="width: 100%">
-				<mat-label>Adicione uma observação (opcional)</mat-label>
-				<textarea
-					#textArea
-					matInput
-					maxlength="300"
-					style="height: 6rem; resize: none"
-				></textarea>
-			</mat-form-field>
-			<mat-hint
-				>Caracteres: {{ textArea.value.length || 0 }}/300</mat-hint
-			>
+		<mat-step label="Resumo">
+			<div class="overview-text">
+				<p data-label="Nome:">
+					{{ firstStepForm.get("fileName")?.value }}
+				</p>
+				<p data-label="Número de páginas:">
+					{{ firstStepForm.get("pageNum")?.value }}
+				</p>
+				<p data-label="Número de cópias:">
+					{{ secondStepForm.get("copyNum")?.value }}
+				</p>
+				@if(secondStepForm.get("pages")?.value !== 'Todas') {
+				<p data-label="Páginas:">
+					{{ secondStepForm.get("pages")?.value }}
+				</p>
+				<p data-label="Intervalo:">
+					{{ secondStepForm.get("pageIntervals")?.value }}
+				</p>
+				} @if(secondStepForm.get("pagesPerSheet")?.value !== 1 ) {
+				<p data-label="Páginas por folha:">
+					{{ secondStepForm.get("pagesPerSheet")?.value }}
+				</p>
+				} @if(secondStepForm.get("layout")?.value !== 'Retrato'){
+				<p data-label="Layout:">
+					{{ secondStepForm.get("layout")?.value }}
+				</p>
+				} @if(secondStepForm.get("frontAndBack")?.value) {
+				<p data-label="Frente e verso:">
+					{{
+						secondStepForm.get("frontAndBack")?.value
+							? "Sim"
+							: "Não"
+					}}
+				</p>
+				}
+				<br class="break" />
+				<p data-label="Prévia total de folhas:">{{ sheetsTotal }}</p>
+			</div>
+
+			<div class="notes-container">
+				<mat-form-field>
+					<mat-label>Adicione uma observação (opcional)</mat-label>
+					<textarea
+						#textArea
+						matInput
+						maxlength="300"
+						style="height: 5.5rem; resize: none"
+						[formControl]="notesControl"
+					></textarea>
+					<mat-hint
+						>Caracteres:
+						{{ textArea.value.length || 0 }}/300</mat-hint
+					>
+				</mat-form-field>
+			</div>
+
 			<div class="nav-buttons">
 				<button mat-button matStepperPrevious>Voltar</button>
 			</div>
@@ -334,12 +378,17 @@
 	<button mat-button (click)="onNoClick()">
 		{{ data.negative_label || "Cancelar" }}
 	</button>
-	<button mat-button (click)="stepper.reset(); fileInput.value = ''">
+	<button
+		mat-button
+		(click)="
+			stepper.reset(); fileInput.value = ''; advanced_options.close()
+		"
+	>
 		Limpar
 	</button>
 	<button
 		mat-button
-		[mat-dialog-close]="newCopyData"
+		[mat-dialog-close]="requestInfo()"
 		[disabled]="stepper.selectedIndex !== stepper.steps.length - 1"
 	>
 		{{ data.positive_label || "Confirmar" }}
