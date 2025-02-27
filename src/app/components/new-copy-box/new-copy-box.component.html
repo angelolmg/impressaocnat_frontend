@@ -18,14 +18,14 @@
 				<mat-accordion class="example-headers-align" multi="false">
 					<mat-expansion-panel
 						hideToggle
-						[expanded]="!firstStepForm.get('isPhysical')?.value"
+						[expanded]="!firstStepForm.get('isPhysicalFile')?.value"
 						(opened)="
-							firstStepForm.get('isPhysical')?.setValue(false)
+							firstStepForm.get('isPhysicalFile')?.setValue(false)
 						"
 						(closed)="
 							fileInput.value = '';
 							newCopyForm.reset();
-							firstStepForm.get('isPhysical')?.setValue(true);
+							firstStepForm.get('isPhysicalFile')?.setValue(true);
 							advanced_options.close();
 						"
 					>
@@ -34,7 +34,7 @@
 								<mat-checkbox
 									disabled="true"
 									[checked]="
-										!firstStepForm.get('isPhysical')?.value
+										!firstStepForm.get('isPhysicalFile')?.value
 									"
 								></mat-checkbox>
 								É arquivo digital
@@ -51,7 +51,7 @@
 									mat-stroked-button
 									(click)="fileInput.click()"
 									[disabled]="
-										firstStepForm.get('isPhysical')?.value
+										firstStepForm.get('isPhysicalFile')?.value
 									"
 								>
 									Escolher arquivo...
@@ -79,14 +79,14 @@
 
 					<mat-expansion-panel
 						hideToggle
-						[expanded]="firstStepForm.get('isPhysical')?.value"
+						[expanded]="firstStepForm.get('isPhysicalFile')?.value"
 						(opened)="
-							firstStepForm.get('isPhysical')?.setValue(true)
+							firstStepForm.get('isPhysicalFile')?.setValue(true)
 						"
 						(closed)="
 							fileInput.value = '';
 							newCopyForm.reset();
-							firstStepForm.get('isPhysical')?.setValue(false);
+							firstStepForm.get('isPhysicalFile')?.setValue(false);
 							advanced_options.close();
 						"
 					>
@@ -95,7 +95,7 @@
 								<mat-checkbox
 									disabled="true"
 									[checked]="
-										firstStepForm.get('isPhysical')?.value
+										firstStepForm.get('isPhysicalFile')?.value
 									"
 								></mat-checkbox
 								>É arquivo físico
@@ -160,19 +160,19 @@
 									<input
 										matInput
 										type="number"
-										formControlName="pageNum"
+										formControlName="pageCount"
 										placeholder="Ex. 10"
 									/>
 									@if
-									(firstStepForm.get('pageNum')?.hasError('min')
+									(firstStepForm.get('pageCount')?.hasError('min')
 									&&
-									!firstStepForm.get('pageNum')?.hasError('required'))
+									!firstStepForm.get('pageCount')?.hasError('required'))
 									{
 									<mat-error
 										>Insira um valor positivo</mat-error
 									>
 									} @if
-									(firstStepForm.get('pageNum')?.hasError('required'))
+									(firstStepForm.get('pageCount')?.hasError('required'))
 									{
 									<mat-error>Campo obrigatório</mat-error>
 									}
@@ -205,13 +205,14 @@
 						matInput
 						type="number"
 						class="copy-number-input"
-						formControlName="copyNum"
+						formControlName="copyCount"
 						placeholder="Ex. 10"
+						[errorStateMatcher]="matcher"
 					/>
-					@if (secondStepForm.get('copyNum')?.hasError('min') &&
-					!secondStepForm.get('copyNum')?.hasError('required')) {
+					@if (secondStepForm.get('copyCount')?.hasError('min') &&
+					!secondStepForm.get('copyCount')?.hasError('required')) {
 					<mat-error>Insira um valor positivo</mat-error>
-					} @if (secondStepForm.get('copyNum')?.hasError('required'))
+					} @if (secondStepForm.get('copyCount')?.hasError('required'))
 					{
 					<mat-error>Campo obrigatório</mat-error>
 					}
@@ -221,7 +222,7 @@
 					<mat-expansion-panel
 						#advanced_options
 						[expanded]="false"
-						[disabled]="firstStepForm.get('isPhysical')?.value"
+						[disabled]="firstStepForm.get('isPhysicalFile')?.value"
 					>
 						<mat-expansion-panel-header>
 							<mat-panel-title> Avançado </mat-panel-title>
@@ -257,7 +258,7 @@
 									@if(secondStepForm.get('pageIntervals')?.invalid)
 									{
 									<mat-error>{{
-										getPageRangeErrorMessage()
+										getPageIntervalsErrorMessage()
 									}}</mat-error>
 									}
 								</mat-form-field>
@@ -317,27 +318,27 @@
 					{{ firstStepForm.get("fileName")?.value }}
 				</p>
 				<p data-label="Número de páginas:">
-					{{ firstStepForm.get("pageNum")?.value }}
+					{{ firstStepForm.get("pageCount")?.value }}
 				</p>
 				<p data-label="Número de cópias:">
-					{{ secondStepForm.get("copyNum")?.value }}
+					{{ secondStepForm.get("copyCount")?.value }}
 				</p>
-				@if(secondStepForm.get("pages")?.value !== 'Todas') {
+				@if(!secondStepForm.get("pages")?.pristine) {
 				<p data-label="Páginas:">
 					{{ secondStepForm.get("pages")?.value }}
 				</p>
 				<p data-label="Intervalo:">
 					{{ secondStepForm.get("pageIntervals")?.value }}
 				</p>
-				} @if(secondStepForm.get("pagesPerSheet")?.value !== 1 ) {
+				} @if(!secondStepForm.get("pagesPerSheet")?.pristine ) {
 				<p data-label="Páginas por folha:">
 					{{ secondStepForm.get("pagesPerSheet")?.value }}
 				</p>
-				} @if(secondStepForm.get("layout")?.value !== 'Retrato'){
+				} @if(!secondStepForm.get("layout")?.pristine){
 				<p data-label="Layout:">
 					{{ secondStepForm.get("layout")?.value }}
 				</p>
-				} @if(secondStepForm.get("frontAndBack")?.value) {
+				} @if(!secondStepForm.get("frontAndBack")?.pristine) {
 				<p data-label="Frente e verso:">
 					{{
 						secondStepForm.get("frontAndBack")?.value
@@ -347,7 +348,7 @@
 				</p>
 				}
 				<br class="break" />
-				<p data-label="Prévia total de folhas:">{{ sheetsTotal }}</p>
+				<p data-label="Prévia de folhas:">{{ sheetsTotal }}</p>
 			</div>
 
 			<div class="notes-container">
@@ -389,7 +390,7 @@
 	<button
 		mat-button
 		[mat-dialog-close]="requestInfo()"
-		[disabled]="stepper.selectedIndex !== stepper.steps.length - 1"
+		[disabled]="stepper.selectedIndex !== stepper.steps.length - 1 || newCopyForm.invalid"
 	>
 		{{ data.positive_label || "Confirmar" }}
 	</button>

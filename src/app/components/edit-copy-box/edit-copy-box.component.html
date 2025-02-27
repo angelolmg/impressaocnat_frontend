@@ -2,33 +2,193 @@
 @if (data.message) {
 <mat-dialog-content>{{ data.message }}</mat-dialog-content>
 } @if (data.warning) {
-<mat-dialog-content class="warning"><strong>{{ data.warning }}</strong></mat-dialog-content>
+<mat-dialog-content class="warning"
+	><strong>{{ data.warning }}</strong></mat-dialog-content
+>
 }
 
-<mat-dialog-content class="copynum-input">
-	<mat-form-field>
-		<mat-label>Número de cópias</mat-label>
-		<input
-			matInput
-			type="number"
-			class="copy-number-input"
-			[formControl]="copyNumFormControl"
-			[errorStateMatcher]="matcher"
-			placeholder="Ex. 10"
-		/>
-		<!-- <mat-hint>Errors appear instantly!</mat-hint> -->
-		@if (copyNumFormControl.hasError('min') &&
-		!copyNumFormControl.hasError('required')) {
-		<mat-error>Insira um valor positivo</mat-error>
-		} @if (copyNumFormControl.hasError('required')) {
-		<mat-error>Campo <strong>obrigatório</strong></mat-error>
-		}
-	</mat-form-field>
+<mat-dialog-content class="copyCount-input">
+	<mat-stepper #stepper style="height: auto" [linear]="true">
+		<mat-step label="Configurações de impressão" [stepControl]="configForm">
+			<form [formGroup]="configForm" class="second-step">
+				<mat-form-field>
+					<mat-label>Defina o número de cópias</mat-label>
+					<input
+						matInput
+						type="number"
+						class="copy-number-input"
+						formControlName="copyCount"
+						placeholder="Ex. 10"
+						[errorStateMatcher]="matcher"
+					/>
+					@if (configForm.get('copyCount')?.hasError('min') &&
+					!configForm.get('copyCount')?.hasError('required')) {
+					<mat-error>Insira um valor positivo</mat-error>
+					} @if (configForm.get('copyCount')?.hasError('required')) {
+					<mat-error>Campo obrigatório</mat-error>
+					}
+				</mat-form-field>
+
+				<mat-accordion class="example-headers-align" multi="false">
+					<mat-expansion-panel
+						#advanced_options
+						[expanded]="false"
+						[disabled]="copy.isPhysicalFile"
+					>
+						<mat-expansion-panel-header>
+							<mat-panel-title> Avançado </mat-panel-title>
+						</mat-expansion-panel-header>
+
+						<div class="advanced-options">
+							<div class="page-range-field">
+								<mat-form-field>
+									<mat-label>Páginas</mat-label>
+									<mat-select
+										#pageSelect
+										formControlName="pages"
+									>
+										<mat-option [value]="'Todas'"
+											>Todas</mat-option
+										>
+										<mat-option [value]="'Personalizado'"
+											>Personalizado</mat-option
+										>
+									</mat-select>
+								</mat-form-field>
+
+								<mat-form-field>
+									<mat-label>Defina as páginas</mat-label>
+									<input
+										matInput
+										[required]="
+											pageSelect.value === 'Personalizado'
+										"
+										formControlName="pageIntervals"
+										placeholder="por exemplo, 1-5, 8, 11-13"
+									/>
+									@if(configForm.get('pageIntervals')?.invalid)
+									{
+									<mat-error>{{
+										getPageIntervalsErrorMessage()
+									}}</mat-error>
+									}
+								</mat-form-field>
+							</div>
+
+							<mat-form-field>
+								<mat-label>Páginas por folha</mat-label>
+								<mat-select formControlName="pagesPerSheet">
+									<mat-option [value]="1">1</mat-option>
+									<mat-option [value]="2">2</mat-option>
+									<mat-option [value]="4">4</mat-option>
+								</mat-select>
+							</mat-form-field>
+
+							<mat-form-field>
+								<mat-label>Layout</mat-label>
+								<mat-select formControlName="layout">
+									<mat-option value="Retrato"
+										>Retrato</mat-option
+									>
+									<mat-option value="Paisagem"
+										>Paisagem</mat-option
+									>
+								</mat-select>
+							</mat-form-field>
+
+							<div class="front-and-back">
+								<p>Frente e verso</p>
+								<mat-checkbox
+									formControlName="frontAndBack"
+									[checked]="
+										configForm.get('frontAndBack')?.value
+									"
+									>Imprimir dos dois lados</mat-checkbox
+								>
+							</div>
+						</div>
+					</mat-expansion-panel>
+				</mat-accordion>
+
+				<div class="nav-buttons">
+					<button
+						mat-button
+						matStepperNext
+						[disabled]="!configValid()"
+					>
+						Próximo
+					</button>
+				</div>
+			</form>
+		</mat-step>
+		<mat-step label="Resumo">
+			<div class="overview-text">
+				<p data-label="Nome:">
+					{{ copy.fileName }}
+				</p>
+				<p data-label="Número de páginas:">
+					{{ copy.pageCount }}
+				</p>
+				<p data-label="Número de cópias:">
+					{{ configForm.get("copyCount")?.value }}
+				</p>
+				@if(!configForm.get("pages")?.pristine) {
+				<p data-label="Páginas:">
+					{{ configForm.get("pages")?.value }}
+				</p>
+				<p data-label="Intervalo:">
+					{{ configForm.get("pageIntervals")?.value }}
+				</p>
+				} @if(!configForm.get("pagesPerSheet")?.pristine ) {
+				<p data-label="Páginas por folha:">
+					{{ configForm.get("pagesPerSheet")?.value }}
+				</p>
+				} @if(!configForm.get("layout")?.pristine){
+				<p data-label="Layout:">
+					{{ configForm.get("layout")?.value }}
+				</p>
+				} @if(!configForm.get("frontAndBack")?.pristine) {
+				<p data-label="Frente e verso:">
+					{{ configForm.get("frontAndBack")?.value ? "Sim" : "Não" }}
+				</p>
+				}
+				<br class="break" />
+				<p data-label="Prévia de folhas:">
+					{{ configForm.get("sheetsTotal")?.value }}
+				</p>
+			</div>
+
+			<div class="notes-container">
+				<mat-form-field>
+					<mat-label>Adicione uma observação (opcional)</mat-label>
+					<textarea
+						#textArea
+						matInput
+						maxlength="300"
+						style="height: 5.5rem; resize: none"
+						[formControl]="notesControl"
+					></textarea>
+					<mat-hint
+						>Caracteres:
+						{{ textArea.value.length || 0 }}/300</mat-hint
+					>
+				</mat-form-field>
+			</div>
+
+			<div class="nav-buttons">
+				<button mat-button matStepperPrevious>Voltar</button>
+			</div>
+		</mat-step>
+	</mat-stepper>
 </mat-dialog-content>
 
 <mat-dialog-actions>
 	<button mat-button (click)="onNoClick()">{{ data.negative_label }}</button>
-	<button mat-button [mat-dialog-close]="formControl()" cdkFocusInitial>
+	<button
+		mat-button
+		[mat-dialog-close]="formControl()"
+		[disabled]="stepper.selectedIndex !== stepper.steps.length - 1 || configForm.invalid"
+	>
 		{{ data.positive_label }}
 	</button>
 </mat-dialog-actions>

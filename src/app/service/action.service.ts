@@ -1,5 +1,5 @@
 import { EventEmitter, inject, Injectable } from '@angular/core';
-import { CopyInterface } from '../models/copy.interface';
+import { CopyInterface, NewCopyFormData } from '../models/copy.interface';
 import { RequestInterface } from './../models/request.interface';
 import { UserService } from './user.service';
 
@@ -106,9 +106,9 @@ const FILE_NAME_KEY = 'fileName';
 	providedIn: 'root',
 })
 export class ActionService {
-	deleteCopy = new EventEmitter<CopyInterface>();
-	editCopy = new EventEmitter<CopyInterface>();
-	downloadCopy = new EventEmitter<CopyInterface>();
+	deleteCopy = new EventEmitter<NewCopyFormData>();
+	editCopy = new EventEmitter<NewCopyFormData>();
+	downloadCopy = new EventEmitter<NewCopyFormData>();
 	deleteRequest = new EventEmitter<RequestInterface>();
 	editRequest = new EventEmitter<RequestInterface>();
 	viewRequest = new EventEmitter<RequestInterface>();

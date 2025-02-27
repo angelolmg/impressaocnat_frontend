@@ -26,7 +26,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { EditCopyBoxComponent } from '../../components/edit-copy-box/edit-copy-box.component';
 import { actions, ActionService } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
-import { CopyInterface } from './../../models/copy.interface';
+import { NewCopyFormData } from './../../models/copy.interface';
 import { PageType } from './../../service/action.service';
 
 import { HttpErrorResponse } from '@angular/common/http';
@@ -105,7 +105,7 @@ export class ViewRequestComponent implements OnInit {
 	loadingData = signal(false);
 
 	matcher = new MyErrorStateMatcher();
-	copies = new MatTableDataSource<CopyInterface>();
+	copies = new MatTableDataSource<NewCopyFormData>();
 	route = inject(ActivatedRoute);
 	actionService = inject(ActionService);
 	dialogService = inject(DialogService);
@@ -145,7 +145,7 @@ export class ViewRequestComponent implements OnInit {
 
 		this.actionService.downloadCopy
 			.pipe(takeUntil(this.ngUnsubscribe))
-			.subscribe((copy: CopyInterface) => {
+			.subscribe((copy: NewCopyFormData) => {
 				this.downloadFileAndOpenInNewWindow(copy);
 			});
 
@@ -184,7 +184,7 @@ export class ViewRequestComponent implements OnInit {
 				})
 			)
 			.subscribe({
-				next: (copies: CopyInterface[]) => (this.copies.data = copies),
+				next: (copies: NewCopyFormData[]) => (this.copies.data = copies),
 				error: (error) => {
 					this._snackBar.open(
 						`Erro ao buscar solicitações: ${error}`,
@@ -194,7 +194,7 @@ export class ViewRequestComponent implements OnInit {
 			});
 	}
 
-	removeCopy(copy: CopyInterface) {
+	removeCopy(copy: NewCopyFormData) {
 		let isLastCopy = this.copies.data.length == 1;
 		let lastCopyMessage = isLastCopy
 			? 'Esta é a única cópia e a solicitação também será excluída. '
@@ -242,11 +242,10 @@ export class ViewRequestComponent implements OnInit {
 			});
 	}
 
-	editCopyDialog(copy: CopyInterface) {
+	editCopyDialog(copy: NewCopyFormData) {
 		this.dialogService
 			.openDialog(EditCopyBoxComponent, {
 				title: 'Editar cópia',
-				message: 'Defina o número de cópias',
 				data: copy,
 				positive_label: 'Confirmar',
 				negative_label: 'Cancelar',
@@ -254,7 +253,7 @@ export class ViewRequestComponent implements OnInit {
 			.afterClosed()
 			.subscribe((control: FormControl) => {
 				if (control && !control.errors) {
-					copy.copyCount = control.value;
+					copy.printConfig.copyCount = control.value;
 					let patchCopy = this.requestService.patchCopy(
 						copy,
 						this.myRequest!
@@ -272,7 +271,7 @@ export class ViewRequestComponent implements OnInit {
 			});
 	}
 
-	downloadFileAndOpenInNewWindow(copy: CopyInterface): void {
+	downloadFileAndOpenInNewWindow(copy: NewCopyFormData): void {
 		if (copy.fileInDisk && this.requestId) {
 			this.loadingData.set(true);
 			const newWindow = window.open('', '_blank');
@@ -361,7 +360,7 @@ export class ViewRequestComponent implements OnInit {
 		this.updateTable(this.copies.data);
 	}
 
-	updateTable(copies?: CopyInterface[]) {
+	updateTable(copies?: NewCopyFormData[]) {
 		// Atualizar objeto data source de cópias da tabela
 		// Angular Material is weird
 		this.copies.data = copies || [];
@@ -371,7 +370,7 @@ export class ViewRequestComponent implements OnInit {
 		// Refresh total page counter of the request
 		var counter = 0;
 		this.copies.data.forEach((copy) => {
-			counter += copy.pageCount * copy.copyCount;
+			counter += copy.printConfig.sheetsTotal;
 		});
 
 		this.requestPageCounter.set(counter);

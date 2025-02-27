@@ -8,27 +8,8 @@ import { inject, Injectable } from '@angular/core';
 import { EMPTY, map, Observable, of, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { RequestInterface } from '../models/request.interface';
-import { CopyInterface } from './../models/copy.interface';
+import { NewCopyFormData } from './../models/copy.interface';
 import { UserService } from './user.service';
-
-export interface PrintConfig {
-	copyNum: number;
-	pages: 'Todas' | 'Personalizado';
-	pageInterval: string;
-	pagesPerSheet: 1 | 2 | 4;
-	layout: 'Retrato' | 'Paisagem';
-	frontAndBack: boolean;
-}
-
-export interface NewCopyFormData {
-	file: File | null;
-	fileName: string;
-	isPhysical: boolean;
-	pageNum: number;
-	printConfig: PrintConfig;
-	requestTotalSheets: number;
-	notes: string;
-}
 
 export interface FileDownloadResponse {
 	filename: string;
@@ -48,7 +29,7 @@ export class RequestService {
 	editRequest(
 		id: number,
 		files: File[],
-		copies: CopyInterface[],
+		copies: NewCopyFormData[],
 		term: number,
 		totalPageCount: number
 	): Observable<any> {
@@ -106,7 +87,7 @@ export class RequestService {
 
 	saveRequest(
 		files: File[],
-		copies: CopyInterface[],
+		copies: NewCopyFormData[],
 		term: number,
 		totalPageCount: number
 	): Observable<any> {
@@ -216,7 +197,7 @@ export class RequestService {
 	getCopiesByRequestId(
 		requestId?: number,
 		query?: string
-	): Observable<CopyInterface[]> {
+	): Observable<NewCopyFormData[]> {
 		if (!requestId) {
 			console.warn("[request.service] Nenhum 'requestId' definido.");
 			return of([]);
@@ -225,7 +206,7 @@ export class RequestService {
 		let httpParams = new HttpParams();
 		if (query) httpParams = httpParams.set('query', query);
 
-		return this.http.get<CopyInterface[]>(this.copyUrl + '/' + requestId, {
+		return this.http.get<NewCopyFormData[]>(this.copyUrl + '/' + requestId, {
 			params: httpParams,
 		});
 	}
@@ -239,7 +220,7 @@ export class RequestService {
 	}
 
 	patchCopy(
-		copyToPatch: CopyInterface,
+		copyToPatch: NewCopyFormData,
 		request: RequestInterface
 	): Observable<any> {
 		// Verifica se há cópias na requisição
@@ -259,7 +240,7 @@ export class RequestService {
 		// Refresh total page counter of the request
 		var counter = 0;
 		request.copies.forEach((copy) => {
-			counter += copy.pageCount * copy.copyCount;
+			counter += copy.printConfig.sheetsTotal;
 		});
 
 		// Retorna a requisição de edição
@@ -291,7 +272,7 @@ export class RequestService {
 		// Refresh total page counter of the request
 		var counter = 0;
 		request.copies.forEach((copy) => {
-			counter += copy.pageCount * copy.copyCount;
+			counter += copy.printConfig.sheetsTotal;
 		});
 
 		// Retorna a requisição de edição
@@ -319,4 +300,35 @@ export class RequestService {
 			responseType: 'text',
 		});
 	}
+
+	calcPagesByInterval(interval: string): number {
+		if (!interval || interval.trim() === '') return 0;
+		
+		let totalPages = 0;
+		const ranges = interval.split(',');
+
+		for (const range of ranges) {
+			const parts = range.trim().split('-');
+
+			if (parts.length === 2) {
+				// Handle range like "1-5"
+				const start = parseInt(parts[0], 10);
+				const end = parseInt(parts[1], 10);
+
+				if (!isNaN(start) && !isNaN(end) && start <= end) {
+					totalPages += end - start + 1;
+				}
+			} else if (parts.length === 1) {
+				// Handle single page like "8"
+				const page = parseInt(parts[0], 10);
+
+				if (!isNaN(page)) {
+					totalPages += 1;
+				}
+			}
+		}
+
+		return totalPages;
+	};
+	
 }
