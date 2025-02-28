@@ -365,7 +365,7 @@ export class NewCopyBoxComponent {
 		var file: File = isPhysicalFile
 			? new File([], now)
 			: (this.firstStepForm.get('file')?.value as File);
-		var fileType = file.size > 0 ? file.type : undefined;
+		var fileType = file.size > 0 ? file.type : 'Arquivo Físico';
 
 		var newCopyData: NewCopyFormData = {
 			file: file,

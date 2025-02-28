@@ -23,7 +23,7 @@ export interface NewCopyFormData {
 	id?: number;
 	file: File; // Arquivo
 	fileName: string; // Nome do arquivo
-	fileType?: string; // Extensão do arquivo
+	fileType: string; // Extensão do arquivo
 	pageCount: number; // Número de páginas
 	printConfig: PrintConfig; // Configurações de impressão
 	fileInDisk?: boolean; // Se o arquivo esta salvo no backend
