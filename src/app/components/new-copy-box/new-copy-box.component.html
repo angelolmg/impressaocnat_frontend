@@ -3,7 +3,7 @@
 @if (data.message) {
 <mat-dialog-content>{{ data.message }}</mat-dialog-content>
 } @if (data.warning) {
-<mat-dialog-content class="warning"
+<mat-dialog-content style="color: red"
 	><strong>{{ data.warning }}</strong></mat-dialog-content
 >
 }
@@ -113,7 +113,7 @@
 						</mat-expansion-panel-header>
 						<div class="panel-content">
 							<p>
-								Dê um rótulo ao seu arquivo e defina o número de
+								Dê um rótulo ao seu documento e defina o número total de
 								páginas a copiar
 							</p>
 
@@ -121,10 +121,11 @@
 								<mat-form-field>
 									<mat-label
 										>Defina um rótulo para o
-										arquivo</mat-label
+										documento</mat-label
 									>
 									<input
 										matInput
+										maxlength="255"
 										placeholder="Ex. prova3_2025, anotacoes_aula10, etc"
 										formControlName="fileName"
 									/>

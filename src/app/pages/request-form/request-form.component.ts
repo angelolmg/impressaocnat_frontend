@@ -38,6 +38,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize, Observable, Subject, takeUntil } from 'rxjs';
 import { environment } from '../../../environments/environment';
+import { ConfigBoxComponent } from '../../components/config-box/config-box.component';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
 import { NewCopyBoxComponent } from '../../components/new-copy-box/new-copy-box.component';
 import { IconPipe } from '../../pipes/icon.pipe';
@@ -102,6 +103,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 		'fileName',
 		'pageCount',
 		'copyCount',
+		'pageConfig',
 		'actions',
 	];
 	editRequestId: number | undefined;
@@ -289,6 +291,15 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 					if (result) this.clearCopies();
 				});
 		}
+	}
+
+	showConfigs(copy: NewCopyFormData) {
+		this.dialogService
+			.openDialog(ConfigBoxComponent, {
+				title: 'Configurações de Impressão',
+				data: copy,
+				positive_label: 'Ok',
+			});
 	}
 
 	clearCopies() {

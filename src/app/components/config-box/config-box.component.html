@@ -1,0 +1,64 @@
+@if (data.title) {
+<h2 mat-dialog-title>{{ data.title }}</h2>
+} @if (data.message) {
+<mat-dialog-content>{{ data.message }}</mat-dialog-content>
+} @if (data.warning) {
+<mat-dialog-content style="color: red"
+	><strong>{{ data.warning }}</strong></mat-dialog-content
+>
+}
+<mat-dialog-content>
+	<div class="overview-text">
+		<!-- <p data-label="Nome:">
+			{{ copy.fileName }}
+		</p>
+		<p data-label="Número de páginas:">
+			{{ copy.pageCount }}
+		</p>
+		<p data-label="Número de cópias:">
+			{{ copy.printConfig.copyCount }}
+		</p> -->
+
+		<p data-label="Páginas:">
+			{{ copy.printConfig.pages }}
+		</p>
+		@if(copy.printConfig.pages === 'Personalizado') {
+			<p data-label="Intervalos:">
+				{{ copy.printConfig.pageIntervals }}
+			</p>
+		}
+
+		<p data-label="Páginas por folha:">
+			{{ copy.printConfig.pagesPerSheet }}
+		</p>
+
+		<p data-label="Layout:">
+			{{ copy.printConfig.layout }}
+		</p>
+
+		<p data-label="Frente e verso:">
+			{{ copy.printConfig.frontAndBack ? "Sim" : "Não" }}
+		</p>
+
+		<br class="break" />
+		<p data-label="Prévia de folhas:">{{ copy.printConfig.sheetsTotal }}</p>
+	</div>
+
+	<div class="notes-container">
+		<mat-form-field>
+			<mat-label>Observações</mat-label>
+			<textarea
+				matInput
+				style="height: 5.5rem; resize: none"
+				disabled="true"
+				>{{ copy.notes }}</textarea
+			>
+		</mat-form-field>
+	</div>
+</mat-dialog-content>
+
+<mat-dialog-actions>
+	<button mat-button [mat-dialog-close]="true" cdkFocusInitial>
+		{{ data.positive_label }}
+	</button>
+</mat-dialog-actions>

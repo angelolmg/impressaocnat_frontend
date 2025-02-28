@@ -2,12 +2,12 @@
 @if (data.message) {
 <mat-dialog-content>{{ data.message }}</mat-dialog-content>
 } @if (data.warning) {
-<mat-dialog-content class="warning"
+<mat-dialog-content style="color: red"
 	><strong>{{ data.warning }}</strong></mat-dialog-content
 >
 }
 
-<mat-dialog-content class="copyCount-input">
+<mat-dialog-content style="width: 40vw;">
 	<mat-stepper #stepper style="height: auto" [linear]="true">
 		<mat-step label="Configurações de impressão" [stepControl]="configForm">
 			<form [formGroup]="configForm" class="second-step">

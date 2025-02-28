@@ -1,10 +1,13 @@
 <form class="my-steps">
 	<h2 class="page-title">
 		@if(getLastPageState() && pageType == editRequest) {
-		<span (click)="navigateTo(getLastPageState(true))" >{{ getLastPageState() }}</span>
+		<span (click)="navigateTo(getLastPageState(true))">{{
+			getLastPageState()
+		}}</span>
 		<mat-icon>chevron_right</mat-icon>
 		}
-		{{ pageTitle }}</h2>
+		{{ pageTitle }}
+	</h2>
 
 	<p>1. Anexe arquivos à solicitação</p>
 
@@ -26,12 +29,32 @@
 				</td>
 			</ng-container>
 
-			<ng-container matColumnDef="fileName">
-				<th mat-header-cell *matHeaderCellDef style="width: 50%">
+			<ng-container matColumnDef="fileName" class="file-name-container">
+				<th
+					mat-header-cell
+					*matHeaderCellDef
+					style="width: 50%; max-width: 10rem"
+				>
 					Arquivo
 				</th>
-				<td mat-cell *matCellDef="let element" style="width: 50%">
-					{{ element.fileName }}
+				<td
+					mat-cell
+					*matCellDef="let element"
+					style="width: 50%; max-width: 10rem"
+				>
+					<div style="display: flex; gap: 0.5rem">
+						@if(element.isPhysicalFile) {
+						<mat-icon
+							style="cursor: auto; opacity: 50%; display: table"
+							matTooltip="Arquivo físico"
+							>history_edu</mat-icon
+						>
+						}
+						<span
+							style="display: inline-flex; align-items: center"
+							>{{ element.fileName }}</span
+						>
+					</div>
 				</td>
 			</ng-container>
 
@@ -48,6 +71,46 @@
 					{{ element.printConfig.copyCount }}
 				</td>
 			</ng-container>
+
+			<ng-container matColumnDef="pageConfig">
+				<th
+					mat-header-cell
+					*matHeaderCellDef
+					style="text-align: center"
+				>
+					Detalhes
+				</th>
+				<td
+					mat-cell
+					*matCellDef="let element"
+					style="text-align: center"
+				>
+					<mat-icon (click)="showConfigs(element)">print</mat-icon>
+				</td>
+			</ng-container>
+
+			<!-- <ng-container matColumnDef="notes">
+				<th
+					mat-header-cell
+					*matHeaderCellDef
+					style="text-align: center"
+				>
+					Observações
+				</th>
+				<td
+					mat-cell
+					*matCellDef="let element"
+					style="text-align: center"
+				>
+					@if(element.notes) {
+					<mat-icon [matTooltip]="element.notes">comment</mat-icon>
+					} @else {
+					<mat-icon style="opacity: 30%; cursor: auto"
+						>comment</mat-icon
+					>
+					}
+				</td>
+			</ng-container> -->
 
 			<ng-container matColumnDef="actions">
 				<th mat-header-cell *matHeaderCellDef>Ações</th>
@@ -97,7 +160,7 @@
 			<mat-chip>Contagem de Folhas: {{ requestPageCounter() }}</mat-chip>
 			<img
 				style="margin-left: 0.5rem"
-				matTooltip="Nº folhas = Σ(nº páginas * nº de cópias) ∀ arquivos anexados"
+				matTooltip="Prévia de acordo com as configurações de impressão de todos os arquivos anexados"
 				matTooltipPosition="after"
 				class="help-icon"
 				src="assets/help.svg"
