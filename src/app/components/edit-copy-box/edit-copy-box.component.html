@@ -7,7 +7,7 @@
 >
 }
 
-<mat-dialog-content style="width: 40vw;">
+<mat-dialog-content style="width: 40vw">
 	<mat-stepper #stepper style="height: auto" [linear]="true">
 		<mat-step label="Configurações de impressão" [stepControl]="configForm">
 			<form [formGroup]="configForm" class="second-step">
@@ -132,26 +132,38 @@
 				<p data-label="Número de cópias:">
 					{{ configForm.get("copyCount")?.value }}
 				</p>
+
 				@if(!configForm.get("pages")?.pristine) {
 				<p data-label="Páginas:">
 					{{ configForm.get("pages")?.value }}
 				</p>
+				@if(configForm.get("pages")?.value !== 'Todas') {
 				<p data-label="Intervalo:">
 					{{ configForm.get("pageIntervals")?.value }}
 				</p>
-				} @if(!configForm.get("pagesPerSheet")?.pristine ) {
+				} } 
+				
+				@if(!configForm.get("pagesPerSheet")?.pristine ||
+				configForm.get("pagesPerSheet")?.value !== 1) {
 				<p data-label="Páginas por folha:">
 					{{ configForm.get("pagesPerSheet")?.value }}
 				</p>
-				} @if(!configForm.get("layout")?.pristine){
+				} 
+				
+				@if(!configForm.get("layout")?.pristine ||
+				configForm.get("layout")?.value !== 'Retrato'){
 				<p data-label="Layout:">
 					{{ configForm.get("layout")?.value }}
 				</p>
-				} @if(!configForm.get("frontAndBack")?.pristine) {
+				} 
+				
+				@if(!configForm.get("frontAndBack")?.pristine ||
+				configForm.get("frontAndBack")?.value) {
 				<p data-label="Frente e verso:">
 					{{ configForm.get("frontAndBack")?.value ? "Sim" : "Não" }}
 				</p>
 				}
+
 				<br class="break" />
 				<p data-label="Prévia de folhas:">
 					{{ configForm.get("sheetsTotal")?.value }}
@@ -187,7 +199,10 @@
 	<button
 		mat-button
 		[mat-dialog-close]="formGroup()"
-		[disabled]="stepper.selectedIndex !== stepper.steps.length - 1 || configForm.invalid"
+		[disabled]="
+			stepper.selectedIndex !== stepper.steps.length - 1 ||
+			configForm.invalid
+		"
 	>
 		{{ data.positive_label }}
 	</button>

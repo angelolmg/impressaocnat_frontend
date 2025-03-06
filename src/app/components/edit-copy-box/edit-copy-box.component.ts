@@ -134,12 +134,24 @@ export class EditCopyBoxComponent implements OnInit {
 			);
 
 			this.formGroup.set(this.configForm);
-
 			this.configForm.valueChanges.subscribe(() => {
 				this.updateSheetsTotal();
 			});
 		}
 
+		// Inicializar validador de intervalo caso seja edição de páginas que já sejam personalizadas
+		// Sem esperar valueChanges
+		if (this.configForm.get('pages')?.value == 'Personalizado') {
+			this.configForm
+				.get('pageIntervals')
+				?.setValidators([
+					Validators.required,
+					pageRangeValidator(this.copy.pageCount),
+				]);
+		}
+
+		// Alterar necessidade de validador de intervalo caso tipo de página seja alterada
+		// 'Todas' vs 'Personalizado'
 		this.configForm.get('pages')?.valueChanges.subscribe((value) => {
 			const pageIntervalsControl = this.configForm.get('pageIntervals');
 			const totalPages = this.copy.pageCount;

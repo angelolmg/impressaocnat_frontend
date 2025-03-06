@@ -139,12 +139,6 @@ export class ViewRequestComponent implements OnInit {
 				this.removeCopy(copy);
 			});
 
-		this.actionService.editCopy
-			.pipe(takeUntil(this.ngUnsubscribe))
-			.subscribe((copy) => {
-				this.editCopyDialog(copy);
-			});
-
 		this.actionService.downloadCopy
 			.pipe(takeUntil(this.ngUnsubscribe))
 			.subscribe((copy: NewCopyFormData) => {
@@ -244,40 +238,6 @@ export class ViewRequestComponent implements OnInit {
 							}
 						);
 					}
-				}
-			});
-	}
-
-	editCopyDialog(copy: NewCopyFormData) {
-		this.dialogService
-			.openDialog(EditCopyBoxComponent, {
-				title: 'Editar cópia',
-				data: copy,
-				positive_label: 'Confirmar',
-				negative_label: 'Cancelar',
-			})
-			.afterClosed()
-			.subscribe((group: FormGroup) => {
-				if (group && !group.errors) {
-					copy.printConfig = group.value;
-					copy.notes = group.value.notes
-					let patchCopy = this.requestService.patchCopy(
-						copy,
-						this.myRequest!
-					);
-					let getUpdatedRequest = this.requestService.getRequestById(
-						this.myRequest!.id
-					);
-					concat(patchCopy, getUpdatedRequest).subscribe(
-						(request: RequestInterface) => {
-							this.myRequest = request;
-							this.updateTable(request.copies);
-							this._snackBar.open(
-								'Cópia editada com sucesso.',
-								'Ok'
-							);
-						}
-					);
 				}
 			});
 	}

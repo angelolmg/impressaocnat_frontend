@@ -6,7 +6,7 @@
 <mat-dialog-content style="color: red"><strong>{{ data.warning }}</strong></mat-dialog-content>
 }
 <mat-dialog-actions>
-	<button mat-button (click)="onNoClick()">{{ data.negative_label }}</button>
+	<button mat-button [mat-dialog-close]="false">{{ data.negative_label }}</button>
 	<button mat-button [mat-dialog-close]="true" cdkFocusInitial>
 		{{ data.positive_label }}
 	</button>

@@ -26,7 +26,7 @@
 							fileInput.value = '';
 							newCopyForm.reset();
 							firstStepForm.get('isPhysicalFile')?.setValue(true);
-							advanced_options.close();
+							advanced_options.close()
 						"
 					>
 						<mat-expansion-panel-header>
@@ -34,7 +34,8 @@
 								<mat-checkbox
 									disabled="true"
 									[checked]="
-										!firstStepForm.get('isPhysicalFile')?.value
+										!firstStepForm.get('isPhysicalFile')
+											?.value
 									"
 								></mat-checkbox>
 								É arquivo digital
@@ -51,7 +52,8 @@
 									mat-stroked-button
 									(click)="fileInput.click()"
 									[disabled]="
-										firstStepForm.get('isPhysicalFile')?.value
+										firstStepForm.get('isPhysicalFile')
+											?.value
 									"
 								>
 									Escolher arquivo...
@@ -86,8 +88,10 @@
 						(closed)="
 							fileInput.value = '';
 							newCopyForm.reset();
-							firstStepForm.get('isPhysicalFile')?.setValue(false);
-							advanced_options.close();
+							firstStepForm
+								.get('isPhysicalFile')
+								?.setValue(false);
+							advanced_options.close()
 						"
 					>
 						<mat-expansion-panel-header>
@@ -95,7 +99,8 @@
 								<mat-checkbox
 									disabled="true"
 									[checked]="
-										firstStepForm.get('isPhysicalFile')?.value
+										firstStepForm.get('isPhysicalFile')
+											?.value
 									"
 								></mat-checkbox
 								>É arquivo físico
@@ -113,8 +118,8 @@
 						</mat-expansion-panel-header>
 						<div class="panel-content">
 							<p>
-								Dê um rótulo ao seu documento e defina o número total de
-								páginas a copiar
+								Dê um rótulo ao seu documento e defina o número
+								total de páginas a copiar
 							</p>
 
 							<div class="physical_archive_infos">
@@ -213,8 +218,8 @@
 					@if (secondStepForm.get('copyCount')?.hasError('min') &&
 					!secondStepForm.get('copyCount')?.hasError('required')) {
 					<mat-error>Insira um valor positivo</mat-error>
-					} @if (secondStepForm.get('copyCount')?.hasError('required'))
-					{
+					} @if
+					(secondStepForm.get('copyCount')?.hasError('required')) {
 					<mat-error>Campo obrigatório</mat-error>
 					}
 				</mat-form-field>
@@ -324,22 +329,33 @@
 				<p data-label="Número de cópias:">
 					{{ secondStepForm.get("copyCount")?.value }}
 				</p>
+
 				@if(!secondStepForm.get("pages")?.pristine) {
 				<p data-label="Páginas:">
 					{{ secondStepForm.get("pages")?.value }}
 				</p>
+				@if(secondStepForm.get("pages")?.value !== 'Todas') {
 				<p data-label="Intervalo:">
 					{{ secondStepForm.get("pageIntervals")?.value }}
 				</p>
-				} @if(!secondStepForm.get("pagesPerSheet")?.pristine ) {
+				} } 
+				
+				@if(!secondStepForm.get("pagesPerSheet")?.pristine ||
+				secondStepForm.get("pagesPerSheet")?.value !== 1 ) {
 				<p data-label="Páginas por folha:">
 					{{ secondStepForm.get("pagesPerSheet")?.value }}
 				</p>
-				} @if(!secondStepForm.get("layout")?.pristine){
+				} 
+				
+				@if(!secondStepForm.get("layout")?.pristine ||
+				secondStepForm.get("layout")?.value !== 'Retrato'){
 				<p data-label="Layout:">
 					{{ secondStepForm.get("layout")?.value }}
 				</p>
-				} @if(!secondStepForm.get("frontAndBack")?.pristine) {
+				} 
+				
+				@if(!secondStepForm.get("frontAndBack")?.pristine ||
+				secondStepForm.get("frontAndBack")?.value) {
 				<p data-label="Frente e verso:">
 					{{
 						secondStepForm.get("frontAndBack")?.value
@@ -348,6 +364,8 @@
 					}}
 				</p>
 				}
+
+
 				<br class="break" />
 				<p data-label="Prévia de folhas:">{{ sheetsTotal }}</p>
 			</div>
@@ -391,7 +409,10 @@
 	<button
 		mat-button
 		[mat-dialog-close]="requestInfo()"
-		[disabled]="stepper.selectedIndex !== stepper.steps.length - 1 || newCopyForm.invalid"
+		[disabled]="
+			stepper.selectedIndex !== stepper.steps.length - 1 ||
+			newCopyForm.invalid
+		"
 	>
 		{{ data.positive_label || "Confirmar" }}
 	</button>

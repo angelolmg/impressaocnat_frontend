@@ -190,6 +190,17 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 			});
 	}
 
+	// Retorna index da cópia com mesmo nome e intervalo na lista de cópias anexadas, caso exista
+	// Caso contrátrio retorna -1
+	private findExistingCopyIndex(name: string, pageIntervals?: string) {
+		return this.copies.data.findIndex((existingCopy) => {
+			return (
+				existingCopy.fileName === name && // Nomes iguais
+				(existingCopy.printConfig.pageIntervals == pageIntervals || // Intervalos iguais
+					(!existingCopy.printConfig.pageIntervals && !pageIntervals)) // OU ambos não possuem intervalo
+			);
+		});
+	}
 	editCopyDialog(copy: NewCopyFormData) {
 		this.dialogService
 			.openDialog(EditCopyBoxComponent, {
@@ -200,29 +211,99 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 			})
 			.afterClosed()
 			.subscribe((result: FormGroup) => {
-				const editedParts: Partial<NewCopyFormData> = result.value;
+				if (result) {
+					const editedParts = result.value;
 
-				const copyIndex = this.copies.data.indexOf(copy);
+					// Caso exista, formatar intervalo de páginas (string) para sempre ter UM espaço depois da vírgula ", " (padrão)
+					let interval = editedParts.pageIntervals;
+					editedParts.pageIntervals = interval.replace(/,\s*/g, ', ');
 
-				if (copyIndex >= 0) {
-					// Atualize as observações, remova do objeto temporario
-					this.copies.data[copyIndex].notes = editedParts.notes;
-					delete editedParts.notes;
+					// Função de atualização de cópia
+					const updateCopy = (indexToRemove?: number) => {
+						const copyIndex = this.copies.data.indexOf(copy);
 
-					// Atualize configurações de impressão
-					this.copies.data[copyIndex].printConfig = {
-						...this.copies.data[copyIndex].printConfig,
-						...editedParts,
+						if (copyIndex >= 0) {
+							// Atualize as observações, remova do objeto temporario
+							this.copies.data[copyIndex].notes =
+								editedParts.notes;
+							delete editedParts.notes;
+
+							// Atualize configurações de impressão
+							this.copies.data[copyIndex].printConfig = {
+								...this.copies.data[copyIndex].printConfig,
+								...editedParts,
+							};
+
+							if (
+								this.copies.data[copyIndex].printConfig
+									.pages === 'Todas'
+							)
+								this.copies.data[
+									copyIndex
+								].printConfig.pageIntervals = undefined;
+						}
+
+						if (indexToRemove != undefined) {
+							this.copies.data.splice(indexToRemove, 1);
+							this.files.splice(indexToRemove, 1);
+						}
+
+						this.refreshTable();
 					};
-				}
 
-				this.refreshTable();
+					// Encontrar cópia repetida, caso exista
+					const existingCopyIndex = this.findExistingCopyIndex(
+						copy.fileName,
+						editedParts.pageIntervals
+					);
+
+					// Função manipuladora de cópias durante edição
+					// Pode: atualizar OU atualizar remover cópia repetida
+					const processCopy = () => {
+						if (existingCopyIndex !== -1) {
+							let copy = this.copies.data[existingCopyIndex];
+							this.dialogService
+								.openDialog(DialogBoxComponent, {
+									title: 'Sobreescrever cópia',
+									message: `Já existe uma cópia com o nome '${
+										copy.fileName
+									}'${
+										copy.printConfig.pageIntervals
+											? " e mesmo intervalo '" +
+											  copy.printConfig.pageIntervals +
+											  "'"
+											: ''
+									} nesta solicitação. Deseja sobreescrever?`,
+									warning: 'Esta ação é permanente',
+									positive_label: 'Sim',
+									negative_label: 'Não',
+								})
+								.afterClosed()
+								.subscribe((shouldRewrite: boolean) => {
+									// Atualizar removendo cópia repetida
+									// Somente após confirmação do usuário
+									if (shouldRewrite)
+										updateCopy(existingCopyIndex);
+								});
+						} else {
+							updateCopy();
+						}
+					};
+					processCopy();
+				}
 			});
 	}
 
-	addCopyDialog() {
+	addCopyDialog(data?: NewCopyFormData) {
 		this.dialogService
-			.openDialog(NewCopyBoxComponent, { positive_label: 'Finalizar' })
+			.openDialog(
+				NewCopyBoxComponent,
+				{
+					data: data,
+					positive_label: 'Finalizar',
+				},
+				true
+			)
 			.afterClosed()
 			.subscribe((result: NewCopyFormData | null) => {
 				if (!result) return;
@@ -234,8 +315,18 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 					return;
 				}
 
-				const existingCopyIndex = this.copies.data.findIndex(
-					(copy) => copy.fileName === result.file.name
+				// Caso exista, formatar intervalo de páginas (string) para sempre ter UM espaço depois da vírgula ", " (padrão)
+				let interval = result.printConfig.pageIntervals;
+				if (interval)
+					result.printConfig.pageIntervals = interval.replace(
+						/,\s*/g,
+						', '
+					);
+
+				// Encontrar cópia repetida, caso exista
+				const existingCopyIndex = this.findExistingCopyIndex(
+					result.file.name,
+					result.printConfig.pageIntervals
 				);
 
 				const addOrUpdateCopy = (index?: number) => {
@@ -246,33 +337,39 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 						this.copies.data.push(result);
 						this.files.push(result.file);
 					}
-
 					this.refreshTable();
 				};
 
-				// const processCopy = () => {
-				// 	if (existingCopyIndex !== -1) {
-				// 		this.dialogService
-				// 			.openDialog(DialogBoxComponent, {
-				// 				title: 'Sobreescrever cópia',
-				// 				message: `Já existe uma cópia com o nome '${this.copies.data[existingCopyIndex].fileName}' nesta solicitação. Deseja sobreescrever?`,
-				// 				warning: 'Esta ação é permanente',
-				// 				positive_label: 'Sim',
-				// 				negative_label: 'Não',
-				// 			})
-				// 			.afterClosed()
-				// 			.subscribe((shouldRewrite: boolean) => {
-				// 				if (shouldRewrite)
-				// 					addOrUpdateCopy(existingCopyIndex);
-				// 			});
-				// 	} else {
-				// 		addOrUpdateCopy();
-				// 	}
-				// };
-
-				// processCopy();
-
-				addOrUpdateCopy();
+				const processCopy = () => {
+					if (existingCopyIndex !== -1) {
+						let copy = this.copies.data[existingCopyIndex];
+						this.dialogService
+							.openDialog(DialogBoxComponent, {
+								title: 'Sobreescrever cópia',
+								message: `Já existe uma cópia com o nome '${
+									copy.fileName
+								}'${
+									copy.printConfig.pageIntervals
+										? " e mesmo intervalo '" +
+										  copy.printConfig.pageIntervals +
+										  "'"
+										: ''
+								} nesta solicitação. Deseja sobreescrever?`,
+								warning: 'Esta ação é permanente',
+								positive_label: 'Sim',
+								negative_label: 'Não',
+							})
+							.afterClosed()
+							.subscribe((shouldRewrite: boolean) => {
+								if (shouldRewrite)
+									addOrUpdateCopy(existingCopyIndex);
+								else this.addCopyDialog(result);
+							});
+					} else {
+						addOrUpdateCopy();
+					}
+				};
+				processCopy();
 			});
 	}
 
@@ -294,12 +391,11 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 	}
 
 	showConfigs(copy: NewCopyFormData) {
-		this.dialogService
-			.openDialog(ConfigBoxComponent, {
-				title: 'Configurações de Impressão',
-				data: copy,
-				positive_label: 'Ok',
-			});
+		this.dialogService.openDialog(ConfigBoxComponent, {
+			title: 'Configurações de Impressão',
+			data: copy,
+			positive_label: 'Ok',
+		});
 	}
 
 	clearCopies() {

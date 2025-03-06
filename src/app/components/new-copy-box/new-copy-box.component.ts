@@ -125,54 +125,25 @@ export class NewCopyBoxComponent {
 
 	matcher = new MyErrorStateMatcher();
 
-	newCopyForm = new FormGroup({
-		firstStepForm: new FormGroup({
-			file: new FormControl<File | null>(null),
-			fileName: new FormControl<string>('', [
-				Validators.required,
-				Validators.minLength(3),
-				Validators.maxLength(255),
-				Validators.pattern(/^(?!\s*$)[^\\/:*?"<>|]*$/),
-			]),
-			isPhysicalFile: new FormControl<boolean>(false),
-			pageCount: new FormControl<number>(0, [
-				Validators.required,
-				Validators.min(1),
-			]),
-		}),
+	baseCopyForm: any = {
+		file: null,
+		fileName: '',
+		isPhysicalFile: false,
+		pageCount: 0,
+		fileType: null,
+		notes: '',
 
-		secondStepForm: new FormGroup({
-			copyCount: new FormControl<number | null>(null, [
-				Validators.required,
-				Validators.min(1),
-			]),
-			pages: new FormControl<'Todas' | 'Personalizado'>('Todas', {
-				nonNullable: true,
-				validators: [Validators.required],
-			}),
-			pageIntervals: new FormControl<string | null>({
-				value: '',
-				disabled: true,
-			}),
-			pagesPerSheet: new FormControl<number>(1, {
-				nonNullable: true,
-				validators: [Validators.required, Validators.min(1)],
-			}),
-			layout: new FormControl<'Retrato' | 'Paisagem'>('Retrato', {
-				nonNullable: true,
-				validators: [Validators.required],
-			}),
-			frontAndBack: new FormControl<boolean>(false, {
-				nonNullable: true,
-				validators: [Validators.required],
-			}),
-		}),
-		sheetsTotal: new FormControl<number>(0, {
-			nonNullable: true,
-			validators: [Validators.required, Validators.min(1)],
-		}),
-		notes: new FormControl<string>(''),
-	});
+		printConfig: {
+			copyCount: null,
+			pages: 'Todas',
+			pageIntervals: '',
+			pagesPerSheet: 1,
+			layout: 'Retrato',
+			frontAndBack: false,
+		},
+	};
+
+	newCopyForm!: FormGroup;
 
 	get firstStepForm(): FormGroup {
 		return this.newCopyForm.get('firstStepForm') as FormGroup;
@@ -207,6 +178,77 @@ export class NewCopyBoxComponent {
 	}
 
 	ngOnInit(): void {
+		let copyData = this.data.data;
+		if (copyData) this.baseCopyForm = copyData;
+
+		this.newCopyForm = new FormGroup({
+			firstStepForm: new FormGroup({
+				file: new FormControl<File | null>(this.baseCopyForm.file),
+				fileName: new FormControl<string>(this.baseCopyForm.fileName, [
+					Validators.required,
+					Validators.minLength(3),
+					Validators.maxLength(255),
+					Validators.pattern(/^(?!\s*$)[^\\/:*?"<>|]*$/),
+				]),
+				isPhysicalFile: new FormControl<boolean>(
+					this.baseCopyForm.isPhysicalFile
+				),
+				pageCount: new FormControl<number>(
+					this.baseCopyForm.pageCount,
+					[Validators.required, Validators.min(1)]
+				),
+			}),
+
+			secondStepForm: new FormGroup({
+				copyCount: new FormControl<number | null>(
+					this.baseCopyForm.printConfig.copyCount,
+					[Validators.required, Validators.min(1)]
+				),
+				pages: new FormControl<'Todas' | 'Personalizado'>(
+					this.baseCopyForm.printConfig.pages,
+					{
+						nonNullable: true,
+						validators: [Validators.required],
+					}
+				),
+				pageIntervals: new FormControl<string | null>({
+					value: this.baseCopyForm.printConfig.pageIntervals,
+					disabled: this.baseCopyForm.printConfig.pageIntervals
+						? false
+						: true,
+				}),
+				pagesPerSheet: new FormControl<number>(
+					this.baseCopyForm.printConfig.pagesPerSheet,
+					{
+						nonNullable: true,
+						validators: [Validators.required, Validators.min(1)],
+					}
+				),
+				layout: new FormControl<'Retrato' | 'Paisagem'>(
+					this.baseCopyForm.printConfig.layout,
+					{
+						nonNullable: true,
+						validators: [Validators.required],
+					}
+				),
+				frontAndBack: new FormControl<boolean>(
+					this.baseCopyForm.printConfig.frontAndBack,
+					{
+						nonNullable: true,
+						validators: [Validators.required],
+					}
+				),
+			}),
+			sheetsTotal: new FormControl<number>(
+				this.baseCopyForm.printConfig.sheetsTotal,
+				{
+					nonNullable: true,
+					validators: [Validators.required, Validators.min(1)],
+				}
+			),
+			notes: new FormControl<string>(this.baseCopyForm.notes),
+		});
+
 		this.secondStepForm.get('pages')?.valueChanges.subscribe((value) => {
 			const pageIntervalsControl =
 				this.secondStepForm.get('pageIntervals');
@@ -361,9 +403,8 @@ export class NewCopyBoxComponent {
 		// Caso contrário, manter o nome usual
 		var isPhysicalFile: boolean =
 			this.firstStepForm.get('isPhysicalFile')?.value;
-		var now = new Date().getTime().toString();
 		var file: File = isPhysicalFile
-			? new File([], now)
+			? new File([], this.firstStepForm.get('fileName')?.value)
 			: (this.firstStepForm.get('file')?.value as File);
 		var fileType = file.size > 0 ? file.type : 'Arquivo Físico';
 
