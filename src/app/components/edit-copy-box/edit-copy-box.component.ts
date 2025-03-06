@@ -60,7 +60,7 @@ export class EditCopyBoxComponent implements OnInit {
 
 	copy!: NewCopyFormData;
 	configForm: FormGroup = new FormGroup({});
-	formControl: ModelSignal<FormGroup> = model(this.configForm);
+	formGroup: ModelSignal<FormGroup> = model(this.configForm);
 
 	ngOnInit(): void {
 		this.copy = this.data.data as NewCopyFormData;
@@ -133,7 +133,7 @@ export class EditCopyBoxComponent implements OnInit {
 				new FormControl<string>(this.copy.notes || '')
 			);
 
-			this.formControl.set(this.configForm);
+			this.formGroup.set(this.configForm);
 
 			this.configForm.valueChanges.subscribe(() => {
 				this.updateSheetsTotal();
@@ -183,6 +183,7 @@ export class EditCopyBoxComponent implements OnInit {
 			(totalPages * copyCount) / ((frontAndBack ? 2 : 1) * pagesPerSheet)
 		);
 
+		// 'emitEvent: false' para evitar loop infinito com ativação do valueChanges
 		this.configForm.patchValue(
 			{ sheetsTotal: subtotal },
 			{ onlySelf: true, emitEvent: false }
@@ -191,7 +192,7 @@ export class EditCopyBoxComponent implements OnInit {
 
 	editedCopy() {
 		if (this.configForm.invalid) return null;
-		return this.formControl;
+		return this.formGroup;
 	}
 
 	get notesControl(): FormControl<string> {

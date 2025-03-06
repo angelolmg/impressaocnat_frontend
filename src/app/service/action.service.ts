@@ -216,14 +216,15 @@ export class ActionService {
 	callbackHandler(
 		action: ActionType,
 		element: RequestInterface | CopyInterface,
-		component?: string,
+		component: string,
 		state?: PageType
 	): void {
 		// Mudar última página visitada caso alguma ação de redirecinamento seja acionada
-		// No caso, ações de visualização e edição redirecionam o usuário
+		// No caso, ações de visualização e edição (nas telas de listagens) redirecionam o usuário e possibilitam retorno
 		if (
 			state &&
 			action &&
+			['list-requests'].includes(component) &&
 			[ActionType.VISUALIZAR, ActionType.EDITAR].includes(action)
 		)
 			localStorage.setItem('lastPageState', pageTypeRoutes[state]);

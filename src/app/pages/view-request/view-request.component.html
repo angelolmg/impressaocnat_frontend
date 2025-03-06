@@ -2,7 +2,9 @@
 	<div class="top-shelf">
 		<h2 class="page-title">
 			@if(getLastPageState()) {
-			<span (click)="navigateTo(getLastPageState(true))">{{ getLastPageState() }}</span>
+			<span (click)="navigateTo(getLastPageState(true))">{{
+				getLastPageState()
+			}}</span>
 			<mat-icon>chevron_right</mat-icon>
 			}
 			<span
@@ -39,59 +41,69 @@
 			"
 		>
 			<ng-container matColumnDef="id">
-				<th
-					mat-header-cell
-					*matHeaderCellDef
-					mat-sort-header
-					sortActionDescription="Ordenar por ID"
-				>
-					ID
-				</th>
+				<th mat-header-cell *matHeaderCellDef>ID</th>
 				<td mat-cell *matCellDef="let element">
 					{{ element.id.toString().padStart(6, "0") }}
 				</td>
 			</ng-container>
 
-			<ng-container matColumnDef="fileName">
+			<ng-container matColumnDef="fileName" class="file-name-container">
 				<th
 					mat-header-cell
 					*matHeaderCellDef
-					style="width: 50%"
-					mat-sort-header
-					sortActionDescription="Ordenar por nome do arquivo"
+					style="width: 50%; max-width: 10rem"
 				>
 					Arquivo
 				</th>
-				<td mat-cell *matCellDef="let element" style="width: 50%">
-					{{ element.fileName }}
+				<td
+					mat-cell
+					*matCellDef="let element"
+					style="width: 50%; max-width: 10rem"
+				>
+					<div style="display: flex; gap: 0.5rem">
+						@if(element.isPhysicalFile) {
+						<mat-icon
+							style="cursor: auto; opacity: 50%; display: table"
+							matTooltip="Arquivo físico"
+							>history_edu</mat-icon
+						>
+						}
+						<span
+							style="display: inline-flex; align-items: center"
+							>{{ element.fileName }}</span
+						>
+					</div>
 				</td>
 			</ng-container>
 
 			<ng-container matColumnDef="pageCount">
-				<th
-					mat-header-cell
-					*matHeaderCellDef
-					mat-sort-header
-					sortActionDescription="Ordenar por número de páginas"
-				>
-					Páginas
-				</th>
+				<th mat-header-cell *matHeaderCellDef>Páginas</th>
 				<td mat-cell *matCellDef="let element">
 					{{ element.pageCount }}
 				</td>
 			</ng-container>
 
 			<ng-container matColumnDef="copyCount">
+				<th mat-header-cell *matHeaderCellDef>Nº Cópias</th>
+				<td mat-cell *matCellDef="let element">
+					{{ element.printConfig.copyCount }}
+				</td>
+			</ng-container>
+
+			<ng-container matColumnDef="pageConfig">
 				<th
 					mat-header-cell
 					*matHeaderCellDef
-					mat-sort-header
-					sortActionDescription="Ordenar por número de cópias"
+					style="text-align: center"
 				>
-					Nº Cópias
+					Detalhes
 				</th>
-				<td mat-cell *matCellDef="let element">
-					{{ element.copyCount }}
+				<td
+					mat-cell
+					*matCellDef="let element"
+					style="text-align: center"
+				>
+					<mat-icon (click)="showConfigs(element)">print</mat-icon>
 				</td>
 			</ng-container>
 

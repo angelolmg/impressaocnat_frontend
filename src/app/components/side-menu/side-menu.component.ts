@@ -46,9 +46,7 @@ export class SideMenuComponent implements AfterViewInit {
 	ngAfterViewInit(): void {
 		this.router.events.subscribe((event) => {
 			if (event instanceof NavigationEnd) {
-				this.currentRoute = event.url.slice(1);
-				console.log(event);
-				
+				this.currentRoute = event.url.slice(1);		
 			}
 		});
 

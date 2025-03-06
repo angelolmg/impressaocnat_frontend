@@ -46,6 +46,7 @@ import {
 	takeUntil,
 	throwError
 } from 'rxjs';
+import { ConfigBoxComponent } from '../../components/config-box/config-box.component';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
 import { RequestInterface } from '../../models/request.interface';
 import { IconPipe } from '../../pipes/icon.pipe';
@@ -121,6 +122,7 @@ export class ViewRequestComponent implements OnInit {
 		'fileName',
 		'pageCount',
 		'copyCount',
+		'pageConfig',
 		'actions',
 	];
 
@@ -235,6 +237,10 @@ export class ViewRequestComponent implements OnInit {
 							(request: RequestInterface) => {
 								this.myRequest = request;
 								this.updateTable(request.copies);
+								this._snackBar.open(
+									'Cópia excluída com sucesso.',
+									'Ok'
+								);
 							}
 						);
 					}
@@ -251,9 +257,10 @@ export class ViewRequestComponent implements OnInit {
 				negative_label: 'Cancelar',
 			})
 			.afterClosed()
-			.subscribe((control: FormControl) => {
-				if (control && !control.errors) {
-					copy.printConfig.copyCount = control.value;
+			.subscribe((group: FormGroup) => {
+				if (group && !group.errors) {
+					copy.printConfig = group.value;
+					copy.notes = group.value.notes
 					let patchCopy = this.requestService.patchCopy(
 						copy,
 						this.myRequest!
@@ -265,6 +272,10 @@ export class ViewRequestComponent implements OnInit {
 						(request: RequestInterface) => {
 							this.myRequest = request;
 							this.updateTable(request.copies);
+							this._snackBar.open(
+								'Cópia editada com sucesso.',
+								'Ok'
+							);
 						}
 					);
 				}
@@ -375,6 +386,15 @@ export class ViewRequestComponent implements OnInit {
 
 		this.requestPageCounter.set(counter);
 	}
+
+	showConfigs(copy: NewCopyFormData) {
+			this.dialogService
+				.openDialog(ConfigBoxComponent, {
+					title: 'Configurações de Impressão',
+					data: copy,
+					positive_label: 'Ok',
+				});
+		}
 
 	clearFilters() {
 		this.queryForm.reset();

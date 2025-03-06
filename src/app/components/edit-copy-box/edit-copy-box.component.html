@@ -186,7 +186,7 @@
 	<button mat-button (click)="onNoClick()">{{ data.negative_label }}</button>
 	<button
 		mat-button
-		[mat-dialog-close]="formControl()"
+		[mat-dialog-close]="formGroup()"
 		[disabled]="stepper.selectedIndex !== stepper.steps.length - 1 || configForm.invalid"
 	>
 		{{ data.positive_label }}
