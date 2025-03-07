@@ -78,7 +78,7 @@ import { RequestService } from '../../service/request.service';
 		MatBadgeModule,
 		MatProgressSpinnerModule,
 		ReactiveFormsModule,
-		MatSelectModule
+		MatSelectModule,
 	],
 	templateUrl: './list-requests.component.html',
 	styleUrl: './list-requests.component.scss',
@@ -332,6 +332,12 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 						}),
 						tap((requests) => {
 							this.requests.data = requests;
+						}),
+						catchError((error) => {
+							console.log(error);
+
+							this._snackBar.open(error.error.message, 'Ok');
+							return EMPTY;
 						})
 					);
 				})
@@ -361,10 +367,7 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 						}),
 						// Em caso de erro, trata e retorna um observable vazio
 						catchError((error) => {
-							this._snackBar.open(
-								`Erro ao excluir solicitação: ${error.message}`,
-								'Ok'
-							);
+							this._snackBar.open(error.error.message, 'Ok');
 							return EMPTY;
 						})
 					)

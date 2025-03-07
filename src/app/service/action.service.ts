@@ -1,5 +1,5 @@
 import { EventEmitter, inject, Injectable } from '@angular/core';
-import { CopyInterface, NewCopyFormData } from '../models/copy.interface';
+import { NewCopyFormData } from '../models/copy.interface';
 import { RequestInterface } from './../models/request.interface';
 import { UserService } from './user.service';
 
@@ -127,8 +127,8 @@ export class ActionService {
 		return CREATION_DATE_KEY in object;
 	}
 
-	// Verifica se objeto é instância de CopyInterface (é um objeto de cópia)
-	instanceOfCopy(object: any): object is CopyInterface {
+	// Verifica se objeto é instância de NewCopyFormData (é um objeto de cópia)
+	instanceOfCopy(object: any): object is NewCopyFormData {
 		return FILE_NAME_KEY in object;
 	}
 
@@ -160,14 +160,32 @@ export class ActionService {
 		component?: string,
 		state?: PageType,
 		action?: ActionType,
-		element?: RequestInterface | CopyInterface
+		element?: RequestInterface | NewCopyFormData,
+		parentElement?: RequestInterface
 	) {
-		// Desabilitar botões de 'Concluir' e 'Editar' caso solicitação tenha data de conclusão (solicitação concluída)
+		// Desabilitar todos os botões de ação para cópias caso a requisição seja obsoleta/arquivada
+		if (
+			component &&
+			this.instanceOfCopy(element) &&
+			parentElement?.stale
+		)
+			return true;
+
+		// Desabilitar todas as ações (exceto visualização) caso solicitação seja obsoleta/arquivada
+		if (
+			component &&
+			this.instanceOfRequest(element) &&
+			element.stale &&
+			action != ActionType.VISUALIZAR
+		)
+			return true;
+
+		// Desabilitar botões de 'Concluir' e 'Editar' caso solicitação tenha data de conclusão (solicitação concluída) mas não obsoleta/arquivada
 		if (
 			component &&
 			['view-request', 'list-requests'].includes(component) &&
 			this.instanceOfRequest(element) &&
-			element.conclusionDate &&
+			(element.conclusionDate && !element.stale) &&
 			(action == ActionType.EXCLUIR || action == ActionType.EDITAR)
 		)
 			return true;
@@ -177,7 +195,7 @@ export class ActionService {
 			component &&
 			['view-request'].includes(component) &&
 			this.instanceOfCopy(element) &&
-			(!element.fileInDisk || element.isPhysicalFile) &&
+			(!element.fileInDisk || element.isPhysicalFile || parentElement?.stale) &&
 			action == ActionType.BAIXAR
 		)
 			return true;
@@ -187,7 +205,7 @@ export class ActionService {
 
 	private emitAction(
 		action: ActionType,
-		element: RequestInterface | CopyInterface
+		element: RequestInterface | NewCopyFormData
 	): void {
 		const actionMap = new Map<ActionType, EventEmitter<any>>([
 			[
@@ -214,7 +232,7 @@ export class ActionService {
 
 	callbackHandler(
 		action: ActionType,
-		element: RequestInterface | CopyInterface,
+		element: RequestInterface | NewCopyFormData,
 		component: string,
 		state?: PageType
 	): void {

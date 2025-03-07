@@ -7,6 +7,7 @@ export interface RequestInterface {
 	username: string; // Nome do usuário
 	registration: string; // Matrícula
 	conclusionDate?: number; // Data de conclusão
+    stale?: boolean;
     totalPageCount?: number; // Total de páginas na solicitação
     copies?: NewCopyFormData[]; // Arquivos anexados a solicitação
 }

@@ -9,7 +9,7 @@
 			}
 			<span
 				>Solicitação Nº {{ requestId!.toString().padStart(6, "0") }}
-				{{ myRequest?.conclusionDate ? "(FECHADA)" : "" }}</span
+				{{ myRequest?.stale ? "(ARQUIVADA)" : myRequest?.conclusionDate ? "(FECHADA)" : "" }}</span
 			>
 		</h2>
 		<form [formGroup]="queryForm">
@@ -117,7 +117,8 @@
 								'view-request',
 								undefined,
 								action,
-								element
+								element,
+								myRequest
 							)
 						"
 						mat-icon-button
