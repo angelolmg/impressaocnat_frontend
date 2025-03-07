@@ -25,6 +25,18 @@ mat-drawer-container {
 	display: flex;
 	flex-direction: column;
 	height: 100%;
+	justify-content: space-between;
+
+	text-align: start;
+	p {
+		padding-right: 1rem;
+		font-size: small;
+		opacity: 50%;
+		a {
+			color: inherit;
+			text-decoration: none;
+		}
+	}
 }
 
 h2 {

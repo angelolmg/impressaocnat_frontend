@@ -82,6 +82,10 @@ export class SideMenuComponent implements AfterViewInit {
 		return parentRoute && route == parentRoute;
 	}
 
+	getCurrentYear() {
+		return new Date().getFullYear();
+	}
+
 	// Unsubscribe para prevenir memory leak
 	ngOnDestroy() {
 		this.ngUnsubscribe.next();

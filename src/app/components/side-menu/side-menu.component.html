@@ -2,21 +2,30 @@
 	<mat-drawer-container autosize>
 		<mat-drawer #drawer mode="side" opened="true">
 			<div class="side-menu">
-				<h2>Solicitações</h2>
+				<div>
+					<h2>Solicitações</h2>
 
-				<ul class="options-list">
-					@for (option of options(); track $index) {
-					<button
-						mat-fab
-						extended
-						[routerLink]="option.routerLink"
-						[class.selected]="optionSelected(option.routerLink)"
-					>
-						<mat-icon>{{ option.icon }}</mat-icon>
-						{{ option.text }}
-					</button>
-					}
-				</ul>
+					<ul class="options-list">
+						@for (option of options(); track $index) {
+						<button
+							mat-fab
+							extended
+							[routerLink]="option.routerLink"
+							[class.selected]="optionSelected(option.routerLink)"
+						>
+							<mat-icon>{{ option.icon }}</mat-icon>
+							{{ option.text }}
+						</button>
+						}
+					</ul>
+				</div>
+				<p>
+					© {{ getCurrentYear() }} Diretoria de Tecnologia da
+					Informação (DTI) IFRN/CNAT
+					<a href="mailto:dti.cnat@ifrn.edu.br">{{
+						"dti.cnat@ifrn.edu.br"
+					}}</a> | v1.0.0
+				</p>
 			</div>
 		</mat-drawer>
 	</mat-drawer-container>
