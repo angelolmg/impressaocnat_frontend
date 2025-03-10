@@ -25,7 +25,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { EditCopyBoxComponent } from '../../components/edit-copy-box/edit-copy-box.component';
-import { NewCopyFormData } from '../../models/copy.interface';
 import {
 	actions,
 	ActionService,
@@ -33,6 +32,7 @@ import {
 	PageType,
 } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
+import { NewCopyFormData } from './../../models/copy.interface';
 
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -94,6 +94,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 	files: File[] = [];
 	copies = new MatTableDataSource<NewCopyFormData>();
 	allowedActions: ActionType[] = [];
+	detalhes = ActionType.DETALHES;
 
 	fileCount = signal(0);
 	requestPageCounter = signal(0);
@@ -165,6 +166,13 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 	}
 
 	removeCopy(copy: NewCopyFormData) {
+		// Apenas tente deletar uma solicitação durante uma edição, caso o usuário tente remover a última cópia
+		let isLastCopy =
+			this.pageType == this.editRequest && this.copies.data.length == 1;
+		let lastCopyMessage = isLastCopy
+			? 'Esta é a única cópia e a solicitação também será excluída. '
+			: '';
+
 		this.dialogService
 			.openDialog(DialogBoxComponent, {
 				title: 'Excluir cópia',
@@ -172,35 +180,94 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 					"Deseja realmente excluir cópia de '" +
 					copy.fileName +
 					"'?",
-				warning: 'Esta ação é permanente',
+				warning: lastCopyMessage + 'Esta ação é permanente',
 				positive_label: 'Sim',
 				negative_label: 'Não',
 			})
 			.afterClosed()
 			.subscribe((shouldRemove: boolean) => {
 				if (!shouldRemove) return;
-				const copyIndex = this.copies.data.indexOf(copy);
 
-				if (copyIndex >= 0) {
-					this.copies.data.splice(copyIndex, 1);
-					this.files.splice(copyIndex, 1);
+				if (isLastCopy) {
+					this.requestService
+						.removeRequestById(this.editRequestId!)
+						.subscribe((response) => {
+							this._snackBar.open(response.message, 'Ok');
+							this.router.navigate([
+								this.actionService.getLastPageState(true) ||
+									'nova-solicitacao',
+							]);
+						});
+				} else {
+					const copyIndex = this.copies.data.indexOf(copy);
 
-					this.refreshTable();
+					if (copyIndex >= 0) {
+						this.copies.data.splice(copyIndex, 1);
+						this.files.splice(copyIndex, 1);
+
+						this.refreshTable();
+					}
 				}
 			});
 	}
 
-	// Retorna index da cópia com mesmo nome e intervalo na lista de cópias anexadas, caso exista
-	// Caso contrátrio retorna -1
-	private findExistingCopyIndex(name: string, pageIntervals?: string) {
-		return this.copies.data.findIndex((existingCopy) => {
-			return (
-				existingCopy.fileName === name && // Nomes iguais
-				(existingCopy.printConfig.pageIntervals == pageIntervals || // Intervalos iguais
-					(!existingCopy.printConfig.pageIntervals && !pageIntervals)) // OU ambos não possuem intervalo
-			);
-		});
+	/**
+	 * Retorna o índice de uma cópia existente com o mesmo nome e intervalos de página na lista de cópias anexadas.
+	 * Se não existir uma cópia correspondente, retorna -1.
+	 *
+	 * @param name - O nome do arquivo para comparar
+	 * @param pageIntervals - A string de intervalos de página para comparar
+	 * @param index - O índice da cópia sendo editada (se aplicável)
+	 * @param editing - Se estamos no modo de edição
+	 * @param relativePosition - A posição da cópia sendo editada
+	 * @returns O índice da cópia correspondente ou -1 se nenhuma correspondência for encontrada
+	 */
+	private findExistingCopyIndex(
+		name: string,
+		pageIntervals?: string,
+		index?: number,
+		editing?: boolean,
+		relativePosition?: number
+	): number {
+		const copies: NewCopyFormData[] = this.copies.data;
+
+		for (let i = 0; i < copies.length; i++) {
+			const currCopy = copies[i];
+
+			// Verifica se os nomes correspondem
+			const namesMatch = currCopy.fileName === name;
+
+			// Verifica se os intervalos de página correspondem (ou ambos são iguais ou ambos são undefined/null)
+			const intervalsMatch =
+				currCopy.printConfig.pageIntervals === pageIntervals ||
+				(!currCopy.printConfig.pageIntervals && !pageIntervals);
+
+			if (namesMatch && intervalsMatch) {
+				// Se não estiver no modo de edição, encontramos uma correspondência
+				if (!editing) {
+					return i;
+				}
+
+				// Lida com a lógica de edição com casos especiais
+				const samePosition = i === relativePosition;
+				const bothHaveIds = index && currCopy.id;
+				const neitherHaveIds = !index && !currCopy.id;
+				const mixedIdStatus =
+					(index && !currCopy.id) || (!index && currCopy.id);
+
+				if ((bothHaveIds || neitherHaveIds) && samePosition) {
+					return -1; // Mesma posição, então é o item sendo editado
+				}
+
+				if (bothHaveIds || neitherHaveIds || mixedIdStatus) {
+					return i;
+				}
+			}
+		}
+
+		return -1; // Nenhuma correspondência encontrada
 	}
+
 	editCopyDialog(copy: NewCopyFormData) {
 		this.dialogService
 			.openDialog(EditCopyBoxComponent, {
@@ -216,12 +283,15 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 
 					// Caso exista, formatar intervalo de páginas (string) para sempre ter UM espaço depois da vírgula ", " (padrão)
 					let interval = editedParts.pageIntervals;
-					editedParts.pageIntervals = interval.replace(/,\s*/g, ', ');
+					if (interval)
+						editedParts.pageIntervals = interval.replace(
+							/,\s*/g,
+							', '
+						);
 
+					const copyIndex = this.copies.data.indexOf(copy);
 					// Função de atualização de cópia
 					const updateCopy = (indexToRemove?: number) => {
-						const copyIndex = this.copies.data.indexOf(copy);
-
 						if (copyIndex >= 0) {
 							// Atualize as observações, remova do objeto temporario
 							this.copies.data[copyIndex].notes =
@@ -254,7 +324,10 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 					// Encontrar cópia repetida, caso exista
 					const existingCopyIndex = this.findExistingCopyIndex(
 						copy.fileName,
-						editedParts.pageIntervals
+						editedParts.pageIntervals,
+						copy.id,
+						true,
+						copyIndex
 					);
 
 					// Função manipuladora de cópias durante edição
@@ -328,6 +401,8 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 					result.file.name,
 					result.printConfig.pageIntervals
 				);
+
+				console.log(result);
 
 				const addOrUpdateCopy = (index?: number) => {
 					if (index !== undefined) {
@@ -445,7 +520,6 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 				break;
 			case PageType.editRequest:
 				this.uploading.set(true);
-
 				sub = this.requestService.editRequest(
 					this.editRequestId!,
 					this.files,
@@ -469,7 +543,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 					'Ok'
 				);
 				this.clearCopies();
-				this.router.navigate(['minhas-solicitacoes']);
+				this.router.navigate([this.getLastPageState(true) || 'minhas-solicitacoes']);
 			},
 			error: (err) => {
 				console.error(err);

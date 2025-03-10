@@ -163,4 +163,10 @@ mat-accordion {
 	color: #767676;
 	margin-top: 4px;
   }
+
+  span::before {
+	content: attr(data-label);
+	opacity: 25%;
+	margin: 0 2rem;
+  }
   

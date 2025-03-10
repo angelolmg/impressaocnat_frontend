@@ -9,7 +9,13 @@
 			}
 			<span
 				>Solicitação Nº {{ requestId!.toString().padStart(6, "0") }}
-				{{ myRequest?.stale ? "(ARQUIVADA)" : myRequest?.conclusionDate ? "(FECHADA)" : "" }}</span
+				{{
+					myRequest?.stale
+						? "(ARQUIVADA)"
+						: myRequest?.conclusionDate
+						? "(FECHADA)"
+						: ""
+				}}</span
 			>
 		</h2>
 		<form [formGroup]="queryForm">
@@ -103,7 +109,9 @@
 					*matCellDef="let element"
 					style="text-align: center"
 				>
-					<mat-icon (click)="showConfigs(element)">print</mat-icon>
+					<mat-icon (click)="showConfigs(element)">{{
+						detalhes | icon
+					}}</mat-icon>
 				</td>
 			</ng-container>
 
@@ -156,7 +164,7 @@
 			<mat-chip>Contagem de folhas: {{ requestPageCounter() }}</mat-chip>
 			<img
 				style="margin-left: 0.5rem"
-				matTooltip="Nº folhas = Σ(nº páginas * nº de cópias) ∀ arquivos anexados"
+				matTooltip="Prévia de acordo com as configurações de impressão de todos os arquivos anexados"
 				matTooltipPosition="after"
 				class="help-icon"
 				src="assets/help.svg"

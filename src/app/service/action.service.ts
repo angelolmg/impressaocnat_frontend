@@ -38,6 +38,7 @@ export enum ActionType {
 	EXCLUIR = 'Excluir',
 	ABRIR = 'Abrir',
 	BAIXAR = 'Baixar',
+	DETALHES = 'Detalhes'
 }
 
 export const actions = {
@@ -197,7 +198,7 @@ export class ActionService {
 			this.instanceOfCopy(element) &&
 			(!element.fileInDisk || element.isPhysicalFile || parentElement?.stale) &&
 			action == ActionType.BAIXAR
-		)
+		) 
 			return true;
 
 		return false;

@@ -21,7 +21,7 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
-import { MatStepperModule } from '@angular/material/stepper';
+import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { NewCopyFormData } from '../../models/copy.interface';
 import { DialogData } from '../../models/dialogData.interface';
 import { MyErrorStateMatcher } from '../../pages/request-form/request-form.component';
@@ -250,5 +250,13 @@ export class EditCopyBoxComponent implements OnInit {
 		}
 
 		return '';
+	}
+
+	goToNext(stepper: MatStepper) {
+		stepper.next();
+	}
+
+	goToPrevious(stepper: MatStepper) {
+		stepper.previous();
 	}
 }

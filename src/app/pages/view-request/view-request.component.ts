@@ -23,8 +23,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { EditCopyBoxComponent } from '../../components/edit-copy-box/edit-copy-box.component';
-import { actions, ActionService } from '../../service/action.service';
+import { actions, ActionService, ActionType } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
 import { NewCopyFormData } from './../../models/copy.interface';
 import { PageType } from './../../service/action.service';
@@ -104,6 +103,7 @@ export class ViewRequestComponent implements OnInit {
 	fileCount = signal(0);
 	requestPageCounter = signal(0);
 	loadingData = signal(false);
+	detalhes = ActionType.DETALHES;
 
 	matcher = new MyErrorStateMatcher();
 	copies = new MatTableDataSource<NewCopyFormData>();
@@ -208,14 +208,14 @@ export class ViewRequestComponent implements OnInit {
 				negative_label: 'Não',
 			})
 			.afterClosed()
-			.subscribe((shouldDelete: boolean) => {
-				if (shouldDelete) {
+			.subscribe((shouldRemove: boolean) => {
+				if (shouldRemove) {
 					if (isLastCopy) {
 						this.requestService
 							.removeRequestById(this.myRequest!.id)
 							.subscribe((response) => {
 								this._snackBar.open(response.message, 'Ok');
-								this.router.navigate(['listar-solicitacaoes']);
+								this.router.navigate([this.actionService.getLastPageState(true) || 'nova-solicitacao']);
 							});
 					} else {
 						let removeCopy = this.requestService.removeCopyById(

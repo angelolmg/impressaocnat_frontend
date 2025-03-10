@@ -188,7 +188,7 @@
 					</mat-expansion-panel>
 				</mat-accordion>
 
-				<div class="nav-buttons">
+				<!-- <div class="nav-buttons">
 					<button
 						mat-button
 						matStepperNext
@@ -196,7 +196,7 @@
 					>
 						Próximo
 					</button>
-				</div>
+				</div> -->
 			</form>
 		</mat-step>
 		<mat-step
@@ -306,7 +306,7 @@
 					</mat-expansion-panel>
 				</mat-accordion>
 
-				<div class="nav-buttons">
+				<!-- <div class="nav-buttons">
 					<button mat-button matStepperPrevious>Voltar</button>
 					<button
 						mat-button
@@ -315,7 +315,7 @@
 					>
 						Próximo
 					</button>
-				</div>
+				</div> -->
 			</form>
 		</mat-step>
 		<mat-step label="Resumo">
@@ -338,23 +338,17 @@
 				<p data-label="Intervalo:">
 					{{ secondStepForm.get("pageIntervals")?.value }}
 				</p>
-				} } 
-				
-				@if(!secondStepForm.get("pagesPerSheet")?.pristine ||
+				} } @if(!secondStepForm.get("pagesPerSheet")?.pristine ||
 				secondStepForm.get("pagesPerSheet")?.value !== 1 ) {
 				<p data-label="Páginas por folha:">
 					{{ secondStepForm.get("pagesPerSheet")?.value }}
 				</p>
-				} 
-				
-				@if(!secondStepForm.get("layout")?.pristine ||
+				} @if(!secondStepForm.get("layout")?.pristine ||
 				secondStepForm.get("layout")?.value !== 'Retrato'){
 				<p data-label="Layout:">
 					{{ secondStepForm.get("layout")?.value }}
 				</p>
-				} 
-				
-				@if(!secondStepForm.get("frontAndBack")?.pristine ||
+				} @if(!secondStepForm.get("frontAndBack")?.pristine ||
 				secondStepForm.get("frontAndBack")?.value) {
 				<p data-label="Frente e verso:">
 					{{
@@ -364,7 +358,6 @@
 					}}
 				</p>
 				}
-
 
 				<br class="break" />
 				<p data-label="Prévia de folhas:">{{ sheetsTotal }}</p>
@@ -387,9 +380,9 @@
 				</mat-form-field>
 			</div>
 
-			<div class="nav-buttons">
+			<!-- <div class="nav-buttons">
 				<button mat-button matStepperPrevious>Voltar</button>
-			</div>
+			</div> -->
 		</mat-step>
 	</mat-stepper>
 </mat-dialog-content>
@@ -406,13 +399,30 @@
 	>
 		Limpar
 	</button>
+	<span data-label="|"></span>
+	<button
+		mat-button
+		[disabled]="stepper.selectedIndex === 0"
+		(click)="goToPrevious(stepper)"
+	>
+		Voltar
+	</button>
+	<button
+		mat-button
+		[disabled]="
+			(stepper.selectedIndex === 0 && !fistStepValid()) ||
+			(stepper.selectedIndex === 1 && !secondStepValid())
+		"
+		(click)="goToNext(stepper)"
+		[hidden]="stepper.selectedIndex === stepper.steps.length - 1"
+	>
+		Próximo
+	</button>
 	<button
 		mat-button
 		[mat-dialog-close]="requestInfo()"
-		[disabled]="
-			stepper.selectedIndex !== stepper.steps.length - 1 ||
-			newCopyForm.invalid
-		"
+		[disabled]="newCopyForm.invalid"
+		[hidden]="stepper.selectedIndex !== stepper.steps.length - 1"
 	>
 		{{ data.positive_label || "Confirmar" }}
 	</button>

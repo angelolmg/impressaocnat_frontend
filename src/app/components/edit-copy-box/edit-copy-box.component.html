@@ -110,7 +110,7 @@
 					</mat-expansion-panel>
 				</mat-accordion>
 
-				<div class="nav-buttons">
+				<!-- <div class="nav-buttons">
 					<button
 						mat-button
 						matStepperNext
@@ -118,7 +118,7 @@
 					>
 						Próximo
 					</button>
-				</div>
+				</div> -->
 			</form>
 		</mat-step>
 		<mat-step label="Resumo">
@@ -141,23 +141,17 @@
 				<p data-label="Intervalo:">
 					{{ configForm.get("pageIntervals")?.value }}
 				</p>
-				} } 
-				
-				@if(!configForm.get("pagesPerSheet")?.pristine ||
+				} } @if(!configForm.get("pagesPerSheet")?.pristine ||
 				configForm.get("pagesPerSheet")?.value !== 1) {
 				<p data-label="Páginas por folha:">
 					{{ configForm.get("pagesPerSheet")?.value }}
 				</p>
-				} 
-				
-				@if(!configForm.get("layout")?.pristine ||
+				} @if(!configForm.get("layout")?.pristine ||
 				configForm.get("layout")?.value !== 'Retrato'){
 				<p data-label="Layout:">
 					{{ configForm.get("layout")?.value }}
 				</p>
-				} 
-				
-				@if(!configForm.get("frontAndBack")?.pristine ||
+				} @if(!configForm.get("frontAndBack")?.pristine ||
 				configForm.get("frontAndBack")?.value) {
 				<p data-label="Frente e verso:">
 					{{ configForm.get("frontAndBack")?.value ? "Sim" : "Não" }}
@@ -187,22 +181,38 @@
 				</mat-form-field>
 			</div>
 
-			<div class="nav-buttons">
-				<button mat-button matStepperPrevious>Voltar</button>
-			</div>
+			<!-- <div class="nav-buttons">
+				<button mat-button (click)="goToPrevious(stepper)">
+					Voltar
+				</button>
+			</div> -->
 		</mat-step>
 	</mat-stepper>
 </mat-dialog-content>
 
 <mat-dialog-actions>
 	<button mat-button (click)="onNoClick()">{{ data.negative_label }}</button>
+	<span data-label="|"></span>
+	<button
+		mat-button
+		[disabled]="stepper.selectedIndex === 0"
+		(click)="goToPrevious(stepper)"
+	>
+		Voltar
+	</button>
+	<button
+		mat-button
+		[disabled]="!configValid()"
+		[hidden]="stepper.selectedIndex === stepper.steps.length - 1"
+		(click)="goToNext(stepper)"
+	>
+		Próximo
+	</button>
 	<button
 		mat-button
 		[mat-dialog-close]="formGroup()"
-		[disabled]="
-			stepper.selectedIndex !== stepper.steps.length - 1 ||
-			configForm.invalid
-		"
+		[disabled]="configForm.invalid"
+		[hidden]="stepper.selectedIndex !== stepper.steps.length - 1"
 	>
 		{{ data.positive_label }}
 	</button>

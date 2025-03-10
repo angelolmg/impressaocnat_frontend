@@ -150,10 +150,13 @@ table {
 .table-wrapper {
 	position: relative; /* Define a referência para posicionamento absoluto */
 	display: inline-block; /* Ajusta o tamanho ao conteúdo da tabela */
-	height: 100%;
+	// height: 100%;
 	box-shadow: 0 2px 4px rgb(0 0 0 / 12%);
 	border-radius: 1rem;
-	overflow: hidden;
+	// overflow: hidden;
+
+	height: 23rem;
+    overflow-y: scroll;
 }
 
 .overlay {

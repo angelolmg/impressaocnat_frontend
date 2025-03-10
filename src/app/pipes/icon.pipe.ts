@@ -18,6 +18,8 @@ export class IconPipe implements PipeTransform {
 				return 'edit';
 			case ActionType.BAIXAR:
 				return 'open_in_new';
+			case ActionType.DETALHES:
+				return 'settings';
 		}
 		
 		// Just in case

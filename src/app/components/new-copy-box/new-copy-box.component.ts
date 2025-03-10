@@ -25,7 +25,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatStepperModule } from '@angular/material/stepper';
+import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { PDFDocument } from 'pdf-lib';
 import { Observable } from 'rxjs';
@@ -419,6 +419,14 @@ export class NewCopyBoxComponent {
 		};
 
 		return newCopyData;
+	}
+
+	goToNext(stepper: MatStepper) {
+		stepper.next();
+	}
+
+	goToPrevious(stepper: MatStepper) {
+		stepper.previous();
 	}
 
 	onNoClick(): void {

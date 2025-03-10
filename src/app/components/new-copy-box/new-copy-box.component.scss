@@ -144,6 +144,12 @@ mat-accordion {
 	color: #555;
 	min-width: 160px;
   }
+
+  span::before {
+	content: attr(data-label);
+	opacity: 25%;
+	margin: 0 2rem;
+  }
   
   .overview-text .break {
 	  display: block;
