@@ -22,9 +22,11 @@ export interface FileDownloadResponse {
 export class RequestService {
 	userService = inject(UserService);
 	http: HttpClient = inject(HttpClient);
-	requestUrl = `${environment.API_URL}/solicitacoes`;
-	copyUrl = `${environment.API_URL}/copias`;
-	apiUrl = `${environment.API_URL}/api`;
+	apiUrl = `${environment.API_URL}`;
+	requestUrl = `${this.apiUrl}/solicitacoes`;
+	copyUrl = `${this.apiUrl}/copias`;
+	reportUrl = `${this.apiUrl}/relatorio`;
+	
 
 	editRequest(
 		id: number,
@@ -296,7 +298,7 @@ export class RequestService {
 	  }
 
 	generateReport(requests: RequestInterface[]) {
-		return this.http.post(this.apiUrl + '/relatorio', requests, {
+		return this.http.post(this.reportUrl, requests, {
 			responseType: 'text',
 		});
 	}

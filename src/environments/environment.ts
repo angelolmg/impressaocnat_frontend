@@ -4,7 +4,7 @@ export const environment = {
 	SUAP_URL: 'https://suap.ifrn.edu.br',
 	SCOPE: 'identificacao',
 
-	API_URL: 'http://localhost:8080',
+	API_URL: 'http://localhost:8080/api',
 
 	DEFAULT_TERM_VALUE: 24,
 	MAX_FILE_SIZE_MB: 10
