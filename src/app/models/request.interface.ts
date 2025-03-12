@@ -1,4 +1,4 @@
-import { NewCopyFormData } from "./copy.interface";
+import { CopyInterface } from "./copy.interface";
 
 export interface RequestInterface {
 	id: number;
@@ -9,7 +9,7 @@ export interface RequestInterface {
 	conclusionDate?: number; // Data de conclusão
     stale?: boolean; // Flag de obsolência/arquivado
     totalPageCount?: number; // Total de páginas na solicitação
-    copies?: NewCopyFormData[]; // Arquivos anexados a solicitação
+    copies?: CopyInterface[]; // Arquivos anexados a solicitação
 }
 
 const DATE_2024_01_15 = new Date('2024-01-15T22:00:00.000Z').getTime();

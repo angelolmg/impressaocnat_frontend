@@ -8,7 +8,7 @@ import { inject, Injectable } from '@angular/core';
 import { EMPTY, map, Observable, of, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { RequestInterface } from '../models/request.interface';
-import { NewCopyFormData } from './../models/copy.interface';
+import { CopyInterface } from './../models/copy.interface';
 import { UserService } from './user.service';
 
 export interface FileDownloadResponse {
@@ -31,7 +31,7 @@ export class RequestService {
 	editRequest(
 		id: number,
 		files: File[],
-		copies: NewCopyFormData[],
+		copies: CopyInterface[],
 		term: number,
 		totalPageCount: number
 	): Observable<any> {
@@ -89,7 +89,7 @@ export class RequestService {
 
 	saveRequest(
 		files: File[],
-		copies: NewCopyFormData[],
+		copies: CopyInterface[],
 		term: number,
 		totalPageCount: number
 	): Observable<any> {
@@ -199,7 +199,7 @@ export class RequestService {
 	getCopiesByRequestId(
 		requestId?: number,
 		query?: string
-	): Observable<NewCopyFormData[]> {
+	): Observable<CopyInterface[]> {
 		if (!requestId) {
 			console.warn("[request.service] Nenhum 'requestId' definido.");
 			return of([]);
@@ -208,7 +208,7 @@ export class RequestService {
 		let httpParams = new HttpParams();
 		if (query) httpParams = httpParams.set('query', query);
 
-		return this.http.get<NewCopyFormData[]>(this.copyUrl + '/' + requestId, {
+		return this.http.get<CopyInterface[]>(this.copyUrl + '/' + requestId, {
 			params: httpParams,
 		});
 	}
@@ -222,7 +222,7 @@ export class RequestService {
 	}
 
 	patchCopy(
-		copyToPatch: NewCopyFormData,
+		copyToPatch: CopyInterface,
 		request: RequestInterface
 	): Observable<any> {
 		// Verifica se há cópias na requisição

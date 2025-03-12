@@ -25,7 +25,7 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { actions, ActionService, ActionType } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
-import { NewCopyFormData } from './../../models/copy.interface';
+import { CopyInterface } from './../../models/copy.interface';
 import { PageType } from './../../service/action.service';
 
 import { HttpErrorResponse } from '@angular/common/http';
@@ -106,7 +106,7 @@ export class ViewRequestComponent implements OnInit {
 	detalhes = ActionType.DETALHES;
 
 	matcher = new MyErrorStateMatcher();
-	copies = new MatTableDataSource<NewCopyFormData>();
+	copies = new MatTableDataSource<CopyInterface>();
 	route = inject(ActivatedRoute);
 	actionService = inject(ActionService);
 	dialogService = inject(DialogService);
@@ -141,7 +141,7 @@ export class ViewRequestComponent implements OnInit {
 
 		this.actionService.downloadCopy
 			.pipe(takeUntil(this.ngUnsubscribe))
-			.subscribe((copy: NewCopyFormData) => {
+			.subscribe((copy: CopyInterface) => {
 				this.downloadFileAndOpenInNewWindow(copy);
 			});
 
@@ -180,7 +180,7 @@ export class ViewRequestComponent implements OnInit {
 				})
 			)
 			.subscribe({
-				next: (copies: NewCopyFormData[]) => (this.copies.data = copies),
+				next: (copies: CopyInterface[]) => (this.copies.data = copies),
 				error: (error) => {
 					this._snackBar.open(
 						`Erro ao buscar solicitações: ${error}`,
@@ -190,7 +190,7 @@ export class ViewRequestComponent implements OnInit {
 			});
 	}
 
-	removeCopy(copy: NewCopyFormData) {
+	removeCopy(copy: CopyInterface) {
 		let isLastCopy = this.copies.data.length == 1;
 		let lastCopyMessage = isLastCopy
 			? 'Esta é a única cópia e a solicitação também será excluída. '
@@ -242,7 +242,7 @@ export class ViewRequestComponent implements OnInit {
 			});
 	}
 
-	downloadFileAndOpenInNewWindow(copy: NewCopyFormData): void {
+	downloadFileAndOpenInNewWindow(copy: CopyInterface): void {
 		if (copy.fileInDisk && this.requestId) {
 			this.loadingData.set(true);
 			const newWindow = window.open('', '_blank');
@@ -321,7 +321,7 @@ export class ViewRequestComponent implements OnInit {
 		this.updateTable(this.copies.data);
 	}
 
-	updateTable(copies?: NewCopyFormData[]) {
+	updateTable(copies?: CopyInterface[]) {
 		// Atualizar objeto data source de cópias da tabela
 		// Angular Material is weird
 		this.copies.data = copies || [];
@@ -337,7 +337,7 @@ export class ViewRequestComponent implements OnInit {
 		this.requestPageCounter.set(counter);
 	}
 
-	showConfigs(copy: NewCopyFormData) {
+	showConfigs(copy: CopyInterface) {
 			this.dialogService
 				.openDialog(ConfigBoxComponent, {
 					title: 'Configurações de Impressão',

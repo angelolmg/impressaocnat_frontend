@@ -30,7 +30,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { PDFDocument } from 'pdf-lib';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { NewCopyFormData, PrintConfig } from '../../models/copy.interface';
+import { CopyInterface, PrintConfig } from '../../models/copy.interface';
 import { DialogData } from '../../models/dialogData.interface';
 import { MyErrorStateMatcher } from '../../pages/request-form/request-form.component';
 import { RequestService } from '../../service/request.service';
@@ -413,7 +413,7 @@ export class NewCopyBoxComponent {
 	}
 	// TODO: mandar o newCopyForm inteiro e decidir o que fazer com ele do outro lado
 	// Assim consigo verificar quais opções avançadas foram de fato mexidas
-	requestInfo(): NewCopyFormData | null {
+	requestInfo(): CopyInterface | null {
 		if (this.newCopyForm.invalid) return null;
 
 		var printConfig: PrintConfig = {
@@ -435,7 +435,7 @@ export class NewCopyBoxComponent {
 			: (this.firstStepForm.get('file')?.value as File);
 		var fileType = file.size > 0 ? file.type : 'Arquivo Físico';
 
-		var newCopyData: NewCopyFormData = {
+		var newCopyData: CopyInterface = {
 			file: file,
 			fileName: this.firstStepForm.get('fileName')?.value,
 			fileType: fileType,

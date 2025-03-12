@@ -22,7 +22,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatStepper, MatStepperModule } from '@angular/material/stepper';
-import { NewCopyFormData } from '../../models/copy.interface';
+import { CopyInterface } from '../../models/copy.interface';
 import { DialogData } from '../../models/dialogData.interface';
 import { MyErrorStateMatcher } from '../../pages/request-form/request-form.component';
 import { RequestService } from '../../service/request.service';
@@ -58,12 +58,12 @@ export class EditCopyBoxComponent implements OnInit {
 	requestService = inject(RequestService);
 	matcher = new MyErrorStateMatcher();
 
-	copy!: NewCopyFormData;
+	copy!: CopyInterface;
 	configForm: FormGroup = new FormGroup({});
 	formGroup: ModelSignal<FormGroup> = model(this.configForm);
 
 	ngOnInit(): void {
-		this.copy = this.data.data as NewCopyFormData;
+		this.copy = this.data.data as CopyInterface;
 
 		if (this.copy) {
 			this.configForm.addControl(

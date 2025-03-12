@@ -32,7 +32,7 @@ import {
 	PageType,
 } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
-import { NewCopyFormData } from './../../models/copy.interface';
+import { CopyInterface } from './../../models/copy.interface';
 
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -92,7 +92,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 	pageType = PageType.newRequest;
 	pageTitle: string = PageType.newRequest;
 	files: File[] = [];
-	copies = new MatTableDataSource<NewCopyFormData>();
+	copies = new MatTableDataSource<CopyInterface>();
 	allowedActions: ActionType[] = [];
 	detalhes = ActionType.DETALHES;
 
@@ -165,7 +165,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 			});
 	}
 
-	removeCopy(copy: NewCopyFormData) {
+	removeCopy(copy: CopyInterface) {
 		// Apenas tente deletar uma solicitação durante uma edição, caso o usuário tente remover a última cópia
 		let isLastCopy =
 			this.pageType == this.editRequest && this.copies.data.length == 1;
@@ -229,7 +229,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 		editing?: boolean,
 		relativePosition?: number
 	): number {
-		const copies: NewCopyFormData[] = this.copies.data;
+		const copies: CopyInterface[] = this.copies.data;
 
 		for (let i = 0; i < copies.length; i++) {
 			const currCopy = copies[i];
@@ -268,7 +268,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 		return -1; // Nenhuma correspondência encontrada
 	}
 
-	editCopyDialog(copy: NewCopyFormData) {
+	editCopyDialog(copy: CopyInterface) {
 		this.dialogService
 			.openDialog(EditCopyBoxComponent, {
 				title: 'Editar cópia',
@@ -367,7 +367,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 			});
 	}
 
-	addCopyDialog(data?: NewCopyFormData) {
+	addCopyDialog(data?: CopyInterface) {
 		this.dialogService
 			.openDialog(
 				NewCopyBoxComponent,
@@ -378,7 +378,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 				true
 			)
 			.afterClosed()
-			.subscribe((result: NewCopyFormData | null) => {
+			.subscribe((result: CopyInterface | null) => {
 				if (!result) return;
 
 				if (!result.isPhysicalFile && !result.file) {
@@ -465,7 +465,7 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 		}
 	}
 
-	showConfigs(copy: NewCopyFormData) {
+	showConfigs(copy: CopyInterface) {
 		this.dialogService.openDialog(ConfigBoxComponent, {
 			title: 'Configurações de Impressão',
 			data: copy,

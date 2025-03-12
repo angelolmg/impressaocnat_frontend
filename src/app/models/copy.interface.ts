@@ -8,7 +8,7 @@ export interface PrintConfig {
 	sheetsTotal: number; // Calculado pelo nº de paginas no documento e configurações de impressão
 }
 
-export interface NewCopyFormData {
+export interface CopyInterface {
 	id?: number;
 	file: File; // Arquivo
 	fileName: string; // Nome do arquivo

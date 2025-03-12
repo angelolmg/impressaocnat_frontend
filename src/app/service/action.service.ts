@@ -1,5 +1,5 @@
 import { EventEmitter, inject, Injectable } from '@angular/core';
-import { NewCopyFormData } from '../models/copy.interface';
+import { CopyInterface } from '../models/copy.interface';
 import { RequestInterface } from './../models/request.interface';
 import { UserService } from './user.service';
 
@@ -106,9 +106,9 @@ const FILE_NAME_KEY = 'fileName';
 	providedIn: 'root',
 })
 export class ActionService {
-	deleteCopy = new EventEmitter<NewCopyFormData>();
-	editCopy = new EventEmitter<NewCopyFormData>();
-	downloadCopy = new EventEmitter<NewCopyFormData>();
+	deleteCopy = new EventEmitter<CopyInterface>();
+	editCopy = new EventEmitter<CopyInterface>();
+	downloadCopy = new EventEmitter<CopyInterface>();
 	deleteRequest = new EventEmitter<RequestInterface>();
 	editRequest = new EventEmitter<RequestInterface>();
 	viewRequest = new EventEmitter<RequestInterface>();
@@ -128,8 +128,8 @@ export class ActionService {
 		return CREATION_DATE_KEY in object;
 	}
 
-	// Verifica se objeto é instância de NewCopyFormData (é um objeto de cópia)
-	instanceOfCopy(object: any): object is NewCopyFormData {
+	// Verifica se objeto é instância de CopyInterface (é um objeto de cópia)
+	instanceOfCopy(object: any): object is CopyInterface {
 		return FILE_NAME_KEY in object;
 	}
 
@@ -161,7 +161,7 @@ export class ActionService {
 		component?: string,
 		state?: PageType,
 		action?: ActionType,
-		element?: RequestInterface | NewCopyFormData,
+		element?: RequestInterface | CopyInterface,
 		parentElement?: RequestInterface
 	) {
 		// Desabilitar todos os botões de ação para cópias caso a requisição seja obsoleta/arquivada
@@ -206,7 +206,7 @@ export class ActionService {
 
 	private emitAction(
 		action: ActionType,
-		element: RequestInterface | NewCopyFormData
+		element: RequestInterface | CopyInterface
 	): void {
 		const actionMap = new Map<ActionType, EventEmitter<any>>([
 			[
@@ -233,7 +233,7 @@ export class ActionService {
 
 	callbackHandler(
 		action: ActionType,
-		element: RequestInterface | NewCopyFormData,
+		element: RequestInterface | CopyInterface,
 		component: string,
 		state?: PageType
 	): void {

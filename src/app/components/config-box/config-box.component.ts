@@ -12,7 +12,7 @@ import {
 } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { NewCopyFormData } from '../../models/copy.interface';
+import { CopyInterface } from '../../models/copy.interface';
 import { DialogData } from '../../models/dialogData.interface';
 
 @Component({
@@ -35,5 +35,5 @@ export class ConfigBoxComponent {
 	readonly dialogRef = inject(MatDialogRef<ConfigBoxComponent>);
 	readonly data = inject<DialogData>(MAT_DIALOG_DATA);
 
-	copy = this.data.data as NewCopyFormData;
+	copy = this.data.data as CopyInterface;
 }
