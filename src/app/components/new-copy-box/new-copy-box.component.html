@@ -135,17 +135,6 @@
 										formControlName="fileName"
 									/>
 									@if
-									((firstStepForm.get('fileName')?.hasError('minlength')
-									||
-									firstStepForm.get('fileName')?.hasError('maxlength'))
-									&&
-									!firstStepForm.get('fileName')?.hasError('required'))
-									{
-									<mat-error
-										>O rótulo deve conter no mínimo 3
-										dígitos</mat-error
-									>
-									} @else if
 									(firstStepForm.get('fileName')?.hasError('pattern')
 									&&
 									!firstStepForm.get('fileName')?.hasError('required'))

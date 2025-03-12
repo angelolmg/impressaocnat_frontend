@@ -186,7 +186,6 @@ export class NewCopyBoxComponent {
 				file: new FormControl<File | null>(this.baseCopyForm.file),
 				fileName: new FormControl<string>(this.baseCopyForm.fileName, [
 					Validators.required,
-					Validators.minLength(3),
 					Validators.maxLength(255),
 					Validators.pattern(/^(?!\s*$)[^\\/:*?"<>|,]*$/),
 				]),
@@ -291,7 +290,7 @@ export class NewCopyBoxComponent {
 			const fileNameRegex = /^(?!\s*$)[^\\/:*?"<>|,]*$/;
 
 			if (fileSizeInMB > this.maxFileSize) {
-				let msg = `Tamanho do arquivo excede o tamanho máximo permitido (${this.maxFileSize} MB)`;
+				let msg = `Erro: Tamanho do arquivo excede o tamanho máximo permitido (${this.maxFileSize} MB)`;
 				console.error(msg);
 				fileInput.value = '';
 				this._snackBar.open(msg, 'Ok');
@@ -299,7 +298,7 @@ export class NewCopyBoxComponent {
 			}
 
 			if (!fileNameRegex.test(fileName)) {
-				let msg = `Nome do arquivo contém símbolos não permitidos (\\/:*?"<>|,)`;
+				let msg = `Erro: Nome do arquivo contém símbolos não permitidos (\\/:*?"<>|,)`;
 				console.error(msg);
 				fileInput.value = '';
 				this._snackBar.open(msg, 'Ok');
@@ -316,19 +315,8 @@ export class NewCopyBoxComponent {
 						?.setValue(fileProfile.fileName);
 					this.firstStepForm.get('file')?.setValue(selectedFile);
 				},
-				error: (error) => {
-					let encryptErrMsg =
-						'O PDF está encriptado. \
-						Tente "Abrir o arquivo > Selecionar a opção Imprimir > Selecionar Salvar como PDF > Clicar em Salvar" \
-						e tente anexar o novo arquivo gerado';
-					console.error(
-						'Erro ao obter número de páginas: ' + encryptErrMsg,
-						error
-					);
+				error: () => {
 					fileInput.value = '';
-					this._snackBar.open('Erro: ' + encryptErrMsg, 'Ok', {
-						duration: 18000,
-					});
 				},
 			});
 		}
@@ -374,11 +362,29 @@ export class NewCopyBoxComponent {
 							observer.complete();
 						})
 						.catch((error) => {
-							console.error('Erro ao carregar PDF:', error);
+							let encryptErrMsg =
+								'PDF encriptado. \
+								Porfavor, tente "Abrir o arquivo > Selecionar a opção Imprimir > Selecionar Salvar como PDF > Clicar em Salvar" \
+								e anexe o novo arquivo gerado';
+							console.error(
+								'Erro ao obter número de páginas: ' +
+									encryptErrMsg,
+								error
+							);
+							this._snackBar.open(
+								'Erro: ' + encryptErrMsg,
+								'Ok',
+								{
+									duration: 18000,
+								}
+							);
 							observer.error(error);
 						});
 				} else {
-					console.error('Não foi possível ler arquivo');
+					let corruptErrMsg =
+						'Erro: Não foi possivel ler o arquivo. PDF potencialmente corrompido';
+					console.error(corruptErrMsg);
+					this._snackBar.open(corruptErrMsg, 'Ok');
 					observer.error('Não foi possível ler arquivo');
 				}
 			};
