@@ -188,7 +188,7 @@ export class NewCopyBoxComponent {
 					Validators.required,
 					Validators.minLength(3),
 					Validators.maxLength(255),
-					Validators.pattern(/^(?!\s*$)[^\\/:*?"<>|]*$/),
+					Validators.pattern(/^(?!\s*$)[^\\/:*?"<>|,]*$/),
 				]),
 				isPhysicalFile: new FormControl<boolean>(
 					this.baseCopyForm.isPhysicalFile
@@ -273,6 +273,7 @@ export class NewCopyBoxComponent {
 
 	onFileSelected(event: any): void {
 		const selectedFile = event.target.files[0] ?? null;
+		const fileInput = event.currentTarget as HTMLInputElement;
 
 		if (this.firstStepForm.get('isPhysicalFile')?.value) {
 			let msg = `Não é possivel selecionar arquivo. Desmarque a opção de arquivo físico.`;
@@ -283,12 +284,25 @@ export class NewCopyBoxComponent {
 
 		if (selectedFile) {
 			// Checar se o arquivo foi realmente selecionado
-			const fileSizeInMB = selectedFile.size / (1024 * 1024); // Convert to MB
+			const fileSizeInMB = selectedFile.size / (1024 * 1024); // Converter para MB
+			const fileName = selectedFile.name;
+
+			// Regex para validar o nome do arquivo
+			const fileNameRegex = /^(?!\s*$)[^\\/:*?"<>|,]*$/;
 
 			if (fileSizeInMB > this.maxFileSize) {
 				let msg = `Tamanho do arquivo excede o tamanho máximo permitido (${this.maxFileSize} MB)`;
-				this._snackBar.open(msg, 'Ok');
 				console.error(msg);
+				fileInput.value = '';
+				this._snackBar.open(msg, 'Ok');
+				return;
+			}
+
+			if (!fileNameRegex.test(fileName)) {
+				let msg = `Nome do arquivo contém símbolos não permitidos (\\/:*?"<>|,)`;
+				console.error(msg);
+				fileInput.value = '';
+				this._snackBar.open(msg, 'Ok');
 				return;
 			}
 
@@ -303,11 +317,18 @@ export class NewCopyBoxComponent {
 					this.firstStepForm.get('file')?.setValue(selectedFile);
 				},
 				error: (error) => {
-					console.error('Erro ao obter número de páginas:', error);
-					this._snackBar.open(
-						'Erro ao obter número de páginas do PDF',
-						'Ok'
+					let encryptErrMsg =
+						'O PDF está encriptado. \
+						Tente "Abrir o arquivo > Selecionar a opção Imprimir > Selecionar Salvar como PDF > Clicar em Salvar" \
+						e tente anexar o novo arquivo gerado';
+					console.error(
+						'Erro ao obter número de páginas: ' + encryptErrMsg,
+						error
 					);
+					fileInput.value = '';
+					this._snackBar.open('Erro: ' + encryptErrMsg, 'Ok', {
+						duration: 18000,
+					});
 				},
 			});
 		}

@@ -304,18 +304,8 @@ export class ViewRequestComponent implements OnInit {
 					error: (error: HttpErrorResponse) => {
 						if (newWindow) newWindow.close();
 
-						const reader = new FileReader();
-						// Ler blob de resposta como texto
-						reader.readAsText(error.error);
-						reader.onload = (event) => {
-							if (event.target) {
-								// Captar mensagem de erro como texto
-								const errorMessage = event.target
-									.result as string;
-								this._snackBar.open(errorMessage, 'Ok');
-								console.error(errorMessage);
-							}
-						};
+						this._snackBar.open('Ocorreu um erro ao baixar o arquivo', 'Ok');
+								console.error(error);
 						return throwError(() => error);
 					},
 				});
