@@ -402,8 +402,6 @@ export class RequestFormComponent implements AfterViewInit, OnDestroy, OnInit {
 					result.printConfig.pageIntervals
 				);
 
-				console.log(result);
-
 				const addOrUpdateCopy = (index?: number) => {
 					if (index !== undefined) {
 						this.copies.data[index] = result;

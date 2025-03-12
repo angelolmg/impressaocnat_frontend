@@ -10,14 +10,20 @@ import {
 	ActionService,
 	DEFAULT_USER_INFO,
 	Option,
-	User
+	User,
 } from '../../service/action.service';
 import { UserService } from '../../service/user.service';
 import { DEFAULT_USER_OPTIONS } from './../../service/action.service';
 
 @Component({
 	selector: 'app-navbar',
-	imports: [MatIconModule, MatButtonModule, RouterLink, MatTooltipModule, CommonModule],
+	imports: [
+		MatIconModule,
+		MatButtonModule,
+		RouterLink,
+		MatTooltipModule,
+		CommonModule,
+	],
 	templateUrl: './navbar.component.html',
 	styleUrl: './navbar.component.scss',
 })
@@ -47,16 +53,28 @@ export class NavbarComponent {
 	}
 
 	updateUser(user?: UserData) {
-		if (user) {
+		if (user && user.matricula && user.nome_usual && user.url_foto_75x100) {
+			// Desestruturação de objeto
+			// https://www.w3schools.com/js/js_destructuring.asp
+			const {
+				matricula: registration,
+				nome_usual: name,
+				url_foto_75x100: pfp,
+			} = user;
+
 			this.userSignal.set({
-				registration: user.matricula,
-				name: user.nome_usual,
-				pfp: user.url_foto_75x100,
+				registration,
+				name,
+				pfp,
 			});
 		} else {
-			this.userSignal.set(this.defaultUserInfo);
-			this.setOptionsDefault();
+			this.resetUser();
 		}
+	}
+
+	private resetUser() {
+		this.userSignal.set(this.defaultUserInfo);
+		this.setOptionsDefault();
 	}
 
 	setOptionsDefault() {

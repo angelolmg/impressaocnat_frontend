@@ -225,8 +225,8 @@ export class RequestService {
 		copyToPatch: CopyInterface,
 		request: RequestInterface
 	): Observable<any> {
-		// Verifica se há cópias na requisição
-		if (!request.copies?.length) return EMPTY;
+		// Verifica se solicitação é válida e há cópias anexas
+		if (!request.id || !request.copies?.length) return EMPTY;
 
 		// Busca o índice da cópia a ser atualizada
 		const copyIndex = request.copies.findIndex(
@@ -259,8 +259,8 @@ export class RequestService {
 		copyIdForRemoval: number,
 		request: RequestInterface
 	): Observable<any> {
-		// Verifica se há cópias na requisição
-		if (!request.copies?.length) return EMPTY;
+		// Verifica se solicitação é válida e há cópias anexas
+		if (!request.id || !request.copies?.length) return EMPTY;
 
 		// Verifica se a cópia a ser removida existe
 		const copyIndex = request.copies.findIndex(
@@ -313,7 +313,7 @@ export class RequestService {
 			const parts = range.trim().split('-');
 
 			if (parts.length === 2) {
-				// Handle range like "1-5"
+				// Lidar com intervalos do tipo "1-5"
 				const start = parseInt(parts[0], 10);
 				const end = parseInt(parts[1], 10);
 
@@ -321,7 +321,7 @@ export class RequestService {
 					totalPages += end - start + 1;
 				}
 			} else if (parts.length === 1) {
-				// Handle single page like "8"
+				// Lidar com páginas únicas do tipo "8"
 				const page = parseInt(parts[0], 10);
 
 				if (!isNaN(page)) {
@@ -332,5 +332,4 @@ export class RequestService {
 
 		return totalPages;
 	};
-	
 }

@@ -178,7 +178,7 @@ export class NewCopyBoxComponent {
 	}
 
 	ngOnInit(): void {
-		let copyData = this.data.data;
+		let copyData = this.data.data as CopyInterface;
 		if (copyData) this.baseCopyForm = copyData;
 
 		this.newCopyForm = new FormGroup({
@@ -426,7 +426,7 @@ export class NewCopyBoxComponent {
 			frontAndBack: this.secondStepForm.get('frontAndBack')?.value,
 		};
 
-		// Se é arquivo físico, inicializar um arquivo vazio com nome aleatório único
+		// Se é arquivo físico, inicializar um arquivo vazio com o nome sendo o rótulo fornecido
 		// Caso contrário, manter o nome usual
 		var isPhysicalFile: boolean =
 			this.firstStepForm.get('isPhysicalFile')?.value;

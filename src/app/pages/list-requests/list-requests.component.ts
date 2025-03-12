@@ -304,13 +304,18 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 	}
 
 	toggleRequest(request: RequestInterface) {
-		let hasConclusion = request.conclusionDate;
+		let requestId = request.id;
+		if (!requestId) {
+			this._snackBar.open(`Erro: Solicitação não encontrada`, 'Ok');
+			return;
+		}
 
+		let isClosed = request.conclusionDate;
 		this.dialogService
 			.openDialog(DialogBoxComponent, {
-				title: `${hasConclusion ? 'Abrir' : 'Fechar'} solicitação`,
+				title: `${isClosed ? 'Abrir' : 'Fechar'} solicitação`,
 				message: `Deseja ${
-					hasConclusion ? 'abrir' : 'fechar'
+					isClosed ? 'abrir' : 'fechar'
 				} a solicitação Nº ${request.id}?`,
 				positive_label: 'Sim',
 				negative_label: 'Não',
@@ -321,7 +326,7 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 				filter((confirmed) => confirmed),
 				// Mapeia para a operação de alteração
 				switchMap(() => {
-					return this.requestService.toogleRequest(request.id).pipe(
+					return this.requestService.toogleRequest(requestId).pipe(
 						// Após a mudança, atualiza a lista de solicitações
 						switchMap((response) => {
 							this._snackBar.open(response.message, 'Ok');
@@ -346,10 +351,16 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 	}
 
 	deleteRequest(request: RequestInterface): void {
+		let requestId = request.id;
+		if (!requestId) {
+			this._snackBar.open(`Erro: Solicitação não encontrada`, 'Ok');
+			return;
+		}
+
 		this.dialogService
 			.openDialog(DialogBoxComponent, {
 				title: 'Excluir solicitação',
-				message: `Deseja realmente excluir solicitação Nº ${request.id}?`,
+				message: `Deseja realmente excluir solicitação Nº ${requestId}?`,
 				warning: 'Esta ação é permanente',
 				positive_label: 'Sim',
 				negative_label: 'Não',
@@ -360,7 +371,7 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 				filter((confirmed) => confirmed),
 				// Mapeia para a operação de exclusão
 				switchMap(() =>
-					this.requestService.removeRequestById(request.id).pipe(
+					this.requestService.removeRequestById(requestId).pipe(
 						// Captura a mensagem de sucesso e emite a próxima operação
 						tap((response) => {
 							this._snackBar.open(response.message, 'Ok');

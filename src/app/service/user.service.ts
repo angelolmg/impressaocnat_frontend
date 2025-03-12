@@ -29,11 +29,11 @@ export class UserService {
 		location.href = this.authService.client.getLoginURL();
 	}
 
-	isTokenExpired() {
+	isTokenExpired(): boolean {
 		let token = this.authService.client.getToken();
 		let currentTime = new Date().getTime();
 
-		if(!token) return true;
+		if (!token) return true;
 
 		let tokenStartTime = token.startTime || 0;
 		let tokenExpirationTime = token.expirationTimeInSeconds || 0;
@@ -43,7 +43,7 @@ export class UserService {
 
 	logoutUser() {
 		let token = this.authService.client.getToken();
-		if (token) token.revoke(); 
+		if (token) token.revoke();
 		else console.warn('No token set');
 
 		localStorage.removeItem('suapToken');
@@ -68,15 +68,23 @@ export class UserService {
 
 		const url = `${environment.SUAP_URL}/api/rh/meus-dados/`;
 
-		return this.http
-			.get<UserData>(url)
-			.pipe(
-				switchMap((data: UserData) =>
-					this.fetchAdminPermission(data.matricula).pipe(
-						tap((isAdmin: boolean) => this.setUser(data, isAdmin))
-					)
-				)
-			);
+		return this.http.get<UserData>(url).pipe(
+			switchMap((data: UserData) => {
+				let userRegistration = data.matricula;
+
+				if (!userRegistration)
+					return throwError(
+						() =>
+							new Error(
+								`Não foi possível recuperar dados do usuário`
+							)
+					);
+
+				return this.fetchAdminPermission(userRegistration).pipe(
+					tap((isAdmin: boolean) => this.setUser(data, isAdmin))
+				);
+			})
+		);
 	}
 
 	setUser(data: UserData, isAdmin: boolean) {

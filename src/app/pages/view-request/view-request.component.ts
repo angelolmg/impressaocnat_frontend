@@ -23,7 +23,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { actions, ActionService, ActionType } from '../../service/action.service';
+import {
+	actions,
+	ActionService,
+	ActionType,
+} from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
 import { CopyInterface } from './../../models/copy.interface';
 import { PageType } from './../../service/action.service';
@@ -43,7 +47,7 @@ import {
 	Subject,
 	switchMap,
 	takeUntil,
-	throwError
+	throwError,
 } from 'rxjs';
 import { ConfigBoxComponent } from '../../components/config-box/config-box.component';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
@@ -209,13 +213,17 @@ export class ViewRequestComponent implements OnInit {
 			})
 			.afterClosed()
 			.subscribe((shouldRemove: boolean) => {
-				if (shouldRemove) {
+				let requestId = this.myRequest?.id;
+				if (shouldRemove && requestId) {
 					if (isLastCopy) {
 						this.requestService
-							.removeRequestById(this.myRequest!.id)
+							.removeRequestById(requestId)
 							.subscribe((response) => {
 								this._snackBar.open(response.message, 'Ok');
-								this.router.navigate([this.actionService.getLastPageState(true) || 'nova-solicitacao']);
+								this.router.navigate([
+									this.actionService.getLastPageState(true) ||
+										'nova-solicitacao',
+								]);
 							});
 					} else {
 						let removeCopy = this.requestService.removeCopyById(
@@ -223,9 +231,7 @@ export class ViewRequestComponent implements OnInit {
 							this.myRequest!
 						);
 						let getUpdatedRequest =
-							this.requestService.getRequestById(
-								this.myRequest!.id
-							);
+							this.requestService.getRequestById(requestId);
 
 						concat(removeCopy, getUpdatedRequest).subscribe(
 							(request: RequestInterface) => {
@@ -304,8 +310,11 @@ export class ViewRequestComponent implements OnInit {
 					error: (error: HttpErrorResponse) => {
 						if (newWindow) newWindow.close();
 
-						this._snackBar.open('Ocorreu um erro ao baixar o arquivo', 'Ok');
-								console.error(error);
+						this._snackBar.open(
+							'Ocorreu um erro ao baixar o arquivo',
+							'Ok'
+						);
+						console.error(error);
 						return throwError(() => error);
 					},
 				});
@@ -338,13 +347,12 @@ export class ViewRequestComponent implements OnInit {
 	}
 
 	showConfigs(copy: CopyInterface) {
-			this.dialogService
-				.openDialog(ConfigBoxComponent, {
-					title: 'Configurações de Impressão',
-					data: copy,
-					positive_label: 'Ok',
-				});
-		}
+		this.dialogService.openDialog(ConfigBoxComponent, {
+			title: 'Configurações de Impressão',
+			data: copy,
+			positive_label: 'Ok',
+		});
+	}
 
 	clearFilters() {
 		this.queryForm.reset();
