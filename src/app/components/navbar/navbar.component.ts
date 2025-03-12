@@ -5,7 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router, RouterLink } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
-import { userData } from '../../models/userData.interface';
+import { UserData } from '../../models/userData.interface';
 import {
 	ActionService,
 	DEFAULT_USER_INFO,
@@ -46,7 +46,7 @@ export class NavbarComponent {
 		this.actionService.toggleSideMenuUI.emit();
 	}
 
-	updateUser(user?: userData) {
+	updateUser(user?: UserData) {
 		if (user) {
 			this.userSignal.set({
 				registration: user.matricula,

@@ -1,4 +1,4 @@
-export interface userData {
+export interface UserData {
 	id: number;
 	matricula: string;
 	nome_usual: string;
@@ -13,10 +13,10 @@ export interface userData {
 	url_foto_150x200: string;
 	tipo_vinculo: string;
 	is_admin: boolean;
-	vinculo: Vinculo;
+	vinculo: Affiliation;
 }
 
-export interface Vinculo {
+export interface Affiliation {
 	matricula: string;
 	nome: string;
 	setor_suap: string;

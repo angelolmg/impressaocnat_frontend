@@ -1,7 +1,7 @@
 import { EventEmitter, inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { environment } from './../../environments/environment';
-import { userData } from './../models/userData.interface';
+import { UserData } from './../models/userData.interface';
 
 @Injectable({
 	providedIn: 'root',
@@ -10,7 +10,7 @@ export class AuthService {
 	router: Router = inject(Router);
 	client!: SuapClient;
 
-	userUpdate = new EventEmitter<userData>();
+	userUpdate = new EventEmitter<UserData>();
 
 	constructor() {
 		this.client = new SuapClient(

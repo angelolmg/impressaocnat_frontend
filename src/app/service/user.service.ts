@@ -2,8 +2,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { EventEmitter, inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, Subscription, switchMap, tap, throwError } from 'rxjs';
+import { UserData } from '../models/userData.interface';
 import { environment } from './../../environments/environment';
-import { userData } from './../models/userData.interface';
 import { AuthService } from './auth.service';
 
 @Injectable({
@@ -13,9 +13,9 @@ export class UserService {
 	http: HttpClient = inject(HttpClient);
 	router: Router = inject(Router);
 	authService = inject(AuthService);
-	user?: userData;
+	user?: UserData;
 
-	userUpdate = new EventEmitter<userData>();
+	userUpdate = new EventEmitter<UserData>();
 	userInit = new Subscription();
 
 	constructor() {
@@ -69,9 +69,9 @@ export class UserService {
 		const url = `${environment.SUAP_URL}/api/rh/meus-dados/`;
 
 		return this.http
-			.get<userData>(url)
+			.get<UserData>(url)
 			.pipe(
-				switchMap((data: userData) =>
+				switchMap((data: UserData) =>
 					this.fetchAdminPermission(data.matricula).pipe(
 						tap((isAdmin: boolean) => this.setUser(data, isAdmin))
 					)
@@ -79,14 +79,14 @@ export class UserService {
 			);
 	}
 
-	setUser(data: userData, isAdmin: boolean) {
+	setUser(data: UserData, isAdmin: boolean) {
 		this.user = data;
 		this.user.is_admin = isAdmin;
 		localStorage.setItem('suapAdmin', isAdmin.toString());
 		this.userUpdate.emit(this.user);
 	}
 
-	getCurrentUser(): userData | undefined {
+	getCurrentUser(): UserData | undefined {
 		return this.user;
 	}
 
