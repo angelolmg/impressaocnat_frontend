@@ -1,5 +1,9 @@
 import { Pipe, PipeTransform } from '@angular/core';
 import { ActionType } from '../service/action.service';
+
+/**
+ * Pipe para converter um tipo de ação (ActionType) em um nome de ícone do Material Icons (string).
+ */
 @Pipe({
 	name: 'icon',
 })
@@ -20,9 +24,8 @@ export class IconPipe implements PipeTransform {
 				return 'open_in_new';
 			case ActionType.DETALHES:
 				return 'settings';
+			default:
+				return 'question_mark';
 		}
-		
-		// Just in case
-		return 'question_mark';
 	}
 }

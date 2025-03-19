@@ -7,6 +7,7 @@ import {
 	OnInit,
 	signal,
 	ViewChild,
+	WritableSignal,
 } from '@angular/core';
 import {
 	FormControl,
@@ -42,10 +43,9 @@ import {
 	map,
 	of,
 	Subject,
-	Subscription,
 	switchMap,
 	takeUntil,
-	tap,
+	tap
 } from 'rxjs';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
 import { RequestInterface } from '../../models/request.interface';
@@ -54,7 +54,7 @@ import {
 	actions,
 	ActionService,
 	ActionType,
-	PageType,
+	PageState,
 } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
 import { RequestService } from '../../service/request.service';
@@ -85,8 +85,18 @@ import { RequestService } from '../../service/request.service';
 	changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ListRequestsComponent implements OnInit, OnDestroy {
+	// Serviços
+	dialogService = inject(DialogService);
+	actionService = inject(ActionService);
+	requestService = inject(RequestService);
+	_snackBar = inject(MatSnackBar);
+	router = inject(Router);
+	activatedRoute = inject(ActivatedRoute);
+
+	/** Subject para desinscrever observables e prevenir memory leaks. */
 	private ngUnsubscribe = new Subject<void>();
 
+	/** Colunas a serem exibidas na tabela de solicitações. */
 	displayedColumns: string[] = [
 		'id',
 		'registration',
@@ -97,26 +107,29 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 		'actions',
 	];
 
+	/** Ações permitidas para a visualização de solicitações. */
 	allowedActions: ActionType[] = actions.allowedActionsforViewRequests;
 
-	dialogService = inject(DialogService);
-	actionService = inject(ActionService);
-	requestService = inject(RequestService);
-	_snackBar = inject(MatSnackBar);
-	router = inject(Router);
-	activatedRoute = inject(ActivatedRoute);
+	/** Tipo/estado da página atual. */
+	pageState: PageState = PageState.viewAllRequests;
 
-	pageType = PageType.viewAllRequests;
-	filtering = true;
+	/** Nome deste componente */
+	componentName: string = 'list-requests';
 
+	/** Indica se a listagem deve mostrar apenas as próprias solicitações. */
+	filterForOwnRequests: boolean = true;
+
+	/** Fonte de dados para a tabela de requisições. */
 	requests = new MatTableDataSource<RequestInterface>();
-	loadingData = signal(true);
 
+	/** Sinal para indicar se os dados estão sendo carregados. */
+	loadingData: WritableSignal<boolean> = signal(true);
+
+	// Referências a componentes DOM
 	@ViewChild(MatSort) sort!: MatSort;
 	@ViewChild(MatPaginator) paginator!: MatPaginator;
 
-	subscriptions: Subscription[] = [];
-
+	/** Formulário para filtragem e pesquisa de solicitações. */
 	queryForm = new FormGroup({
 		concluded: new FormControl<boolean | null>(null),
 		startDate: new FormControl<Date | null>(null),
@@ -124,7 +137,14 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 		query: new FormControl(),
 	});
 
-	ngOnInit() {
+	/**
+	 * Método do ciclo de vida chamado na inicialização do componente.
+	 *
+	 * Inicializa a tabela, aplica filtros e lida com subscriptions.
+	 */
+	ngOnInit(): void {
+		// Observa e lida com diversas ações de solicitações dentro da listagem:
+		// Deleção, edição, visualização, abertura e fechamento (toggle)
 		this.actionService.deleteRequest
 			.pipe(takeUntil(this.ngUnsubscribe))
 			.subscribe((request) => {
@@ -143,36 +163,42 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 				this.viewRequestRedirect(request);
 			});
 
-		this.actionService.toggleRequest
+		this.actionService.toggleRequestStatus
 			.pipe(takeUntil(this.ngUnsubscribe))
 			.subscribe((request) => {
-				this.toggleRequest(request);
+				this.toggleRequestStatus(request);
 			});
 
-		// Inicializar listagem
-		// Admins: filtra entre as próprias ou todas as solicitações, a depender da rota '/minhas-solicitacoes' vs '/solicitacoes'
-		// Bug: Caso retorne erro, OnInit chamado 2 vezes
-		// https://stackoverflow.com/questions/38787795/why-is-ngoninit-called-twice
+		// Inicializa a listagem de requisições.
+		// Para administradores: filtra entre as próprias requisições ou todas as requisições, dependendo da rota.
+		// '/minhas-solicitacoes' vs '/solicitacoes'.
+		// Nota: Existe um bug conhecido que pode causar a chamada dupla do ngOnInit em caso de erro.
+		// Referência: https://stackoverflow.com/questions/38787795/why-is-ngoninit-called-twice
 
-		this.filtering =
+		// Determina se a listagem deve filtrar apenas as próprias requisições do usuário.
+		this.filterForOwnRequests =
 			this.activatedRoute.snapshot.parent != null &&
 			this.activatedRoute.snapshot.parent.url[0].path ==
 				'minhas-solicitacoes';
 
-		if (this.filtering) this.pageType = PageType.viewMyRequests;
+		// Se a listagem deve filtrar as próprias requisições, atualiza o tipo da página.
+		if (this.filterForOwnRequests) this.pageState = PageState.viewMyRequests;
 
+		// Obtém todas as requisições do serviço, aplicando filtros e parâmetros do formulário.
 		this.requestService
 			.getAllRequests({
-				filtering: this.filtering,
+				filtering: this.filterForOwnRequests,
 				...this.queryForm.value,
 			})
 			.pipe(
+				// Garante que o indicador de carregamento seja desativado após a conclusão da requisição.
 				finalize(() => {
 					this.loadingData.set(false);
 					return of([]);
 				})
 			)
 			.subscribe({
+				// Atualiza a tabela de requisições com os dados recebidos.
 				next: (requests: RequestInterface[]) => {
 					this.requests.data = requests;
 					this.requests.sort = this.sort;
@@ -183,35 +209,48 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 				},
 			});
 
+		// Observa mudanças no formulário de pesquisa e aplica filtros.
 		this.queryForm.valueChanges
 			.pipe(
-				takeUntil(this.ngUnsubscribe),
-				debounceTime(500),
+				takeUntil(this.ngUnsubscribe), // Desinscreve ao destruir o componente.
+				debounceTime(500), // Aplica um atraso de 500ms para evitar múltiplas requisições.
 				switchMap((params) => {
+					// Inicia o indicador de carregamento.
 					this.loadingData.set(true);
+					// Obtém as requisições filtradas com base nos parâmetros do formulário.
 					return this.requestService
 						.getAllRequests({
-							filtering: this.filtering,
+							filtering: this.filterForOwnRequests,
 							...params,
 						})
-						.pipe(finalize(() => this.loadingData.set(false)));
+						.pipe(finalize(() => this.loadingData.set(false))); // Desativa o indicador de carregamento ao concluir.
 				})
 			)
 			.subscribe({
+				// Atualiza a tabela com as requisições filtradas.
 				next: (requests: RequestInterface[]) => {
 					this.requests.data = requests;
 				},
 				error: (error) => {
 					this._snackBar.open(
-						`Erro ao buscar solicitações: ${error}`,
+						`Erro ao buscar solicitações: ${error.error}`,
 						'Ok'
 					);
 				},
 			});
 	}
 
-	generateReport() {
+	/**
+	 * Gera um relatório das solicitações exibidas na tabela.
+	 *
+	 * Abre um diálogo de confirmação para o usuário antes de gerar o relatório.
+	 * Se confirmado, abre uma nova aba do navegador com um relatório das solicitações.
+	 * Exibe mensagens de erro em um snackbar caso ocorram problemas.
+	 */
+	generateReport(): void {
+		// Verifica se há solicitações na tabela.
 		if (this.requests.data.length > 0) {
+			// Abre um diálogo de confirmação para o usuário.
 			this.dialogService
 				.openDialog(DialogBoxComponent, {
 					title: `Abrir relatório`,
@@ -224,12 +263,14 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 				.pipe(
 					// Continua somente se o usuário confirmar a ação
 					filter((confirmed) => confirmed),
+					// Executa a geração do relatório e abre a nova aba.
 					switchMap(() => {
 						this.loadingData.set(true);
 
-						// Abre uma nova janela
+						// Abre uma nova janela/aba do navegador.
 						const newWindow = window.open('', '_blank');
 
+						// Verifica se a nova aba foi aberta com sucesso.
 						if (!newWindow) {
 							this._snackBar.open(
 								'Popup bloqueado! Por favor, permita popups para este site.',
@@ -239,7 +280,7 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 							return EMPTY;
 						}
 
-						// Tela de carregamento padrão
+						// Exibe uma tela de carregamento na nova aba.
 						newWindow.document.write(`
 							<!DOCTYPE html>
 							<html>
@@ -252,14 +293,17 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 							</html>
 						`);
 
+						// Chama o serviço para gerar o relatório HTML das solicitações.
 						return this.requestService
 							.generateReport(this.requests.data)
 							.pipe(
-								map((reportHtml) => ({ reportHtml, newWindow })) // Passa ambos para o próximo operador
+								// Passa o relatório HTML e a nova aba para o próximo operador.
+								map((reportHtml) => ({ reportHtml, newWindow }))
 							);
 					})
 				)
 				.subscribe({
+					// Escreve o relatório HTML na nova aba.
 					next: ({ reportHtml, newWindow }) => {
 						// Verifica se a nova aba ainda está aberta antes de escrever o relatório
 						if (newWindow && !newWindow.closed) {
@@ -289,28 +333,32 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 		}
 	}
 
-	getRowCount(): number {
-		const isLastPage =
-			this.paginator.pageIndex === this.paginator.getNumberOfPages() - 1;
-		const itemsInLastPage = this.paginator.length % this.paginator.pageSize;
-
-		return isLastPage && itemsInLastPage !== 0
-			? itemsInLastPage
-			: this.paginator.pageSize;
-	}
-
-	handlePageEvent($event: PageEvent) {
+	handlePageEvent($event: PageEvent): void {
 		console.log($event);
 	}
 
-	toggleRequest(request: RequestInterface) {
+	/**
+	 * Alterna o status de uma solicitação (aberta/fechada).
+	 *
+	 * Abre um diálogo de confirmação para o usuário antes de alterar o status da solicitação.
+	 * Se confirmado, chama o serviço para alterar o status da solicitação e atualiza a tabela.
+	 * Exibe mensagens de erro em um snackbar caso ocorram problemas.
+	 *
+	 * @param {RequestInterface} request A solicitação a ser alternada.
+	 */
+	toggleRequestStatus(request: RequestInterface): void {
 		let requestId = request.id;
+
+		// Verifica se o ID da solicitação é válido.
 		if (!requestId) {
 			this._snackBar.open(`Erro: Solicitação não encontrada`, 'Ok');
 			return;
 		}
 
+		// Verifica se a solicitação está fechada.
 		let isClosed = request.conclusionDate;
+
+		// Abre um diálogo de confirmação para o usuário.
 		this.dialogService
 			.openDialog(DialogBoxComponent, {
 				title: `${isClosed ? 'Abrir' : 'Fechar'} solicitação`,
@@ -326,37 +374,51 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 				filter((confirmed) => confirmed),
 				// Mapeia para a operação de alteração
 				switchMap(() => {
-					return this.requestService.toogleRequest(requestId).pipe(
-						// Após a mudança, atualiza a lista de solicitações
-						switchMap((response) => {
-							this._snackBar.open(response.message, 'Ok');
-							return this.requestService.getAllRequests({
-								filtering: this.filtering,
-								...this.queryForm.value,
-							});
-						}),
-						tap((requests) => {
-							this.requests.data = requests;
-						}),
-						catchError((error) => {
-							console.log(error);
-
-							this._snackBar.open(error.error.message, 'Ok');
-							return EMPTY;
-						})
-					);
+					return this.requestService
+						.toggleRequestStatus(requestId)
+						.pipe(
+							// Após a mudança, busca a lista de solicitações atualizada
+							switchMap((response) => {
+								this._snackBar.open(response.message, 'Ok');
+								return this.requestService.getAllRequests({
+									filtering: this.filterForOwnRequests,
+									...this.queryForm.value,
+								});
+							}),
+							// Atualiza a tabela com as solicitações atualizadas.
+							tap((requests) => {
+								this.requests.data = requests;
+							}),
+							catchError((error) => {
+								console.log(error);
+								this._snackBar.open(error.error.message, 'Ok');
+								return EMPTY;
+							})
+						);
 				})
 			)
 			.subscribe();
 	}
 
+	/**
+	 * Exclui uma solicitação específica.
+	 *
+	 * Abre um diálogo de confirmação para o usuário antes de excluir a solicitação.
+	 * Se confirmado, chama o serviço para excluir a solicitação e atualiza a tabela.
+	 * Exibe mensagens de sucesso ou erro em um snackbar.
+	 *
+	 * @param {RequestInterface} request A solicitação a ser removida.
+	 */
 	deleteRequest(request: RequestInterface): void {
 		let requestId = request.id;
+
+		// Verifica se o ID da solicitação é válido.
 		if (!requestId) {
 			this._snackBar.open(`Erro: Solicitação não encontrada`, 'Ok');
 			return;
 		}
 
+		// Abre um diálogo de confirmação para o usuário.
 		this.dialogService
 			.openDialog(DialogBoxComponent, {
 				title: 'Excluir solicitação',
@@ -372,24 +434,24 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 				// Mapeia para a operação de exclusão
 				switchMap(() =>
 					this.requestService.removeRequestById(requestId).pipe(
-						// Captura a mensagem de sucesso e emite a próxima operação
+						// Exibe um snackbar com a mensagem de sucesso.
 						tap((response) => {
 							this._snackBar.open(response.message, 'Ok');
 						}),
-						// Em caso de erro, trata e retorna um observable vazio
 						catchError((error) => {
 							this._snackBar.open(error.error.message, 'Ok');
 							return EMPTY;
 						})
 					)
 				),
-				// Após a exclusão, atualiza a lista de solicitações
+				// Após a exclusão, busca lista atualizada de solicitações
 				switchMap(() =>
 					this.requestService.getAllRequests({
-						filtering: this.filtering,
+						filtering: this.filterForOwnRequests,
 						...this.queryForm.value,
 					})
 				),
+				// Atualiza a tabela com as solicitações atualizadas.
 				tap((requests) => {
 					this.requests.data = requests;
 				}),
@@ -404,30 +466,60 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 			.subscribe();
 	}
 
-	editRequestRedirect(request: RequestInterface) {
+	/**
+	 * Redireciona para a página de edição de uma solicitação específica.
+	 *
+	 * Navega para a rota '/editar/:id', onde ':id' é o ID da solicitação.
+	 * A navegação é relativa à rota ativa atual.
+	 *
+	 * @param {RequestInterface} request A solicitação a ser editada.
+	 */
+	editRequestRedirect(request: RequestInterface): void {
 		this.router.navigate(['editar', request.id], {
 			relativeTo: this.activatedRoute,
 		});
 	}
 
-	viewRequestRedirect(request: RequestInterface) {
+	/**
+	 * Redireciona para a página de visualização de uma solicitação específica.
+	 *
+	 * Navega para a rota '/ver/:id', onde ':id' é o ID da solicitação.
+	 * A navegação é relativa à rota ativa atual.
+	 *
+	 * @param {RequestInterface} request A solicitação a ser visualizada.
+	 */
+	viewRequestRedirect(request: RequestInterface): void {
 		this.router.navigate(['ver', request.id], {
 			relativeTo: this.activatedRoute,
 		});
 	}
 
-	refreshTable() {
+	/**
+	 * Atualiza a tabela de solicitações.
+	 *
+	 * Atualiza a propriedade 'data' do objeto 'requests' para forçar a atualização da tabela.
+	 */
+	refreshTable(): void {
 		// Atualizar objeto data source de cópias da tabela
 		// Angular Material is weird
 		this.requests.data = this.requests.data;
 	}
 
-	clearFilters() {
+	/**
+	 * Limpa os filtros de pesquisa da tabela.
+	 *
+	 * Reseta o formulário 'queryForm' para seus valores iniciais, removendo todos os filtros aplicados.
+	 */
+	clearFilters(): void {
 		this.queryForm.reset();
 	}
 
-	// Unsubscribe para prevenir memory leak
-	ngOnDestroy() {
+	/**
+	 * Método do ciclo de vida chamado quando o componente é destruído.
+	 *
+	 * Desinscreve observables para prevenir memory leaks.
+	 */
+	ngOnDestroy(): void {
 		this.ngUnsubscribe.next();
 		this.ngUnsubscribe.complete();
 	}

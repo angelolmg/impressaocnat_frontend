@@ -2,12 +2,24 @@ import { inject, Injectable } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DialogData } from '../models/dialogData.interface';
 
+/**
+ * Serviço para gerenciamento de diálogos (modais) na aplicação.
+ */
 @Injectable({
 	providedIn: 'root',
 })
 export class DialogService {
+	/** Instância do serviço MatDialog para abrir e gerenciar diálogos. */
 	readonly dialog = inject(MatDialog);
 
+	/**
+     * Abre um diálogo (modal) na aplicação.
+     *
+     * @param {any} dialogBoxComponent O componente do diálogo a ser aberto.
+     * @param {DialogData} [data] Os dados a serem passados para o componente do diálogo.
+     * @param {boolean} [disableClose=false] Indica se o diálogo deve ser fechado ao clicar fora dele ou pressionar ESC.
+     * @returns {MatDialogRef<any>} Uma referência para o diálogo aberto.
+     */
 	openDialog(
 		dialogBoxComponent: any,
 		data?: DialogData,
@@ -22,6 +34,7 @@ export class DialogService {
 		const buttonElement = document.activeElement as HTMLElement;
 		buttonElement.blur();
 
+		// Abre o diálogo com as configurações fornecidas.
 		return this.dialog.open(dialogBoxComponent, {
 			data: data,
 			disableClose: disableClose,

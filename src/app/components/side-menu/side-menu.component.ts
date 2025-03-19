@@ -32,36 +32,53 @@ import {
 	styleUrl: './side-menu.component.scss',
 })
 export class SideMenuComponent implements AfterViewInit {
-	private ngUnsubscribe = new Subject<void>();
+	/** Serviços */
 	dialogService = inject(DialogService);
 	userService = inject(UserService);
 	actionService = inject(ActionService);
 	router = inject(Router);
+
+	/** Subject para desinscrever observables e prevenir memory leaks. */
+	private ngUnsubscribe = new Subject<void>();
+
+	/** Rota atual da aplicação. */
 	currentRoute: string = '';
 
-	options = signal<Option[]>([]);
+	/** Sinal para armazenar as opções do menu lateral. */
+	sideMenuOptions = signal<Option[]>([]);
 
+	/** Referência ao componente MatDrawer. */
 	@ViewChild(MatDrawer) drawer!: MatDrawer;
 
+	/**
+	 * Método do ciclo de vida chamado após a inicialização da view.
+	 *
+	 * Inicializa a rota atual, define as opções padrão do menu,
+	 * observa mudanças no usuário e ações do serviço.
+	 */
 	ngAfterViewInit(): void {
+		// Observa eventos de roteamento para atualizar a rota atual.
 		this.router.events.subscribe((event) => {
 			if (event instanceof NavigationEnd) {
-				this.currentRoute = event.url.slice(1);		
+				this.currentRoute = event.url.slice(1);
 			}
 		});
 
-		this.setOptionsDefault();
+		// Define as opções padrão do menu.
+		this.setMenuOptionsDefault();
 
+		// Observa mudanças no usuário para atualizar as opções do menu.
 		this.userService.userUpdate
 			.pipe(takeUntil(this.ngUnsubscribe))
 			.subscribe(() => {
 				if (this.userService.getCurrentUser()?.is_admin) {
-					this.options.update((curr) =>
+					this.sideMenuOptions.update((curr: Option[]) =>
 						curr.concat(ADMIN_USER_OPTIONS)
 					);
 				}
 			});
 
+		// Observa ações para alternar a visibilidade do menu lateral.
 		this.actionService.toggleSideMenuUI
 			.pipe(takeUntil(this.ngUnsubscribe))
 			.subscribe(() => {
@@ -69,25 +86,39 @@ export class SideMenuComponent implements AfterViewInit {
 			});
 	}
 
-	toggleDrawer() {
+	/** Alterna a visibilidade do menu lateral. */
+	toggleDrawer(): void {
 		this.drawer.toggle();
 	}
 
-	setOptionsDefault() {
-		this.options.set(DEFAULT_USER_OPTIONS);
+	/** Define as opções padrão do menu lateral. */
+	setMenuOptionsDefault(): void {
+		this.sideMenuOptions.set(DEFAULT_USER_OPTIONS);
 	}
 
-	optionSelected(route: string) {
-		let parentRoute = this.currentRoute.split('/')[0]
-		return parentRoute && route == parentRoute;
+	/**
+	 * Verifica se uma opção do menu está selecionada com base na rota atual.
+	 *
+	 * @param {string} route A rota da opção do menu.
+	 * @returns {boolean} Retorna true se a opção estiver selecionada, false caso contrário.
+	 */
+	menuOptionSelected(route: string): boolean {
+		let parentRoute: string = this.currentRoute.split('/')[0];
+		let onRoute: boolean = !!parentRoute && route == parentRoute;
+		return onRoute;
 	}
 
-	getCurrentYear() {
+	/** Obtém o ano atual. */
+	getCurrentYear(): number {
 		return new Date().getFullYear();
 	}
 
-	// Unsubscribe para prevenir memory leak
-	ngOnDestroy() {
+	/**
+	 * Método do ciclo de vida chamado quando o componente é destruído.
+	 *
+	 * Desinscreve observables para prevenir memory leaks.
+	 */
+	ngOnDestroy(): void {
 		this.ngUnsubscribe.next();
 		this.ngUnsubscribe.complete();
 	}

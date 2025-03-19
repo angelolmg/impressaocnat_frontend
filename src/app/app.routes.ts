@@ -3,66 +3,66 @@ import { ListRequestsComponent } from './pages/list-requests/list-requests.compo
 import { RedirectComponent } from './pages/redirect/redirect.component';
 import { RequestFormComponent } from './pages/request-form/request-form.component';
 import { ViewRequestComponent } from './pages/view-request/view-request.component';
-import { pageTypeRoutes, PageType } from './service/action.service';
+import { PageState, pageStateRoutes } from './service/action.service';
 
 export const routes: Routes = [
-    {
-        path: '',
-        pathMatch: 'full',
-        component: RequestFormComponent
-    },
-    {
-        path: pageTypeRoutes[PageType.viewMyRequests],
-        children: [
-            {
-                path: '',
-                component: ListRequestsComponent,
-            },
-            {
-                path: pageTypeRoutes[PageType.editRequest],
-                component: RequestFormComponent,
-            },
-            {
-                path: pageTypeRoutes[PageType.viewRequest],
-                component: ViewRequestComponent
-            },
-        ]
-    },
-    {
-        path: pageTypeRoutes[PageType.viewAllRequests],
-        children: [
-            {
-                path: '',
-                component: ListRequestsComponent,
-            },
-            {
-                path: pageTypeRoutes[PageType.editRequest],
-                component: RequestFormComponent,
-            },
-            {
-                path: pageTypeRoutes[PageType.viewRequest],
-                component: ViewRequestComponent
-            },
-        ]
-    },
-    {
-        path: pageTypeRoutes[PageType.newRequest],
-        component: RequestFormComponent,
-    },
-    {
-        path: pageTypeRoutes[PageType.editRequest],
-        component: RequestFormComponent,
-    },
-    {
-        path: pageTypeRoutes[PageType.viewRequest],
-        component: ViewRequestComponent
-    },
-    {
-        path: 'redirect',
-        component: RedirectComponent
-    },
-    {
-        path: '**',
-        redirectTo: pageTypeRoutes[PageType.newRequest]
-    }
+	{
+		path: '',
+		pathMatch: 'full',
+		component: RequestFormComponent,
+	},
+	{
+		path: pageStateRoutes[PageState.viewMyRequests],
+		children: [
+			{
+				path: '',
+				component: ListRequestsComponent,
+			},
+			{
+				path: pageStateRoutes[PageState.editRequest],
+				component: RequestFormComponent,
+			},
+			{
+				path: pageStateRoutes[PageState.viewRequest],
+				component: ViewRequestComponent,
+			},
+		],
+	},
+	{
+		path: pageStateRoutes[PageState.viewAllRequests],
+		children: [
+			{
+				path: '',
+				component: ListRequestsComponent,
+			},
+			{
+				path: pageStateRoutes[PageState.editRequest],
+				component: RequestFormComponent,
+			},
+			{
+				path: pageStateRoutes[PageState.viewRequest],
+				component: ViewRequestComponent,
+			},
+		],
+	},
+	{
+		path: pageStateRoutes[PageState.newRequest],
+		component: RequestFormComponent,
+	},
+	{
+		path: pageStateRoutes[PageState.editRequest],
+		component: RequestFormComponent,
+	},
+	{
+		path: pageStateRoutes[PageState.viewRequest],
+		component: ViewRequestComponent,
+	},
+	{
+		path: 'redirect',
+		component: RedirectComponent,
+	},
+	{
+		path: '**',
+		redirectTo: pageStateRoutes[PageState.newRequest],
+	},
 ];

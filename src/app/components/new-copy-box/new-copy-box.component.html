@@ -1,3 +1,5 @@
+<!-- Cabeçalho -->
+
 <h2 mat-dialog-title>{{ data.title || "Adicionar Novo Arquivo" }}</h2>
 
 @if (data.message) {
@@ -8,8 +10,14 @@
 >
 }
 
+<!-- Conteúdo -->
 <mat-dialog-content class="file-input">
+	<!-- O MatStepper é composto por três etapas na criação de uma cópia: 
+	 (1) Anexar arquivo (digital ou físico)
+	 (2) Configurações de impressão e 
+	 (3) Visualizar resumo (+ observações) -->
 	<mat-stepper #stepper style="height: auto" [linear]="true">
+		<!-- (1) Anexar arquivo (digital ou físico) -->
 		<mat-step
 			label="Selecionar tipo de arquivo"
 			[stepControl]="firstStepForm"
@@ -135,6 +143,17 @@
 										formControlName="fileName"
 									/>
 									@if
+									((firstStepForm.get('fileName')?.hasError('minlength')
+									||
+									firstStepForm.get('fileName')?.hasError('maxlength'))
+									&&
+									!firstStepForm.get('fileName')?.hasError('required'))
+									{
+									<mat-error
+										>O rótulo deve conter no mínimo 3
+										dígitos</mat-error
+									>
+									} @else if
 									(firstStepForm.get('fileName')?.hasError('pattern')
 									&&
 									!firstStepForm.get('fileName')?.hasError('required'))
@@ -178,10 +197,11 @@
 				</mat-accordion>
 			</form>
 		</mat-step>
+		<!-- (2) Configurações de impressão -->
 		<mat-step
 			label="Configurações de impressão"
 			[stepControl]="secondStepForm"
-			[completed]="fistStepValid() && secondStepValid()"
+			[completed]="firstStepForm.valid && secondStepForm.valid"
 		>
 			<form [formGroup]="secondStepForm" class="second-step">
 				<mat-form-field>
@@ -286,6 +306,7 @@
 				</mat-accordion>
 			</form>
 		</mat-step>
+		<!-- (3) Visualizar resumo (+ observações) -->
 		<mat-step label="Resumo">
 			<div class="overview-text">
 				<p data-label="Nome:">
@@ -351,6 +372,7 @@
 	</mat-stepper>
 </mat-dialog-content>
 
+<!-- Botões de ação  -->
 <mat-dialog-actions>
 	<button mat-button (click)="onNoClick()">
 		{{ data.negative_label || "Cancelar" }}
@@ -374,8 +396,8 @@
 	<button
 		mat-button
 		[disabled]="
-			(stepper.selectedIndex === 0 && !fistStepValid()) ||
-			(stepper.selectedIndex === 1 && !secondStepValid())
+			(stepper.selectedIndex === 0 && firstStepForm.invalid) ||
+			(stepper.selectedIndex === 1 && secondStepForm.invalid)
 		"
 		(click)="goToNext(stepper)"
 		[hidden]="stepper.selectedIndex === stepper.steps.length - 1"

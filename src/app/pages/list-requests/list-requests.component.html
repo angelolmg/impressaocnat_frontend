@@ -1,7 +1,8 @@
 <div class="content">
 	<div class="top-shelf">
-		<h2 class="page-title">{{ pageType }}</h2>
+		<h2 class="page-title">{{ pageState }}</h2>
 
+		<!-- Formulário de filtros  -->
 		<form [formGroup]="queryForm" class="my-options">
 			<mat-form-field>
 				<mat-label>Filtrar por Criação</mat-label>
@@ -65,7 +66,13 @@
 		</form>
 	</div>
 
+	<!-- Tabela de solicitações -->
 	<div class="table-wrapper">
+
+		<!-- TODO: Aqui [style.height.%] calcula a altura da tabela de acordo com o número de itens que 
+		 aparecem na página atual da listagem, relativo a lista de todas as solicitações. 
+		 Isso garante que todos os itens tenham sempre a "mesma" altura.  
+		 Solução itermediária até ser implementada paginação. -->
 		<table
 			mat-table
 			[dataSource]="requests"
@@ -186,6 +193,7 @@
 				</td>
 			</ng-container>
 
+			<!-- Seletor de ações -->
 			<ng-container matColumnDef="actions">
 				<th mat-header-cell *matHeaderCellDef>Ações</th>
 				<td mat-cell *matCellDef="let element">
@@ -193,18 +201,18 @@
 					<button
 						[hidden]="
 							actionService.hiddenHandler(
-								'list-requests',
-								pageType,
-								action,
-								element
+								element,
+								componentName,
+								pageState,
+								action
 							)
 						"
 						[disabled]="
 							actionService.disabledHandler(
-								'list-requests',
-								pageType,
-								action,
-								element
+								element,
+								componentName,
+								pageState,
+								action
 							)
 						"
 						mat-icon-button
@@ -214,8 +222,8 @@
 							actionService.callbackHandler(
 								action,
 								element,
-								'list-requests',
-								pageType
+								componentName,
+								pageState
 							)
 						"
 					>
@@ -233,6 +241,7 @@
 			></tr>
 		</table>
 
+		<!-- Overlay de carregamento da tabela  -->
 		@if(loadingData()) {
 		<div class="overlay">
 			<mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
@@ -240,6 +249,7 @@
 		}
 	</div>
 
+	<!-- Paginação -->
 	<mat-paginator
 		#paginator
 		showFirstLastButtons

@@ -22,11 +22,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatStepper, MatStepperModule } from '@angular/material/stepper';
+import { FormErrorStateMatcher, pageRangeValidator } from '../../configs/validators.config';
 import { CopyInterface } from '../../models/copy.interface';
 import { DialogData } from '../../models/dialogData.interface';
-import { MyErrorStateMatcher } from '../../pages/request-form/request-form.component';
 import { RequestService } from '../../service/request.service';
-import { pageRangeValidator } from '../new-copy-box/new-copy-box.component';
 
 @Component({
 	selector: 'app-edit-copy',
@@ -52,24 +51,43 @@ import { pageRangeValidator } from '../new-copy-box/new-copy-box.component';
 	templateUrl: './edit-copy-box.component.html',
 	styleUrl: './edit-copy-box.component.scss',
 })
-export class EditCopyBoxComponent implements OnInit {
-	readonly dialogRef = inject(MatDialogRef<EditCopyBoxComponent>);
-	readonly data = inject<DialogData>(MAT_DIALOG_DATA);
-	requestService = inject(RequestService);
-	matcher = new MyErrorStateMatcher();
 
+/**
+ * Caixa de edição de cópias
+ * Usuários podem editar configurações de impressão e observações anexas
+ */
+export class EditCopyBoxComponent implements OnInit {
+	/** Referência ao diálogo atual, usada para fechar o diálogo. */
+	readonly dialogRef = inject(MatDialogRef<EditCopyBoxComponent>);
+
+	/** Dados passados para o diálogo, contendo a configuração de cópia. */
+	readonly data = inject<DialogData>(MAT_DIALOG_DATA);
+
+	/** Serviço de requisições. */
+	requestService = inject(RequestService);
+
+	/** Validador personalizado para estados de erro do formulário. */
+	matcher = new FormErrorStateMatcher();
+
+	/** Interface contendo os dados da cópia a ser editada. */
 	copy!: CopyInterface;
+
+	/** Formulário de configuração para edição da cópia. */
 	configForm: FormGroup = new FormGroup({});
+
+	/** Signal para gerenciar o formulário de configuração. */
 	formGroup: ModelSignal<FormGroup> = model(this.configForm);
 
 	ngOnInit(): void {
+		// Inicializa a cópia com os dados passados para o diálogo.
 		this.copy = this.data.data as CopyInterface;
 
 		if (this.copy) {
+			// Adiciona controles ao formulário com os valores e validadores apropriados.
 			this.configForm.addControl(
 				'copyCount',
 				new FormControl<number | null>(
-					this.copy.printConfig.copyCount,
+					this.copy.printConfig.copyCount || null,
 					[Validators.required, Validators.min(1)]
 				)
 			);
@@ -133,13 +151,16 @@ export class EditCopyBoxComponent implements OnInit {
 				new FormControl<string>(this.copy.notes || '')
 			);
 
+			// Sincroniza o formulário com o signal.
 			this.formGroup.set(this.configForm);
+
+			// Observa mudanças no formulário para atualizar o total de folhas.
 			this.configForm.valueChanges.subscribe(() => {
 				this.updateSheetsTotal();
 			});
 		}
 
-		// Inicializar validador de intervalo caso seja edição de páginas que já sejam personalizadas
+		// Inicializa validador de intervalo caso seja edição de solicitação onde 'pages' = 'Personalizado'.
 		// Sem esperar valueChanges
 		if (this.configForm.get('pages')?.value == 'Personalizado') {
 			this.configForm
@@ -150,7 +171,7 @@ export class EditCopyBoxComponent implements OnInit {
 				]);
 		}
 
-		// Alterar necessidade de validador de intervalo caso tipo de página seja alterada
+		// Alterar necessidade de validador de intervalo caso tipo de página 'pages' seja alterada.
 		// 'Todas' vs 'Personalizado'
 		this.configForm.get('pages')?.valueChanges.subscribe((value) => {
 			const pageIntervalsControl = this.configForm.get('pageIntervals');
@@ -173,90 +194,123 @@ export class EditCopyBoxComponent implements OnInit {
 		});
 	}
 
-	onNoClick(): void {
-		this.dialogRef.close();
+	/**
+	 * Retorna o controle de formulário para o campo 'notes' do formulário de configuração.
+	 *
+	 * @returns {FormControl<string>} O controle de formulário para o campo 'notes'.
+	 */
+	get notesControl(): FormControl<string> {
+		return this.configForm.get('notes') as FormControl<string>;
 	}
 
-	updateSheetsTotal() {
+	/**
+	 * Calcula e atualiza o número total de folhas necessárias para a impressão,
+	 * com base nas configurações do formulário.
+	 *
+	 * A função considera se todas as páginas devem ser impressas, o intervalo de páginas,
+	 * o número de cópias, a impressão frente e verso e o número de páginas por folha.
+	 *
+	 * O resultado é armazenado no campo 'sheetsTotal' do formulário de configuração.
+	 *
+	 * @returns {void}
+	 */
+	updateSheetsTotal(): void {
+		// Determina se todas as páginas devem ser impressas com base no valor do campo 'pages' do formulário.
 		const shouldPrintAllPages: boolean =
 			this.configForm.get('pages')?.value === 'Todas';
 
+		// Calcula o número total de páginas a serem impressas.
+		// Se 'shouldPrintAllPages' for verdadeiro, usa o número total de páginas do documento ('copy.pageCount').
+		// Caso contrário, calcula o número de páginas com base no intervalo de páginas especificado no formulário.
 		const totalPages = shouldPrintAllPages
 			? this.copy.pageCount
 			: this.requestService.calcPagesByInterval(
 					this.configForm.get('pageIntervals')?.value
 			  );
 
+		// Obtém os valores dos campos 'copyCount', 'frontAndBack' e 'pagesPerSheet' do formulário.
 		const copyCount = this.configForm.get('copyCount')?.value;
 		const frontAndBack = this.configForm.get('frontAndBack')?.value;
 		const pagesPerSheet = this.configForm.get('pagesPerSheet')?.value;
 
+		// Calcula o subtotal de folhas necessárias.
+		// A fórmula leva em consideração o número total de páginas, o número de cópias,
+		// a impressão frente e verso (que dobra a capacidade de páginas por folha) e o número de páginas por folha.
+		// 'Math.ceil' arredonda o resultado para cima, garantindo que todas as páginas sejam impressas.
 		var subtotal = Math.ceil(
 			(totalPages * copyCount) / ((frontAndBack ? 2 : 1) * pagesPerSheet)
 		);
 
-		// 'emitEvent: false' para evitar loop infinito com ativação do valueChanges
+		// Atualiza o valor do campo 'sheetsTotal' no formulário com o subtotal calculado.
+		// 'emitEvent: false' é usado para evitar loops infinitos que podem ocorrer devido a eventos 'valueChanges' associados ao formulário.
+		// 'onlySelf: true' garante que a atualização não propague eventos para outros controles do formulário.
 		this.configForm.patchValue(
 			{ sheetsTotal: subtotal },
 			{ onlySelf: true, emitEvent: false }
 		);
 	}
 
-	editedCopy() {
-		if (this.configForm.invalid) return null;
-		return this.formGroup;
-	}
-
-	get notesControl(): FormControl<string> {
-		return this.configForm.get('notes') as FormControl;
-	}
-
-	configValid(): boolean {
-		const pages = this.configForm.get('pages');
-		const intervals = this.configForm.get('pageIntervals');
-
-		let emptyIntervalValid = pages?.value === 'Todas' && !intervals?.value;
-		let filledIntervalValid =
-			pages?.value === 'Personalizado' &&
-			intervals?.value &&
-			intervals?.valid;
-
-		return (
-			this.configForm?.valid &&
-			(this.copy.isPhysicalFile ||
-				emptyIntervalValid ||
-				filledIntervalValid)
-		);
-	}
-
-	// Helper method to get user-friendly error messages
+	/**
+	 * Retorna uma mensagem de erro para o campo 'pageIntervals' do formulário.
+	 *
+	 * A mensagem de erro varia dependendo do tipo de erro encontrado no controle.
+	 *
+	 * @returns {string} A mensagem de erro correspondente ao erro encontrado, ou uma string vazia se não houver erro.
+	 */
 	getPageIntervalsErrorMessage(): string {
+		// Obtém o controle 'pageIntervals' do formulário.
 		const control = this.configForm.get('pageIntervals');
 
+		// Verifica se o controle tem um erro de 'required' (obrigatório).
 		if (control?.hasError('required')) {
 			return 'O intervalo de páginas é obrigatório';
 		}
 
+		// Verifica se o controle tem um erro de 'invalidFormat' (formato inválido).
 		if (control?.hasError('invalidFormat')) {
 			return 'Formato inválido. Use o formato: 1-5, 8, 11-13';
 		}
 
+		// Verifica se o controle tem um erro de 'invalidRange' (intervalo inválido).
 		if (control?.hasError('invalidRange')) {
 			return 'O primeiro número deve ser menor que o segundo';
 		}
 
+		// Verifica se o controle tem um erro de 'outOfBounds' (fora dos limites).
 		if (control?.hasError('outOfBounds')) {
 			return `As páginas devem estar entre 1 e ${this.copy.pageCount}`;
 		}
 
+		// Retorna uma string vazia se nenhum erro for encontrado.
 		return '';
 	}
 
-	goToNext(stepper: MatStepper) {
+	/**
+	 * Avança para o próximo passo no MatStepper.
+	 *
+	 * @param {MatStepper} stepper - A instância do MatStepper a ser manipulada.
+	 * @returns {void}
+	 */
+	goToNext(stepper: MatStepper): void {
 		stepper.next();
 	}
 
-	goToPrevious(stepper: MatStepper) {
+	/**
+	 * Retorna para o passo anterior no MatStepper.
+	 *
+	 * @param {MatStepper} stepper - A instância do MatStepper a ser manipulada.
+	 * @returns {void}
+	 */
+	goToPrevious(stepper: MatStepper): void {
 		stepper.previous();
+	}
+
+	/**
+	 * Fecha o diálogo atual sem realizar nenhuma ação adicional.
+	 *
+	 * @returns {void}
+	 */
+	onNoClick(): void {
+		this.dialogRef.close();
 	}
 }

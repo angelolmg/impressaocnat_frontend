@@ -3,16 +3,24 @@ import { Router } from '@angular/router';
 import { environment } from './../../environments/environment';
 import { UserData } from './../models/userData.interface';
 
+/**
+ * Serviço para autenticação e gerenciamento de usuários utilizando o SUAP.
+ */
 @Injectable({
 	providedIn: 'root',
 })
 export class AuthService {
+	/** Serviço de roteamento para navegação entre páginas. */
 	router: Router = inject(Router);
+
+	/** Cliente SUAP para comunicação com a API do SUAP. */
 	client!: SuapClient;
 
+	/** Evento para notificar atualizações nos dados do usuário. */
 	userUpdate = new EventEmitter<UserData>();
 
 	constructor() {
+		// Inicializa o cliente SUAP com as configurações do ambiente.
 		this.client = new SuapClient(
 			environment.SUAP_URL,
 			environment.CLIENT_ID,
@@ -20,6 +28,8 @@ export class AuthService {
 			environment.SCOPE
 		);
 
+		// Verifica se há um token armazenado no localStorage.
+		// Se houver um token, inicializa o cliente com o token armazenado.
 		let token = localStorage.getItem('suapToken');
 		if (token) this.client.initializeToken('localStorage');
 	}
@@ -120,7 +130,9 @@ class SuapClient {
 
 	/**
 	 * Inicializa o objeto token.
-	 * @param source Define a origem das informações: 'uri' para extrair da URI ou 'localStorage' para usar o armazenamento local.
+	 *
+	 * @param {string} source Define a origem das informações: 'uri' para extrair da URI ou 'localStorage' para usar o armazenamento local.
+	 * @returns {boolean} Retorna `true` se o token foi inicializado com sucesso, `false` caso contrário.
 	 */
 	public initializeToken(source: string): boolean {
 		let tokenValue: string | null = null;
@@ -129,11 +141,13 @@ class SuapClient {
 		let scope: string | null = null;
 
 		if (source === 'uri') {
+			// Extrai as informações do token da URI.
 			tokenValue = this.extractToken();
 			tokenStartTimeMs = new Date().getTime();
 			tokenDurationSecs = this.extractDuration();
 			scope = this.extractScope();
 		} else if (source === 'localStorage') {
+			// Extrai as informações do token do localStorage.
 			tokenValue = localStorage.getItem('suapToken');
 			tokenStartTimeMs =
 				+localStorage.getItem('suapTokenStartTime')! || 0;
@@ -142,7 +156,9 @@ class SuapClient {
 			scope = localStorage.getItem('suapScope');
 		}
 
+		// Verifica se todas as informações do token foram obtidas com sucesso.
 		if (tokenValue && tokenStartTimeMs && tokenDurationSecs && scope) {
+			// Cria uma nova instância de Token com as informações obtidas.
 			this.token = new Token(
 				tokenValue,
 				tokenStartTimeMs,
@@ -151,6 +167,8 @@ class SuapClient {
 			);
 			return true;
 		}
+
+		// Exibe um aviso no console em caso de erro na inicialização do token.
 		console.warn('Erro ao inicializar token do cliente SUAP');
 		return false;
 	}
@@ -237,6 +255,7 @@ class Token {
 		this.expirationTimeInSeconds = expirationTimeInSeconds;
 		this.scope = scope;
 
+		// Armazena o token e seus metadados no localStorage.
 		localStorage.setItem('suapToken', value);
 		localStorage.setItem('suapTokenStartTime', this.startTime.toString());
 		localStorage.setItem(
@@ -246,34 +265,64 @@ class Token {
 		localStorage.setItem('suapScope', scope);
 	}
 
-	public getValue() {
+	/**
+	 * Obtém o valor do token.
+	 *
+	 * @returns {string | undefined} O valor do token ou undefined se não estiver definido.
+	 */
+	public getValue(): string | undefined {
 		return this.value;
 	}
 
-	public getExpirationTime() {
+	/**
+	 * Obtém o tempo de expiração do token em segundos.
+	 *
+	 * @returns {number | undefined} O tempo de expiração do token ou undefined se não estiver definido.
+	 */
+	public getExpirationTime(): number | undefined {
 		return this.expirationTimeInSeconds;
 	}
 
-	public getScope() {
+	/**
+	 * Obtém os escopos do token.
+	 *
+	 * @returns {string | undefined} Os escopos do token ou undefined se não estiver definido.
+	 */
+	public getScope(): string | undefined {
 		return this.scope;
 	}
 
-	public isValid() {
+	/**
+	 * Verifica se o token é válido.
+	 *
+	 * @returns {boolean} Retorna true se o token for válido, false caso contrário.
+	 */
+	public isValid(): boolean {
 		return (
-			localStorage.getItem('suapToken') &&
-			this.getValue() &&
+			!!localStorage.getItem('suapToken') &&
+			!!this.getValue() &&
 			!this.hasExpired()
 		);
 	}
 
-	public hasExpired() {
+	/**
+	 * Verifica se o token expirou.
+	 *
+	 * @returns {boolean} Retorna true se o token expirou, false caso contrário.
+	 */
+	public hasExpired(): boolean {
 		let actualTime = new Date().getTime();
 		return (
 			this.startTime! + this.expirationTimeInSeconds! * 1000 > actualTime
 		);
 	}
 
-	public revoke() {
+	/**
+	 * Revoga o token, removendo-o do localStorage e limpando as propriedades da instância.
+	 *
+	 * @returns {void}
+	 */
+	public revoke(): void {
 		this.value = undefined;
 		this.startTime = undefined;
 		this.expirationTimeInSeconds = undefined;

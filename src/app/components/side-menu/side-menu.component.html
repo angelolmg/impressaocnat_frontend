@@ -5,13 +5,14 @@
 				<div>
 					<h2>Solicitações</h2>
 
+					<!-- Listagem de opções do menu  -->
 					<ul class="options-list">
-						@for (option of options(); track $index) {
+						@for (option of sideMenuOptions(); track $index) {
 						<button
 							mat-fab
 							extended
 							[routerLink]="option.routerLink"
-							[class.selected]="optionSelected(option.routerLink)"
+							[class.selected]="menuOptionSelected(option.routerLink)"
 						>
 							<mat-icon>{{ option.icon }}</mat-icon>
 							{{ option.text }}
@@ -19,6 +20,8 @@
 						}
 					</ul>
 				</div>
+
+				<!-- Copyright  -->
 				<p>
 					© {{ getCurrentYear() }} Diretoria de Tecnologia da
 					Informação (DTI) IFRN/CNAT

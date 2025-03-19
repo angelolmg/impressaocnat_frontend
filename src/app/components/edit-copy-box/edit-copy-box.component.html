@@ -1,3 +1,4 @@
+<!-- Cabeçalho -->
 <h2 mat-dialog-title>{{ data.title || "Editar arquivo" }}</h2>
 @if (data.message) {
 <mat-dialog-content>{{ data.message }}</mat-dialog-content>
@@ -7,8 +8,12 @@
 >
 }
 
+<!-- Conteúdo -->
 <mat-dialog-content style="width: 40vw">
+	<!-- O MatStepper é composto por duas etapas na edição de uma cópia: (1) configurações de impressão e (2) resumo -->
 	<mat-stepper #stepper style="height: auto" [linear]="true">
+		<!-- (1) Configurações de impressão -->
+		<!-- Aqui o usuário pode definir: número de cópias (obrigatório) e opções avançadas de impressão (obrigatoriedade variada)-->
 		<mat-step label="Configurações de impressão" [stepControl]="configForm">
 			<form [formGroup]="configForm" class="second-step">
 				<mat-form-field>
@@ -56,6 +61,7 @@
 									</mat-select>
 								</mat-form-field>
 
+								<!-- Caso o usuário selecione Páginas = 'Personalizada', o campo 'pageIntervals' se torna obrigatório -->
 								<mat-form-field>
 									<mat-label>Defina as páginas</mat-label>
 									<input
@@ -109,18 +115,12 @@
 						</div>
 					</mat-expansion-panel>
 				</mat-accordion>
-
-				<!-- <div class="nav-buttons">
-					<button
-						mat-button
-						matStepperNext
-						[disabled]="!configValid()"
-					>
-						Próximo
-					</button>
-				</div> -->
 			</form>
 		</mat-step>
+
+		<!-- (2) Resumo -->
+		<!-- Mostra um resumo das configurações de impressão escolhidas pelo usuário, bem como o total de folhas previstas para impressão -->
+		<!-- Há também um campo 'notes' para adição de observações à cópia (optativo) -->
 		<mat-step label="Resumo">
 			<div class="overview-text">
 				<p data-label="Nome:">
@@ -180,16 +180,11 @@
 					>
 				</mat-form-field>
 			</div>
-
-			<!-- <div class="nav-buttons">
-				<button mat-button (click)="goToPrevious(stepper)">
-					Voltar
-				</button>
-			</div> -->
 		</mat-step>
 	</mat-stepper>
 </mat-dialog-content>
 
+<!-- Botões de ação  -->
 <mat-dialog-actions>
 	<button mat-button (click)="onNoClick()">{{ data.negative_label }}</button>
 	<span data-label="|"></span>
@@ -202,7 +197,7 @@
 	</button>
 	<button
 		mat-button
-		[disabled]="!configValid()"
+		[disabled]="configForm.invalid"
 		[hidden]="stepper.selectedIndex === stepper.steps.length - 1"
 		(click)="goToNext(stepper)"
 	>

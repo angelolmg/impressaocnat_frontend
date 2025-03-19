@@ -1,21 +1,32 @@
 <form class="my-steps">
+	<!-- Cabeçalho -->
 	<h2 class="page-title">
-		@if(getLastPageState() && pageType == editRequest) {
-		<span (click)="navigateTo(getLastPageState(true))">{{
-			getLastPageState()
+		<!-- Caso trate-se de uma edição, incrementa título com navegação breadcrumb para a última página -->
+		@if(actionService.getLastPageState() && pageState == editRequest) {
+		<span (click)="navigateTo(actionService.getLastPageState(true))">{{
+			actionService.getLastPageState()
 		}}</span>
 		<mat-icon>chevron_right</mat-icon>
 		}
 		{{ pageTitle }}
+		{{
+			currentRequest?.stale
+				? "(ARQUIVADA)"
+				: currentRequest?.conclusionDate
+				? "(FECHADA)"
+				: ""
+		}}
 	</h2>
 
+	<!-- Botão de novo arquivo, limpeza e tabela de arquivos anexados -->
 	<p>1. Anexe arquivos à solicitação</p>
 
 	<div class="btn-selection">
-		<button type="button" mat-flat-button (click)="addCopyDialog()">
+		<button type="button" mat-flat-button (click)="addCopyDialog()" >
 			Novo arquivo
 		</button>
-		<button type="button" mat-button (click)="clearCopiesDialog()">
+		<!-- Se a solicitação está com status de concluída, desabilitar botão de limpeza -->
+		<button type="button" mat-button (click)="clearCopiesDialog()" [disabled]="!!currentRequest?.conclusionDate">
 			Limpar
 		</button>
 	</div>
@@ -85,32 +96,11 @@
 					*matCellDef="let element"
 					style="text-align: center"
 				>
-					<mat-icon (click)="showConfigs(element)">{{ detalhes | icon }}</mat-icon>
+					<mat-icon (click)="showConfigs(element)">{{
+						detalhes | icon
+					}}</mat-icon>
 				</td>
 			</ng-container>
-
-			<!-- <ng-container matColumnDef="notes">
-				<th
-					mat-header-cell
-					*matHeaderCellDef
-					style="text-align: center"
-				>
-					Observações
-				</th>
-				<td
-					mat-cell
-					*matCellDef="let element"
-					style="text-align: center"
-				>
-					@if(element.notes) {
-					<mat-icon [matTooltip]="element.notes">comment</mat-icon>
-					} @else {
-					<mat-icon style="opacity: 30%; cursor: auto"
-						>comment</mat-icon
-					>
-					}
-				</td>
-			</ng-container> -->
 
 			<ng-container matColumnDef="actions">
 				<th mat-header-cell *matHeaderCellDef>Ações</th>
@@ -119,10 +109,11 @@
 					<button
 						[disabled]="
 							actionService.disabledHandler(
-								'request-form',
-								undefined,
+								element,
+								componentName,
+								pageState,
 								action,
-								element
+								currentRequest
 							)
 						"
 						mat-icon-button
@@ -132,8 +123,8 @@
 							actionService.callbackHandler(
 								action,
 								element,
-								'request-form',
-								pageType
+								componentName,
+								pageState
 							)
 						"
 					>
@@ -147,6 +138,7 @@
 			<tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
 		</table>
 
+		<!-- Overlay de carregamento da tabela  -->
 		@if(loadingData()) {
 		<div class="overlay">
 			<mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
@@ -154,6 +146,7 @@
 		}
 	</div>
 
+	<!-- Contador de arquivo e número de páginas -->
 	<div class="copy-summary" style="margin-bottom: 2rem">
 		<mat-chip-set aria-label="Sumário de cópias">
 			<mat-chip>Arquivos: {{ fileCount() }}</mat-chip>
@@ -169,6 +162,7 @@
 		</mat-chip-set>
 	</div>
 
+	<!-- Definição de prazo  -->
 	<div class="term-input">
 		<div class="term-title">
 			<p>2. Defina o prazo de entrega</p>
@@ -183,7 +177,7 @@
 
 		<mat-form-field>
 			<mat-label>Selecione um prazo</mat-label>
-			<mat-select [formControl]="selectedTermControl">
+			<mat-select [formControl]="selectedTermControl" [disabled]="!!currentRequest?.conclusionDate">
 				@for (time of times; track time) {
 				<mat-option [value]="time">{{ time }} horas</mat-option>
 				}
@@ -191,6 +185,7 @@
 		</mat-form-field>
 	</div>
 
+	<!-- Botão de upload de solicitação  -->
 	<div class="confirm-button">
 		<button
 			type="button"

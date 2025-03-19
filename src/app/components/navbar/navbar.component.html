@@ -1,14 +1,17 @@
 <nav class="header">
+
+	<!-- Logo e nome do app  -->
 	<div class="page-title">
 		<button mat-icon-button (click)="toggleDrawer()">
 			<mat-icon>menu</mat-icon>
 		</button>
-		<span [routerLink]="['/minhas-solicitacoes']" class="header-logo"
-			>🖨️</span
-		>
+		<span [routerLink]="['/minhas-solicitacoes']" class="header-logo">{{
+			headerLogo
+		}}</span>
 		<p>Solicitação de Cópias - CNAT</p>
 	</div>
 
+	<!-- Saudação, foto do usuário e botão de logout -->
 	<div class="user-card">
 		@if(userSignal() != defaultUserInfo) {
 		<p>Bem vindo, {{ userSignal().name }}</p>
@@ -19,7 +22,7 @@
 			class="user-pp"
 		/>
 		} @else {
-			<mat-icon class="user-default shadow-border">person</mat-icon>
+		<mat-icon class="user-default shadow-border">person</mat-icon>
 		}
 
 		<button

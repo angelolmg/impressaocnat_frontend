@@ -25,6 +25,10 @@ import { UserService } from '../../service/user.service';
 	templateUrl: './login-box.component.html',
 	styleUrl: './login-box.component.scss',
 })
+
+/**
+ * Caixa de login via autenticação SUAP
+ */
 export class LoginBoxComponent {
 	readonly dialogRef = inject(MatDialogRef<LoginBoxComponent>);
 
@@ -33,6 +37,11 @@ export class LoginBoxComponent {
 	loginButtonText: string = 'Entrar com SUAP';
 	userService = inject(UserService);
 
+	/**
+	 * Fecha o diálogo atual sem realizar nenhuma ação adicional.
+	 *
+	 * @returns {void}
+	 */
 	onNoClick(): void {
 		this.dialogRef.close();
 	}
