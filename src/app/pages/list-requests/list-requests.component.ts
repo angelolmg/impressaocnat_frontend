@@ -495,17 +495,6 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 	}
 
 	/**
-	 * Atualiza a tabela de solicitações.
-	 *
-	 * Atualiza a propriedade 'data' do objeto 'requests' para forçar a atualização da tabela.
-	 */
-	refreshTable(): void {
-		// Atualizar objeto data source de cópias da tabela
-		// Angular Material is weird
-		this.requests.data = this.requests.data;
-	}
-
-	/**
 	 * Limpa os filtros de pesquisa da tabela.
 	 *
 	 * Reseta o formulário 'queryForm' para seus valores iniciais, removendo todos os filtros aplicados.

@@ -29,9 +29,10 @@ import { PDFDocument } from 'pdf-lib';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { FormErrorStateMatcher, pageRangeValidator } from '../../configs/validators.config';
-import { CopyInterface, PrintConfig } from '../../models/copy.interface';
+import { CopyInterface } from '../../models/copy.interface';
 import { DialogData, FileProfile } from '../../models/dialogData.interface';
 import { RequestService } from '../../service/request.service';
+import { PrintConfig } from '../../models/printConfig.interface';
 
 @Component({
 	selector: 'app-new-copy-box',

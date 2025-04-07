@@ -185,7 +185,7 @@ export class ViewRequestComponent implements OnInit {
 				},
 				error: (error) => {
 					this._snackBar.open(
-						`Erro ao buscar solicitação: ${error.error}`,
+						`Erro ao buscar solicitação: ${error.message}`,
 						'Ok'
 					);
 				},
