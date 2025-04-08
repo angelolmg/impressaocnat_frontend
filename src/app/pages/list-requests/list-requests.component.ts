@@ -58,6 +58,7 @@ import {
 } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
 import { RequestService } from '../../service/request.service';
+import { Payload } from '../../models/dto/payload.interface';
 
 @Component({
 	selector: 'app-list-requests',
@@ -377,24 +378,24 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 					return this.requestService
 						.toggleRequestStatus(requestId)
 						.pipe(
-							// Após a mudança, busca a lista de solicitações atualizada
-							switchMap((response) => {
-								this._snackBar.open(response.message, 'Ok');
-								return this.requestService.getAllRequests({
-									filtering: this.filterForOwnRequests,
-									...this.queryForm.value,
-								});
-							}),
-							// Atualiza a tabela com as solicitações atualizadas.
-							tap((requests) => {
-								this.requests.data = requests;
-							}),
-							catchError((error) => {
-								console.log(error);
-								this._snackBar.open(error.error.message, 'Ok');
-								return EMPTY;
-							})
-						);
+								// After the status change, fetch the updated list of requests
+								switchMap((response: Payload<any>) => {
+									this._snackBar.open(response.message, 'Ok');
+									return this.requestService.getAllRequests({
+										filtering: this.filterForOwnRequests,
+										...this.queryForm.value,
+									});
+								}),
+								// Update the table with the updated requests.
+								tap((requests) => {
+									this.requests.data = requests;
+								}),
+								catchError((error) => {
+									console.log(error);
+									this._snackBar.open(error.error.message, 'Ok');
+									return EMPTY;
+								})
+							);
 				})
 			)
 			.subscribe();
@@ -435,7 +436,7 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 				switchMap(() =>
 					this.requestService.removeRequestById(requestId).pipe(
 						// Exibe um snackbar com a mensagem de sucesso.
-						tap((response) => {
+						tap((response: Payload<any>) => {
 							this._snackBar.open(response.message, 'Ok');
 						}),
 						catchError((error) => {

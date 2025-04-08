@@ -12,6 +12,7 @@ import { RequestInterface } from '../models/request.interface';
 import { CopyInterface } from './../models/copy.interface';
 import { UserService } from './user.service';
 import { UserData } from '../models/userData.interface';
+import { Payload } from '../models/dto/payload.interface';
 
 @Injectable({
 	providedIn: 'root',
@@ -110,20 +111,10 @@ export class RequestService {
 			);
 		}
 
-		// Obtém o usuário atual
-		let currentUser: UserData;
-		try {
-			currentUser = this.getCurrentUser();
-		} catch (error) {
-			return throwError(() => error);
-		}
-
 		// Cria o objeto de solicitação com os dados fornecidos.
 		let request: Partial<RequestInterface> = {
 			term: term * 60 * 60, // Converte o prazo de horas para segundos.
 			totalPageCount: totalPageCount,
-			username: currentUser.nome_usual,
-			registration: currentUser.matricula,
 			copies: copies,
 		};
 
@@ -137,10 +128,10 @@ export class RequestService {
 	 * Altera o status de uma solicitação (abrir/fechar).
 	 *
 	 * @param {number} id O ID da solicitação cujo status será alterado.
-	 * @returns {Observable<any>} Um Observable que emite a resposta da requisição.
+	 * @returns {Observable<Payload>} Um Observable que emite a resposta da requisição.
 	 */
-	toggleRequestStatus(id: number): Observable<any> {
-		return this.http.patch<any>(
+	toggleRequestStatus(id: number): Observable<Payload<any>> {
+		return this.http.patch<Payload<any>>(
 			this.requestUrl + '/' + id + '/status',
 			null
 		);
@@ -237,10 +228,10 @@ export class RequestService {
 	 * Remove uma solicitação por ID.
 	 *
 	 * @param {number} id O ID da solicitação a ser removida.
-	 * @returns {Observable<any>} Um Observable que emite a resposta da requisição.
+	 * @returns {Observable<Payload<any>>} Um Observable que emite a resposta da requisição.
 	 */
-	removeRequestById(id: number): Observable<any> {
-		return this.http.delete<any>(this.requestUrl + '/' + id);
+	removeRequestById(id: number): Observable<Payload<any>> {
+		return this.http.delete<Payload<any>>(this.requestUrl + '/' + id);
 	}
 
 	/**
