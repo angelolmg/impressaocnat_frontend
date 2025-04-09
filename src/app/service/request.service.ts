@@ -13,6 +13,7 @@ import { CopyInterface } from './../models/copy.interface';
 import { UserService } from './user.service';
 import { UserData } from '../models/userData.interface';
 import { Payload } from '../models/dto/payload.interface';
+import { RequestDTO } from '../models/dto/requestDTO.interface';
 
 @Injectable({
 	providedIn: 'root',
@@ -64,6 +65,7 @@ export class RequestService {
 		}
 
 		// Cria o objeto de solicitação com os dados fornecidos.
+		// TODO: trocar para RequestDTO
 		let request: Partial<RequestInterface> = {
 			id: id, // ID da solicitação a ser editada.
 			term: term * 60 * 60, // Converte o prazo de horas para segundos.
@@ -112,7 +114,7 @@ export class RequestService {
 		}
 
 		// Cria o objeto de solicitação com os dados fornecidos.
-		let request: Partial<RequestInterface> = {
+		let request: RequestDTO = {
 			term: term * 60 * 60, // Converte o prazo de horas para segundos.
 			totalPageCount: totalPageCount,
 			copies: copies,

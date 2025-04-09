@@ -54,6 +54,7 @@ export const authInterceptor: HttpInterceptorFn = (
 							'Sua sessão expirou. Por favor, faça login novamente.',
 							'Fechar'
 						);
+						localStorage.removeItem('suapToken');
 						break;
 					case 403:
 						snackBar.open(
