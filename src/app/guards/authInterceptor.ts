@@ -49,12 +49,12 @@ export const authInterceptor: HttpInterceptorFn = (
 			if (error instanceof HttpErrorResponse) {
 				switch (error.status) {
 					case 401:
-						router.navigate(['']);
 						snackBar.open(
 							'Sua sessão expirou. Por favor, faça login novamente.',
 							'Fechar'
 						);
 						localStorage.removeItem('suapToken');
+						router.navigate(['']);
 						break;
 					case 403:
 						snackBar.open(
@@ -73,6 +73,8 @@ export const authInterceptor: HttpInterceptorFn = (
 							'Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.',
 							'Fechar'
 						);
+						localStorage.removeItem('suapToken');
+						router.navigate(['']);
 						break;
 				}
 			}

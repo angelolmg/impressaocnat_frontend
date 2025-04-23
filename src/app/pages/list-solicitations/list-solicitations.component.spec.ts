@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
+import { ListSolicitationsComponent } from './list-solicitations.component';
 import { provideHttpClient } from '@angular/common/http';
-import { RequestFormComponent } from './request-form.component';
 import { provideRouter } from '@angular/router';
 import { routes } from '../../app.routes';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
-describe('RequestFormComponent', () => {
-	let component: RequestFormComponent;
-	let fixture: ComponentFixture<RequestFormComponent>;
+describe('ListSolicitationsComponent', () => {
+	let component: ListSolicitationsComponent;
+	let fixture: ComponentFixture<ListSolicitationsComponent>;
 
 	beforeEach(async () => {
 		await TestBed.configureTestingModule({
-			imports: [RequestFormComponent],
+			imports: [ListSolicitationsComponent],
 			providers: [
 				provideHttpClient(),
 				provideRouter(routes),
@@ -20,7 +20,7 @@ describe('RequestFormComponent', () => {
 			],
 		}).compileComponents();
 
-		fixture = TestBed.createComponent(RequestFormComponent);
+		fixture = TestBed.createComponent(ListSolicitationsComponent);
 		component = fixture.componentInstance;
 		fixture.detectChanges();
 	});

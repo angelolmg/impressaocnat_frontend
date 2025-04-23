@@ -1,26 +1,26 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { provideHttpClient } from '@angular/common/http';
-import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
+import { SolicitationFormComponent } from './solicitation-form.component';
 import { provideRouter } from '@angular/router';
 import { routes } from '../../app.routes';
-import { ViewRequestComponent } from './view-request.component';
+import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 
-describe('ViewRequestComponent', () => {
-	let component: ViewRequestComponent;
-	let fixture: ComponentFixture<ViewRequestComponent>;
+describe('SolicitationFormComponent', () => {
+	let component: SolicitationFormComponent;
+	let fixture: ComponentFixture<SolicitationFormComponent>;
 
 	beforeEach(async () => {
 		await TestBed.configureTestingModule({
-			imports: [ViewRequestComponent],
+			imports: [SolicitationFormComponent],
 			providers: [
-				provideRouter(routes),
 				provideHttpClient(),
+				provideRouter(routes),
 				provideAnimationsAsync(),
 			],
 		}).compileComponents();
 
-		fixture = TestBed.createComponent(ViewRequestComponent);
+		fixture = TestBed.createComponent(SolicitationFormComponent);
 		component = fixture.componentInstance;
 		fixture.detectChanges();
 	});

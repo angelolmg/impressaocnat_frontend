@@ -56,9 +56,9 @@
 					aria-label="Generate report button"
 					(click)="generateReport()"
 					[matBadge]="
-						requests.data.length < 99 ? requests.data.length : '99+'
+						solicitations.data.length < 99 ? solicitations.data.length : '99+'
 					"
-					[matBadgeHidden]="requests.data.length <= 0"
+					[matBadgeHidden]="solicitations.data.length <= 0"
 				>
 					<mat-icon>download</mat-icon>
 				</button>
@@ -75,7 +75,7 @@
 		 Solução itermediária até ser implementada paginação. -->
 		<table
 			mat-table
-			[dataSource]="requests"
+			[dataSource]="solicitations"
 			matSort
 			class="mat-elevation-z8"
 			[style.height.%]="

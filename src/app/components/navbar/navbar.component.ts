@@ -8,9 +8,9 @@ import { Subject, takeUntil } from 'rxjs';
 import { UserData } from '../../models/userData.interface';
 import {
 	ActionService,
-	DEFAULT_USER_INFO,
+	DEFAULT_USER_PROFILE,
 	Option,
-	User,
+	UserProfile,
 } from '../../service/action.service';
 import { UserService } from '../../service/user.service';
 import { DEFAULT_USER_OPTIONS } from './../../service/action.service';
@@ -40,10 +40,10 @@ export class NavbarComponent {
 	router = inject(Router);
 
 	/** Informações padrão do usuário */
-	defaultUserInfo = DEFAULT_USER_INFO;
+	defaultUserInfo = DEFAULT_USER_PROFILE;
 
 	/** Signal contendo as informações do usuário. */
-	userSignal = signal<User>(this.defaultUserInfo);
+	userSignal = signal<UserProfile>(this.defaultUserInfo);
 
 	/** Signal contendo as opções do usuário. */
 	options = signal<Option[]>([]);

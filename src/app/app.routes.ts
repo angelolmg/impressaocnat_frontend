@@ -1,61 +1,61 @@
 import { Routes } from '@angular/router';
-import { ListRequestsComponent } from './pages/list-requests/list-requests.component';
+import { ListSolicitationsComponent } from './pages/list-solicitations/list-solicitations.component';
 import { RedirectComponent } from './pages/redirect/redirect.component';
-import { RequestFormComponent } from './pages/request-form/request-form.component';
-import { ViewRequestComponent } from './pages/view-request/view-request.component';
+import { ViewSolicitationComponent } from './pages/view-solicitation/view-solicitation.component';
 import { PageState, pageStateRoutes } from './service/action.service';
+import { SolicitationFormComponent } from './pages/solicitation-form/solicitation-form.component';
 
 export const routes: Routes = [
 	{
 		path: '',
 		pathMatch: 'full',
-		component: RequestFormComponent,
+		component: SolicitationFormComponent,
 	},
 	{
-		path: pageStateRoutes[PageState.viewMyRequests],
+		path: pageStateRoutes[PageState.viewMySolicitations],
 		children: [
 			{
 				path: '',
-				component: ListRequestsComponent,
+				component: ListSolicitationsComponent,
 			},
 			{
-				path: pageStateRoutes[PageState.editRequest],
-				component: RequestFormComponent,
+				path: pageStateRoutes[PageState.editSolicitation],
+				component: SolicitationFormComponent,
 			},
 			{
-				path: pageStateRoutes[PageState.viewRequest],
-				component: ViewRequestComponent,
+				path: pageStateRoutes[PageState.viewSolicitation],
+				component: ViewSolicitationComponent,
 			},
 		],
 	},
 	{
-		path: pageStateRoutes[PageState.viewAllRequests],
+		path: pageStateRoutes[PageState.viewAllSolicitations],
 		children: [
 			{
 				path: '',
-				component: ListRequestsComponent,
+				component: ListSolicitationsComponent,
 			},
 			{
-				path: pageStateRoutes[PageState.editRequest],
-				component: RequestFormComponent,
+				path: pageStateRoutes[PageState.editSolicitation],
+				component: SolicitationFormComponent,
 			},
 			{
-				path: pageStateRoutes[PageState.viewRequest],
-				component: ViewRequestComponent,
+				path: pageStateRoutes[PageState.viewSolicitation],
+				component: ViewSolicitationComponent,
 			},
 		],
 	},
 	{
-		path: pageStateRoutes[PageState.newRequest],
-		component: RequestFormComponent,
+		path: pageStateRoutes[PageState.newSolicitation],
+		component: SolicitationFormComponent,
 	},
 	{
-		path: pageStateRoutes[PageState.editRequest],
-		component: RequestFormComponent,
+		path: pageStateRoutes[PageState.editSolicitation],
+		component: SolicitationFormComponent,
 	},
 	{
-		path: pageStateRoutes[PageState.viewRequest],
-		component: ViewRequestComponent,
+		path: pageStateRoutes[PageState.viewSolicitation],
+		component: ViewSolicitationComponent,
 	},
 	{
 		path: 'redirect',
@@ -63,6 +63,6 @@ export const routes: Routes = [
 	},
 	{
 		path: '**',
-		redirectTo: pageStateRoutes[PageState.newRequest],
+		redirectTo: pageStateRoutes[PageState.newSolicitation],
 	},
 ];

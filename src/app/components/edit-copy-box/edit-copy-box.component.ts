@@ -25,7 +25,7 @@ import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { FormErrorStateMatcher, pageRangeValidator } from '../../configs/validators.config';
 import { CopyInterface } from '../../models/copy.interface';
 import { DialogData } from '../../models/dialogData.interface';
-import { RequestService } from '../../service/request.service';
+import { SolicitationService } from '../../service/solicitation.service';
 
 @Component({
 	selector: 'app-edit-copy',
@@ -64,7 +64,7 @@ export class EditCopyBoxComponent implements OnInit {
 	readonly data = inject<DialogData>(MAT_DIALOG_DATA);
 
 	/** Serviço de requisições. */
-	requestService = inject(RequestService);
+	solicitationService = inject(SolicitationService);
 
 	/** Validador personalizado para estados de erro do formulário. */
 	matcher = new FormErrorStateMatcher();
@@ -224,7 +224,7 @@ export class EditCopyBoxComponent implements OnInit {
 		// Caso contrário, calcula o número de páginas com base no intervalo de páginas especificado no formulário.
 		const totalPages = shouldPrintAllPages
 			? this.copy.pageCount
-			: this.requestService.calcPagesByInterval(
+			: this.solicitationService.calcPagesByInterval(
 					this.configForm.get('pageIntervals')?.value
 			  );
 

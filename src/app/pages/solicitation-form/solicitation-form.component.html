@@ -2,7 +2,7 @@
 	<!-- Cabeçalho -->
 	<h2 class="page-title">
 		<!-- Caso trate-se de uma edição, incrementa título com navegação breadcrumb para a última página -->
-		@if(actionService.getLastPageState() && pageState == editRequest) {
+		@if(actionService.getLastPageState() && pageState == editSolicitation) {
 		<span (click)="navigateTo(actionService.getLastPageState(true))">{{
 			actionService.getLastPageState()
 		}}</span>
@@ -10,9 +10,9 @@
 		}
 		{{ pageTitle }}
 		{{
-			currentRequest?.stale
+			currentSolicitation?.archived
 				? "(ARQUIVADA)"
-				: currentRequest?.conclusionDate
+				: currentSolicitation?.conclusionDate
 				? "(FECHADA)"
 				: ""
 		}}
@@ -26,7 +26,7 @@
 			Novo arquivo
 		</button>
 		<!-- Se a solicitação está com status de concluída, desabilitar botão de limpeza -->
-		<button type="button" mat-button (click)="clearCopiesDialog()" [disabled]="!!currentRequest?.conclusionDate">
+		<button type="button" mat-button (click)="clearCopiesDialog()" [disabled]="!!currentSolicitation?.conclusionDate">
 			Limpar
 		</button>
 	</div>
@@ -113,7 +113,7 @@
 								componentName,
 								pageState,
 								action,
-								currentRequest
+								currentSolicitation
 							)
 						"
 						mat-icon-button
@@ -150,7 +150,7 @@
 	<div class="copy-summary" style="margin-bottom: 2rem">
 		<mat-chip-set aria-label="Sumário de cópias">
 			<mat-chip>Arquivos: {{ fileCount() }}</mat-chip>
-			<mat-chip>Contagem de Folhas: {{ requestPageCounter() }}</mat-chip>
+			<mat-chip>Contagem de Folhas: {{ solicitationPageCounter() }}</mat-chip>
 			<img
 				style="margin-left: 0.5rem"
 				matTooltip="Prévia de acordo com as configurações de impressão de todos os arquivos anexados"
@@ -177,7 +177,7 @@
 
 		<mat-form-field>
 			<mat-label>Selecione um prazo</mat-label>
-			<mat-select [formControl]="selectedTermControl" [disabled]="!!currentRequest?.conclusionDate">
+			<mat-select [formControl]="selectedTermControl" [disabled]="!!currentSolicitation?.conclusionDate">
 				@for (time of times; track time) {
 				<mat-option [value]="time">{{ time }} horas</mat-option>
 				}
@@ -190,7 +190,7 @@
 		<button
 			type="button"
 			mat-flat-button
-			(click)="submitRequest()"
+			(click)="submitSolicitation()"
 			[disabled]="uploading()"
 		>
 			Enviar Solicitação

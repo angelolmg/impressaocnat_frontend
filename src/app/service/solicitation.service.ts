@@ -8,24 +8,24 @@ import { inject, Injectable } from '@angular/core';
 import { map, Observable, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { FileDownloadResponse } from '../models/dialogData.interface';
-import { RequestInterface } from '../models/request.interface';
-import { CopyInterface } from './../models/copy.interface';
+import { SolicitationInterface } from '../models/solicitation.interface';
+import { CopyInterface } from '../models/copy.interface';
 import { UserService } from './user.service';
 import { UserData } from '../models/userData.interface';
 import { Payload } from '../models/dto/payload.interface';
-import { RequestDTO } from '../models/dto/requestDTO.interface';
+import { SolicitationDTO } from '../models/dto/solicitationDTO.interface';
 
 @Injectable({
 	providedIn: 'root',
 })
-export class RequestService {
+export class SolicitationService {
 	// Serviços
 	userService = inject(UserService);
 	http: HttpClient = inject(HttpClient);
 
 	// Endpoints
 	apiUrl = `${environment.API_URL}`;
-	requestUrl = `${this.apiUrl}/solicitacoes`;
+	solicitationUrl = `${this.apiUrl}/solicitacoes`;
 	copyUrl = `${this.apiUrl}/copias`;
 	reportUrl = `${this.apiUrl}/relatorio`;
 
@@ -39,7 +39,7 @@ export class RequestService {
 	 * @param {number} totalPageCount O número total de páginas da solicitação.
 	 * @returns {Observable<any>} Um Observable que emite a resposta da requisição.
 	 */
-	editRequest(
+	editSolicitation(
 		id: number,
 		files: File[],
 		copies: CopyInterface[],
@@ -65,8 +65,8 @@ export class RequestService {
 		}
 
 		// Cria o objeto de solicitação com os dados fornecidos.
-		// TODO: trocar para RequestDTO
-		let request: Partial<RequestInterface> = {
+		// TODO: trocar para SolicitationDTO
+		let solicitation: Partial<SolicitationInterface> = {
 			id: id, // ID da solicitação a ser editada.
 			term: term * 60 * 60, // Converte o prazo de horas para segundos.
 			totalPageCount: totalPageCount,
@@ -76,9 +76,9 @@ export class RequestService {
 		};
 
 		// Cria objetos FormData e HttpHeaders para enviar uma solicitação com arquivos.
-		const { formData, headers } = this.buildRequest(request, files);
+		const { formData, headers } = this.buildSolicitation(solicitation, files);
 
-		return this.http.patch(this.requestUrl + '/' + id, formData, {
+		return this.http.patch(this.solicitationUrl + '/' + id, formData, {
 			headers,
 		});
 	}
@@ -92,7 +92,7 @@ export class RequestService {
 	 * @param {number} totalPageCount O número total de páginas da solicitação.
 	 * @returns {Observable<any>} Um Observable que emite a resposta da requisição.
 	 */
-	saveRequest(
+	saveSolicitation(
 		files: File[],
 		copies: CopyInterface[],
 		term: number,
@@ -114,16 +114,16 @@ export class RequestService {
 		}
 
 		// Cria o objeto de solicitação com os dados fornecidos.
-		let request: RequestDTO = {
+		let solicitation: SolicitationDTO = {
 			term: term * 60 * 60, // Converte o prazo de horas para segundos.
 			totalPageCount: totalPageCount,
 			copies: copies,
 		};
 
 		// Cria objetos FormData e HttpHeaders para enviar uma solicitação com arquivos.
-		const { formData, headers } = this.buildRequest(request, files);
+		const { formData, headers } = this.buildSolicitation(solicitation, files);
 
-		return this.http.post(this.requestUrl, formData, { headers });
+		return this.http.post(this.solicitationUrl, formData, { headers });
 	}
 
 	/**
@@ -132,9 +132,9 @@ export class RequestService {
 	 * @param {number} id O ID da solicitação cujo status será alterado.
 	 * @returns {Observable<Payload>} Um Observable que emite a resposta da requisição.
 	 */
-	toggleRequestStatus(id: number): Observable<Payload<any>> {
+	toggleSolicitationStatus(id: number): Observable<Payload<any>> {
 		return this.http.patch<Payload<any>>(
-			this.requestUrl + '/' + id + '/status',
+			this.solicitationUrl + '/' + id + '/status',
 			null
 		);
 	}
@@ -143,9 +143,9 @@ export class RequestService {
 	 * Obtém todas as solicitações com filtros opcionais.
 	 *
 	 * @param {Partial<{ filtering: boolean | null; concluded: boolean | null; startDate: Date | null; endDate: Date | null; query: string | null; }>} [params] Os parâmetros de filtro opcionais.
-	 * @returns {Observable<RequestInterface[]>} Um Observable que emite um array de solicitações.
+	 * @returns {Observable<SolicitationInterface[]>} Um Observable que emite um array de solicitações.
 	 */
-	getAllRequests(
+	getAllSolicitations(
 		params: Partial<{
 			filtering: boolean | null;
 			concluded: boolean | null;
@@ -153,7 +153,7 @@ export class RequestService {
 			endDate: Date | null;
 			query: string | null;
 		}>
-	): Observable<RequestInterface[]> {
+	): Observable<SolicitationInterface[]> {
 		// Cria um objeto HttpParams para adicionar os parâmetros de filtro.
 		let httpParams = new HttpParams();
 
@@ -191,7 +191,7 @@ export class RequestService {
 			httpParams = httpParams.set('query', params.query);
 		}
 
-		return this.http.get<RequestInterface[]>(this.requestUrl, {
+		return this.http.get<SolicitationInterface[]>(this.solicitationUrl, {
 			params: httpParams,
 		});
 	}
@@ -199,19 +199,19 @@ export class RequestService {
 	/**
 	 * Obtém as cópias de uma solicitação por ID da solicitação.
 	 *
-	 * @param {number} [requestId] O ID da solicitação para obter as cópias.
+	 * @param {number} [solicitationId] O ID da solicitação para obter as cópias.
 	 * @param {string} [query] Uma string de consulta opcional para filtrar as cópias.
 	 * @returns {Observable<CopyInterface[]>} Um Observable que emite um array de cópias.
 	 */
-	getCopiesByRequestId(
-		requestId: number,
+	getCopiesBySolicitationId(
+		solicitationId: number,
 		query?: string
 	): Observable<CopyInterface[]> {
 		// Cria um objeto HttpParams para adicionar o parâmetro de consulta.
 		let httpParams = new HttpParams();
 		if (query) httpParams = httpParams.set('query', query);
 
-		return this.http.get<CopyInterface[]>(this.copyUrl + '/' + requestId, {
+		return this.http.get<CopyInterface[]>(this.copyUrl + '/' + solicitationId, {
 			params: httpParams,
 		});
 	}
@@ -220,10 +220,10 @@ export class RequestService {
 	 * Obtém uma solicitação por ID.
 	 *
 	 * @param {number} id O ID da solicitação a ser obtida.
-	 * @returns {Observable<RequestInterface>} Um Observable que emite a solicitação correspondente.
+	 * @returns {Observable<SolicitationInterface>} Um Observable que emite a solicitação correspondente.
 	 */
-	getRequestById(id: number): Observable<RequestInterface> {
-		return this.http.get<RequestInterface>(this.requestUrl + '/' + id);
+	getSolicitationById(id: number): Observable<SolicitationInterface> {
+		return this.http.get<SolicitationInterface>(this.solicitationUrl + '/' + id);
 	}
 
 	/**
@@ -232,45 +232,45 @@ export class RequestService {
 	 * @param {number} id O ID da solicitação a ser removida.
 	 * @returns {Observable<Payload<any>>} Um Observable que emite a resposta da requisição.
 	 */
-	removeRequestById(id: number): Observable<Payload<any>> {
-		return this.http.delete<Payload<any>>(this.requestUrl + '/' + id);
+	removeSolicitationById(id: number): Observable<Payload<any>> {
+		return this.http.delete<Payload<any>>(this.solicitationUrl + '/' + id);
 	}
 
 	/**
 	 * Atualiza uma cópia dentro de uma solicitação existente.
 	 *
 	 * @param {CopyInterface} copyToPatch A cópia a ser atualizada.
-	 * @param {RequestInterface} request A solicitação que contém a cópia.
+	 * @param {SolicitationInterface} solicitation A solicitação que contém a cópia.
 	 * @returns {Observable<any>} Um Observable que emite a resposta da requisição de edição.
 	 */
 	patchCopy(
 		copyToPatch: CopyInterface,
-		request: RequestInterface
+		solicitation: SolicitationInterface
 	): Observable<any> {
 		let copyIndex: number = -1;
 		try {
 			// Busca o índice da cópia a ser editada na lista de cópias da solicitação.
-			copyIndex = this.findCopyIndexInRequest(request, copyToPatch.id);
+			copyIndex = this.findCopyIndexInSolicitation(solicitation, copyToPatch.id);
 		} catch (error) {
 			// Retorna um Observable de erro se a cópia não for encontrada ou a solicitação for inválida.
 			return throwError(() => error);
 		}
 
 		// Atualiza a cópia dentro da requisição
-		request.copies![copyIndex] = copyToPatch;
+		solicitation.copies![copyIndex] = copyToPatch;
 
 		// Recalcula o número total de páginas da solicitação.
 		var counter = 0;
-		request.copies!.forEach((copy) => {
+		solicitation.copies!.forEach((copy) => {
 			counter += copy.printConfig.sheetsTotal;
 		});
 
 		// Retorna a requisição de edição da solicitação com a cópia atualizada.
-		return this.editRequest(
-			request.id!,
+		return this.editSolicitation(
+			solicitation.id!,
 			[],
-			request.copies!,
-			request.term / (60 * 60), // Converte o prazo de segundos para horas.
+			solicitation.copies!,
+			solicitation.term / (60 * 60), // Converte o prazo de segundos para horas.
 			counter
 		);
 	}
@@ -279,37 +279,37 @@ export class RequestService {
 	 * Remove uma cópia de uma solicitação existente pelo ID da cópia.
 	 *
 	 * @param {number} copyIdForRemoval O ID da cópia a ser removida.
-	 * @param {RequestInterface} request A solicitação que contém a cópia.
+	 * @param {SolicitationInterface} solicitation A solicitação que contém a cópia.
 	 * @returns {Observable<any>} Um Observable que emite a resposta da requisição de edição.
 	 */
 	removeCopyById(
 		copyIdForRemoval: number,
-		request: RequestInterface
+		solicitation: SolicitationInterface
 	): Observable<any> {
 		let copyIndex: number = -1;
 		try {
 			// Busca o índice da cópia a ser removida na lista de cópias da solicitação.
-			copyIndex = this.findCopyIndexInRequest(request, copyIdForRemoval);
+			copyIndex = this.findCopyIndexInSolicitation(solicitation, copyIdForRemoval);
 		} catch (error) {
 			// Retorna um Observable de erro se a cópia não for encontrada ou a solicitação for inválida.
 			return throwError(() => error);
 		}
 
 		// Remove a cópia pelo índice
-		request.copies!.splice(copyIndex, 1);
+		solicitation.copies!.splice(copyIndex, 1);
 
 		// Recalcula o número total de páginas da solicitação.
 		var counter = 0;
-		request.copies!.forEach((copy) => {
+		solicitation.copies!.forEach((copy) => {
 			counter += copy.printConfig.sheetsTotal;
 		});
 
 		// Retorna a requisição de edição da solicitação com a cópia removida.
-		return this.editRequest(
-			request.id!,
+		return this.editSolicitation(
+			solicitation.id!,
 			[],
-			request.copies!,
-			request.term / (60 * 60), // Converte o prazo de segundos para horas.
+			solicitation.copies!,
+			solicitation.term / (60 * 60), // Converte o prazo de segundos para horas.
 			counter
 		);
 	}
@@ -318,24 +318,24 @@ export class RequestService {
 	 * Encontra o índice de uma cópia em uma solicitação.
 	 *
 	 * @private
-	 * @param {RequestInterface} request A solicitação que contém a cópia.
+	 * @param {SolicitationInterface} solicitation A solicitação que contém a cópia.
 	 * @param {number} [id] O ID da cópia a ser encontrada.
 	 * @returns {number} O índice da cópia na lista de cópias da solicitação.
 	 * @throws {Error} Se a solicitação for inválida ou a cópia não pertencer à solicitação.
 	 */
-	private findCopyIndexInRequest(
-		request: RequestInterface,
+	private findCopyIndexInSolicitation(
+		solicitation: SolicitationInterface,
 		id?: number
 	): number {
 		// Verifica se solicitação é válida e há cópias anexas
-		if (!request.id || !request.copies?.length)
+		if (!solicitation.id || !solicitation.copies?.length)
 			throw new Error('Solicitação inválida');
 		
 		// Verifica se ID da cópia a ser comparada é válido
 		if (!id) throw new Error('ID de cópia inválido');
 
 		// Verifica se a cópia a ser removida existe
-		const copyIndex = request.copies.findIndex((copy) => copy.id === id);
+		const copyIndex = solicitation.copies.findIndex((copy) => copy.id === id);
 
 		// Verifica se a cópia foi encontrada na lista de cópias.
 		if (copyIndex === -1)
@@ -348,17 +348,17 @@ export class RequestService {
 	/**
 	 * Faz o download de um arquivo de uma solicitação.
 	 *
-	 * @param {number} requestId O ID da solicitação que contém o arquivo.
+	 * @param {number} solicitationId O ID da solicitação que contém o arquivo.
 	 * @param {string} filename O nome do arquivo a ser baixado.
 	 * @returns {Observable<FileDownloadResponse>} Um Observable que emite a resposta do download do arquivo.
 	 */
 	downloadFile(
-		requestId: number,
+		solicitationId: number,
 		filename: string
 	): Observable<FileDownloadResponse> {
 		// Faz a requisição GET para obter o arquivo como um Blob.
 		return this.http
-			.get(this.requestUrl + '/' + requestId + '/' + filename, {
+			.get(this.solicitationUrl + '/' + solicitationId + '/' + filename, {
 				observe: 'response',
 				responseType: 'blob',
 			})
@@ -374,13 +374,13 @@ export class RequestService {
 	/**
 	 * Gera um relatório de solicitações.
 	 *
-	 * @param {RequestInterface[]} requests A lista de solicitações para gerar o relatório.
+	 * @param {SolicitationInterface[]} solicitations A lista de solicitações para gerar o relatório.
 	 * @returns {Observable<string>} Um Observable que emite o relatório gerado como texto.
 	 */
-	generateReport(requests: RequestInterface[]): Observable<string> {
+	generateReport(solicitations: SolicitationInterface[]): Observable<string> {
 		// Faz a requisição POST para gerar o relatório com a lista de solicitações fornecida.
 		// Resposta em formato de texto HTML
-		return this.http.post(this.reportUrl, requests, {
+		return this.http.post(this.reportUrl, solicitations, {
 			responseType: 'text',
 		});
 	}
@@ -463,12 +463,12 @@ export class RequestService {
 	 * Constrói um objeto FormData e HttpHeaders para enviar uma solicitação com arquivos.
 	 *
 	 * @private
-	 * @param {Partial<RequestInterface>} request O objeto de solicitação parcial.
+	 * @param {Partial<SolicitationInterface>} solicitation O objeto de solicitação parcial.
 	 * @param {File[]} files A lista de arquivos a serem anexados à solicitação.
 	 * @returns {{ formData: FormData; headers: HttpHeaders }} Um objeto contendo o FormData e os HttpHeaders.
 	 */
-	private buildRequest(
-		request: Partial<RequestInterface>,
+	private buildSolicitation(
+		solicitation: Partial<SolicitationInterface>,
 		files: File[]
 	): { formData: FormData; headers: HttpHeaders } {
 		// Cria um objeto FormData para enviar os dados da solicitação e os arquivos.
@@ -477,7 +477,7 @@ export class RequestService {
 		// Adiciona o objeto de solicitação como um blob JSON ao FormData.
 		formData.append(
 			'solicitacao',
-			new Blob([JSON.stringify(request)], {
+			new Blob([JSON.stringify(solicitation)], {
 				type: 'application/json',
 			})
 		);

@@ -12,11 +12,11 @@
 
 			<!-- Título e estado da solicitação (aberta, fechada ou arquivada) -->
 			<span
-				>Solicitação Nº {{ requestId!.toString().padStart(6, "0") }}
+				>Solicitação Nº {{ solicitationId!.toString().padStart(6, "0") }}
 				{{
-					myRequest?.stale
+					mySolicitation?.archived
 						? "(ARQUIVADA)"
-						: myRequest?.conclusionDate
+						: mySolicitation?.conclusionDate
 						? "(FECHADA)"
 						: ""
 				}}</span
@@ -136,10 +136,10 @@
 						[disabled]="
 							actionService.disabledHandler(
 								element,
-								'view-request',
+								'view-solicitation',
 								pageState,
 								action,
-								myRequest
+								mySolicitation
 							)
 						"
 						mat-icon-button
@@ -149,7 +149,7 @@
 							actionService.callbackHandler(
 								action,
 								element,
-								'view-request',
+								'view-solicitation',
 								pageState
 							)
 						"
@@ -176,7 +176,7 @@
 	<div class="copy-summary">
 		<mat-chip-set aria-label="Sumário de cópias">
 			<mat-chip>Arquivos: {{ fileCount() }}</mat-chip>
-			<mat-chip>Contagem de folhas: {{ requestPageCounter() }}</mat-chip>
+			<mat-chip>Contagem de folhas: {{ solicitationPageCounter() }}</mat-chip>
 			<img
 				style="margin-left: 0.5rem"
 				matTooltip="Prévia de acordo com as configurações de impressão de todos os arquivos anexados"

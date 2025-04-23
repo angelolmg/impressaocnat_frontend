@@ -26,8 +26,8 @@ import {
 	ActionType,
 } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
-import { CopyInterface } from './../../models/copy.interface';
-import { PageState } from './../../service/action.service';
+import { CopyInterface } from '../../models/copy.interface';
+import { PageState } from '../../service/action.service';
 
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
@@ -50,17 +50,17 @@ import { ConfigBoxComponent } from '../../components/config-box/config-box.compo
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
 import { FormErrorStateMatcher } from '../../configs/validators.config';
 import { FileDownloadResponse } from '../../models/dialogData.interface';
-import { RequestInterface } from '../../models/request.interface';
+import { SolicitationInterface } from '../../models/solicitation.interface';
 import { IconPipe } from '../../pipes/icon.pipe';
 import {
-	RequestService,
-} from '../../service/request.service';
+	SolicitationService,
+} from '../../service/solicitation.service';
 
 /**
  * Componente para visualização de uma solicitação específica.
  */
 @Component({
-	selector: 'app-view-request',
+	selector: 'app-view-solicitation',
 	imports: [
 		MatSortModule,
 		MatPaginatorModule,
@@ -77,17 +77,17 @@ import {
 		IconPipe,
 		MatProgressSpinnerModule,
 	],
-	templateUrl: './view-request.component.html',
-	styleUrl: './view-request.component.scss',
+	templateUrl: './view-solicitation.component.html',
+	styleUrl: './view-solicitation.component.scss',
 	changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ViewRequestComponent implements OnInit {
+export class ViewSolicitationComponent implements OnInit {
 
 	// Serviços
 	route = inject(ActivatedRoute);
 	actionService = inject(ActionService);
 	dialogService = inject(DialogService);
-	requestService = inject(RequestService);
+	solicitationService = inject(SolicitationService);
 	_snackBar = inject(MatSnackBar);
 	router = inject(Router);
 
@@ -99,10 +99,10 @@ export class ViewRequestComponent implements OnInit {
 	@ViewChild(MatPaginator) paginator!: MatPaginator;
 
 	/** Objeto da solicitação atual. */
-	myRequest?: RequestInterface;
+	mySolicitation?: SolicitationInterface;
 
 	/** ID da solicitação atual. */
-	requestId?: number;
+	solicitationId?: number;
 
 	/** Lista de arquivos anexados. */
 	files: any[] = [];
@@ -111,7 +111,7 @@ export class ViewRequestComponent implements OnInit {
 	fileCount = signal(0);
 
 	/** Sinal que armazena o número total de páginas da solicitação. */
-	requestPageCounter = signal(0);
+	solicitationPageCounter = signal(0);
 
 	/** Sinal que indica se os dados estão sendo carregados. */
 	loadingData = signal(false);
@@ -126,10 +126,10 @@ export class ViewRequestComponent implements OnInit {
 	copies = new MatTableDataSource<CopyInterface>();
 
 	/** Lista de ações permitidas para a página de visualização de solicitações. */
-	allowedActions = actions.allowedActionsforViewRequest;
+	allowedActions = actions.allowedActionsforViewSolicitation;
 
 	/** Estado da página atual. */
-	pageState = PageState.viewRequest;
+	pageState = PageState.viewSolicitation;
 
 	/** Rota da página anterior. */
 	previousPage: string = '';
@@ -157,7 +157,7 @@ export class ViewRequestComponent implements OnInit {
 	 */
 	ngOnInit() {
 		// Obtém o ID da solicitação da rota.
-		this.requestId = +this.route.snapshot.paramMap.get('id')!;
+		this.solicitationId = +this.route.snapshot.paramMap.get('id')!;
 
 		// Inscreve-se nos evento de exclusão e download de cópia.
 		this.actionService.deleteCopy
@@ -173,19 +173,20 @@ export class ViewRequestComponent implements OnInit {
 
 		// Busca a solicicitação no view init e carrega os dados da tabela de cópias
 		this.loadingData.set(true);
-		this.requestService
-			.getRequestById(this.requestId)
+		this.solicitationService
+			.getSolicitationById(this.solicitationId)
 			.pipe(finalize(() => this.loadingData.set(false)))
 			.subscribe({
-				next: (request: RequestInterface) => {
-					this.myRequest = request;
+				next: (solicitation: SolicitationInterface) => {
+					this.mySolicitation = solicitation;
 					this.copies.sort = this.sort;
 					this.copies.paginator = this.paginator;
-					this.updateTable(request.copies);
+					this.updateTable(solicitation.copies);
 				},
 				error: (error) => {
+					console.error(error);
 					this._snackBar.open(
-						`Erro ao buscar solicitação: ${error.message}`,
+						`Erro ao buscar solicitação. Tente novamente mais tarde.`,
 						'Ok'
 					);
 				},
@@ -199,20 +200,21 @@ export class ViewRequestComponent implements OnInit {
 				map((params) => params.query?.trim() || ''), // Remover espaços em branco e tornar em string
 				filter((query) => query.length == 0 || query.length >= 3), // Continuar apenas se a query tiver 0 ou 3+ caracteres
 				switchMap((query) => {
-					if(!this.requestId) return throwError(() => {
+					if(!this.solicitationId) return throwError(() => {
 						return new Error('Nenhum ID de solicitação definido')
 					})
 					this.loadingData.set(true);
-					return this.requestService
-						.getCopiesByRequestId(this.requestId, query)
+					return this.solicitationService
+						.getCopiesBySolicitationId(this.solicitationId, query)
 						.pipe(finalize(() => this.loadingData.set(false)));
 				})
 			)
 			.subscribe({
 				next: (copies: CopyInterface[]) => (this.copies.data = copies),
 				error: (error) => {
+					console.error(error);
 					this._snackBar.open(
-						`Erro ao buscar solicitações: ${error.error}`,
+						`Erro ao buscar solicitações. Tente novamente mais tarde.`,
 						'Ok'
 					);
 				},
@@ -251,14 +253,14 @@ export class ViewRequestComponent implements OnInit {
 			})
 			.afterClosed()
 			.subscribe((shouldRemove: boolean) => {
-				let requestId = this.myRequest?.id;
+				let solicitationId = this.mySolicitation?.id;
 
 				// Se o usuário confirmar a remoção e o ID da solicitação existir.
-				if (shouldRemove && requestId) {
+				if (shouldRemove && solicitationId) {
 					if (isLastCopy) {
 						// Se a cópia for a última, remove a solicitação inteira.
-						this.requestService
-							.removeRequestById(requestId)
+						this.solicitationService
+							.removeSolicitationById(solicitationId)
 							.subscribe((response) => {
 								this._snackBar.open(response.message, 'Ok');
 								this.router.navigate([
@@ -268,18 +270,18 @@ export class ViewRequestComponent implements OnInit {
 							});
 					} else {
 						// Remove a cópia da solicitação e atualiza a tabela.
-						let removeCopy = this.requestService.removeCopyById(
+						let removeCopy = this.solicitationService.removeCopyById(
 							copy.id!,
-							this.myRequest!
+							this.mySolicitation!
 						);
-						let getUpdatedRequest =
-							this.requestService.getRequestById(requestId);
+						let getUpdatedSolicitation =
+							this.solicitationService.getSolicitationById(solicitationId);
 
 						// Combina os observables para garantir que a tabela seja atualizada após a remoção da cópia.
-						concat(removeCopy, getUpdatedRequest).subscribe(
-							(request: RequestInterface) => {
-								this.myRequest = request;
-								this.updateTable(request.copies);
+						concat(removeCopy, getUpdatedSolicitation).subscribe(
+							(solicitation: SolicitationInterface) => {
+								this.mySolicitation = solicitation;
+								this.updateTable(solicitation.copies);
 								this._snackBar.open(
 									'Cópia removida com sucesso.',
 									'Ok'
@@ -303,7 +305,7 @@ export class ViewRequestComponent implements OnInit {
 	 */
 	downloadFileAndOpenInNewWindow(copy: CopyInterface): void {
 		// Verifica se o arquivo está disponível em disco e se o ID da solicitação existe.
-		if (copy.fileInDisk && this.requestId) {
+		if (copy.fileInDisk && this.solicitationId) {
 			this.loadingData.set(true);
 
 			// Abre uma nova janela em branco.
@@ -333,8 +335,8 @@ export class ViewRequestComponent implements OnInit {
 		  `);
 
 			// Faz o download do arquivo usando o serviço de solicitação.
-			this.requestService
-				.downloadFile(this.requestId, copy.fileName)
+			this.solicitationService
+				.downloadFile(this.solicitationId, copy.fileName)
 				.pipe(
 					// Define o status de carregamento como falso e fecha a nova janela após a conclusão.
 					finalize(() => {
@@ -422,7 +424,7 @@ export class ViewRequestComponent implements OnInit {
 			counter += copy.printConfig.sheetsTotal;
 		});
 
-		this.requestPageCounter.set(counter);
+		this.solicitationPageCounter.set(counter);
 	}
 
 	/**

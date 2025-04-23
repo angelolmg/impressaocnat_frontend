@@ -31,7 +31,7 @@ import { environment } from '../../../environments/environment';
 import { FormErrorStateMatcher, pageRangeValidator } from '../../configs/validators.config';
 import { CopyInterface } from '../../models/copy.interface';
 import { DialogData, FileProfile } from '../../models/dialogData.interface';
-import { RequestService } from '../../service/request.service';
+import { SolicitationService } from '../../service/solicitation.service';
 import { PrintConfig } from '../../models/printConfig.interface';
 
 @Component({
@@ -72,7 +72,7 @@ export class NewCopyBoxComponent {
 	readonly data = inject<DialogData>(MAT_DIALOG_DATA);
 
 	/** Serviço para realizar requisições relacionadas a cópias. */
-	requestService = inject(RequestService);
+	solicitationService = inject(SolicitationService);
 
 	/** Serviço para exibir mensagens de snackbar. */
 	_snackBar = inject(MatSnackBar);
@@ -138,7 +138,7 @@ export class NewCopyBoxComponent {
 		// Caso contrário, calcula o número de páginas com base no intervalo de páginas especificado no segundo passo do formulário.
 		const totalPages = shouldPrintAllPages
 			? this.firstStepForm.get('pageCount')?.value
-			: this.requestService.calcPagesByInterval(
+			: this.solicitationService.calcPagesByInterval(
 					this.secondStepForm.get('pageIntervals')?.value
 			  );
 
@@ -459,7 +459,7 @@ export class NewCopyBoxComponent {
 	 *
 	 * @returns {CopyInterface | null} Retorna um objeto CopyInterface se o formulário for válido, ou null caso contrário.
 	 */
-	requestInfo(): CopyInterface | null {
+	solicitationInfo(): CopyInterface | null {
 		// Retorna null se o formulário principal não for válido.
 		if (this.newCopyForm.invalid) return null;
 

@@ -48,7 +48,7 @@ import {
 	tap
 } from 'rxjs';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
-import { RequestInterface } from '../../models/request.interface';
+import { SolicitationInterface } from '../../models/solicitation.interface';
 import { IconPipe } from '../../pipes/icon.pipe';
 import {
 	actions,
@@ -57,11 +57,11 @@ import {
 	PageState,
 } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
-import { RequestService } from '../../service/request.service';
+import { SolicitationService } from '../../service/solicitation.service';
 import { Payload } from '../../models/dto/payload.interface';
 
 @Component({
-	selector: 'app-list-requests',
+	selector: 'app-list-solicitations',
 	imports: [
 		MatTableModule,
 		MatSortModule,
@@ -81,15 +81,15 @@ import { Payload } from '../../models/dto/payload.interface';
 		ReactiveFormsModule,
 		MatSelectModule,
 	],
-	templateUrl: './list-requests.component.html',
-	styleUrl: './list-requests.component.scss',
+	templateUrl: './list-solicitations.component.html',
+	styleUrl: './list-solicitations.component.scss',
 	changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ListRequestsComponent implements OnInit, OnDestroy {
+export class ListSolicitationsComponent implements OnInit, OnDestroy {
 	// Serviços
 	dialogService = inject(DialogService);
 	actionService = inject(ActionService);
-	requestService = inject(RequestService);
+	solicitationService = inject(SolicitationService);
 	_snackBar = inject(MatSnackBar);
 	router = inject(Router);
 	activatedRoute = inject(ActivatedRoute);
@@ -109,19 +109,19 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 	];
 
 	/** Ações permitidas para a visualização de solicitações. */
-	allowedActions: ActionType[] = actions.allowedActionsforViewRequests;
+	allowedActions: ActionType[] = actions.allowedActionsforViewSolicitations;
 
 	/** Tipo/estado da página atual. */
-	pageState: PageState = PageState.viewAllRequests;
+	pageState: PageState = PageState.viewAllSolicitations;
 
 	/** Nome deste componente */
-	componentName: string = 'list-requests';
+	componentName: string = 'list-solicitations';
 
 	/** Indica se a listagem deve mostrar apenas as próprias solicitações. */
-	filterForOwnRequests: boolean = true;
+	filterForOwnSolicitations: boolean = true;
 
 	/** Fonte de dados para a tabela de requisições. */
-	requests = new MatTableDataSource<RequestInterface>();
+	solicitations = new MatTableDataSource<SolicitationInterface>();
 
 	/** Sinal para indicar se os dados estão sendo carregados. */
 	loadingData: WritableSignal<boolean> = signal(true);
@@ -146,28 +146,28 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 	ngOnInit(): void {
 		// Observa e lida com diversas ações de solicitações dentro da listagem:
 		// Deleção, edição, visualização, abertura e fechamento (toggle)
-		this.actionService.deleteRequest
+		this.actionService.deleteSolicitation
 			.pipe(takeUntil(this.ngUnsubscribe))
-			.subscribe((request) => {
-				this.deleteRequest(request);
+			.subscribe((solicitation) => {
+				this.deleteSolicitation(solicitation);
 			});
 
-		this.actionService.editRequest
+		this.actionService.editSolicitation
 			.pipe(takeUntil(this.ngUnsubscribe))
-			.subscribe((request) => {
-				this.editRequestRedirect(request);
+			.subscribe((solicitation) => {
+				this.editSolicitationRedirect(solicitation);
 			});
 
-		this.actionService.viewRequest
+		this.actionService.viewSolicitation
 			.pipe(takeUntil(this.ngUnsubscribe))
-			.subscribe((request) => {
-				this.viewRequestRedirect(request);
+			.subscribe((solicitation) => {
+				this.viewSolicitationRedirect(solicitation);
 			});
 
-		this.actionService.toggleRequestStatus
+		this.actionService.toggleSolicitationStatus
 			.pipe(takeUntil(this.ngUnsubscribe))
-			.subscribe((request) => {
-				this.toggleRequestStatus(request);
+			.subscribe((solicitation) => {
+				this.toggleSolicitationStatus(solicitation);
 			});
 
 		// Inicializa a listagem de requisições.
@@ -177,18 +177,18 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 		// Referência: https://stackoverflow.com/questions/38787795/why-is-ngoninit-called-twice
 
 		// Determina se a listagem deve filtrar apenas as próprias requisições do usuário.
-		this.filterForOwnRequests =
+		this.filterForOwnSolicitations =
 			this.activatedRoute.snapshot.parent != null &&
 			this.activatedRoute.snapshot.parent.url[0].path ==
 				'minhas-solicitacoes';
 
 		// Se a listagem deve filtrar as próprias requisições, atualiza o tipo da página.
-		if (this.filterForOwnRequests) this.pageState = PageState.viewMyRequests;
+		if (this.filterForOwnSolicitations) this.pageState = PageState.viewMySolicitations;
 
 		// Obtém todas as requisições do serviço, aplicando filtros e parâmetros do formulário.
-		this.requestService
-			.getAllRequests({
-				filtering: this.filterForOwnRequests,
+		this.solicitationService
+			.getAllSolicitations({
+				filtering: this.filterForOwnSolicitations,
 				...this.queryForm.value,
 			})
 			.pipe(
@@ -200,10 +200,10 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 			)
 			.subscribe({
 				// Atualiza a tabela de requisições com os dados recebidos.
-				next: (requests: RequestInterface[]) => {
-					this.requests.data = requests;
-					this.requests.sort = this.sort;
-					this.requests.paginator = this.paginator;
+				next: (solicitations: SolicitationInterface[]) => {
+					this.solicitations.data = solicitations;
+					this.solicitations.sort = this.sort;
+					this.solicitations.paginator = this.paginator;
 				},
 				error: (err) => {
 					console.error(err);
@@ -219,9 +219,9 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 					// Inicia o indicador de carregamento.
 					this.loadingData.set(true);
 					// Obtém as requisições filtradas com base nos parâmetros do formulário.
-					return this.requestService
-						.getAllRequests({
-							filtering: this.filterForOwnRequests,
+					return this.solicitationService
+						.getAllSolicitations({
+							filtering: this.filterForOwnSolicitations,
 							...params,
 						})
 						.pipe(finalize(() => this.loadingData.set(false))); // Desativa o indicador de carregamento ao concluir.
@@ -229,12 +229,13 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 			)
 			.subscribe({
 				// Atualiza a tabela com as requisições filtradas.
-				next: (requests: RequestInterface[]) => {
-					this.requests.data = requests;
+				next: (solicitations: SolicitationInterface[]) => {
+					this.solicitations.data = solicitations;
 				},
 				error: (error) => {
+					console.error(error);
 					this._snackBar.open(
-						`Erro ao buscar solicitações: ${error.error}`,
+						`Erro ao buscar solicitações. Tente novamente mais tarde.`,
 						'Ok'
 					);
 				},
@@ -250,12 +251,12 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 	 */
 	generateReport(): void {
 		// Verifica se há solicitações na tabela.
-		if (this.requests.data.length > 0) {
+		if (this.solicitations.data.length > 0) {
 			// Abre um diálogo de confirmação para o usuário.
 			this.dialogService
 				.openDialog(DialogBoxComponent, {
 					title: `Abrir relatório`,
-					message: `Deseja abrir um relatório das (${this.requests.data.length}) solicitações selecionadas?`,
+					message: `Deseja abrir um relatório das (${this.solicitations.data.length}) solicitações selecionadas?`,
 					warning: 'Será aberta uma nova aba',
 					positive_label: 'Sim',
 					negative_label: 'Não',
@@ -295,8 +296,8 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 						`);
 
 						// Chama o serviço para gerar o relatório HTML das solicitações.
-						return this.requestService
-							.generateReport(this.requests.data)
+						return this.solicitationService
+							.generateReport(this.solicitations.data)
 							.pipe(
 								// Passa o relatório HTML e a nova aba para o próximo operador.
 								map((reportHtml) => ({ reportHtml, newWindow }))
@@ -345,19 +346,19 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 	 * Se confirmado, chama o serviço para alterar o status da solicitação e atualiza a tabela.
 	 * Exibe mensagens de erro em um snackbar caso ocorram problemas.
 	 *
-	 * @param {RequestInterface} request A solicitação a ser alternada.
+	 * @param {SolicitationInterface} solicitation A solicitação a ser alternada.
 	 */
-	toggleRequestStatus(request: RequestInterface): void {
-		let requestId = request.id;
+	toggleSolicitationStatus(solicitation: SolicitationInterface): void {
+		let solicitationId = solicitation.id;
 
 		// Verifica se o ID da solicitação é válido.
-		if (!requestId) {
+		if (!solicitationId) {
 			this._snackBar.open(`Erro: Solicitação não encontrada`, 'Ok');
 			return;
 		}
 
 		// Verifica se a solicitação está fechada.
-		let isClosed = request.conclusionDate;
+		let isClosed = solicitation.conclusionDate;
 
 		// Abre um diálogo de confirmação para o usuário.
 		this.dialogService
@@ -365,7 +366,7 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 				title: `${isClosed ? 'Abrir' : 'Fechar'} solicitação`,
 				message: `Deseja ${
 					isClosed ? 'abrir' : 'fechar'
-				} a solicitação Nº ${request.id}?`,
+				} a solicitação Nº ${solicitation.id}?`,
 				positive_label: 'Sim',
 				negative_label: 'Não',
 			})
@@ -375,20 +376,20 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 				filter((confirmed) => confirmed),
 				// Mapeia para a operação de alteração
 				switchMap(() => {
-					return this.requestService
-						.toggleRequestStatus(requestId)
+					return this.solicitationService
+						.toggleSolicitationStatus(solicitationId)
 						.pipe(
-								// After the status change, fetch the updated list of requests
+								// After the status change, fetch the updated list of solicitations
 								switchMap((response: Payload<any>) => {
 									this._snackBar.open(response.message, 'Ok');
-									return this.requestService.getAllRequests({
-										filtering: this.filterForOwnRequests,
+									return this.solicitationService.getAllSolicitations({
+										filtering: this.filterForOwnSolicitations,
 										...this.queryForm.value,
 									});
 								}),
-								// Update the table with the updated requests.
-								tap((requests) => {
-									this.requests.data = requests;
+								// Update the table with the updated solicitations.
+								tap((solicitations) => {
+									this.solicitations.data = solicitations;
 								}),
 								catchError((error) => {
 									console.log(error);
@@ -408,13 +409,13 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 	 * Se confirmado, chama o serviço para excluir a solicitação e atualiza a tabela.
 	 * Exibe mensagens de sucesso ou erro em um snackbar.
 	 *
-	 * @param {RequestInterface} request A solicitação a ser removida.
+	 * @param {SolicitationInterface} solicitation A solicitação a ser removida.
 	 */
-	deleteRequest(request: RequestInterface): void {
-		let requestId = request.id;
+	deleteSolicitation(solicitation: SolicitationInterface): void {
+		let solicitationId = solicitation.id;
 
 		// Verifica se o ID da solicitação é válido.
-		if (!requestId) {
+		if (!solicitationId) {
 			this._snackBar.open(`Erro: Solicitação não encontrada`, 'Ok');
 			return;
 		}
@@ -423,7 +424,7 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 		this.dialogService
 			.openDialog(DialogBoxComponent, {
 				title: 'Excluir solicitação',
-				message: `Deseja realmente excluir solicitação Nº ${requestId}?`,
+				message: `Deseja realmente excluir solicitação Nº ${solicitationId}?`,
 				warning: 'Esta ação é permanente',
 				positive_label: 'Sim',
 				negative_label: 'Não',
@@ -434,7 +435,7 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 				filter((confirmed) => confirmed),
 				// Mapeia para a operação de exclusão
 				switchMap(() =>
-					this.requestService.removeRequestById(requestId).pipe(
+					this.solicitationService.removeSolicitationById(solicitationId).pipe(
 						// Exibe um snackbar com a mensagem de sucesso.
 						tap((response: Payload<any>) => {
 							this._snackBar.open(response.message, 'Ok');
@@ -447,14 +448,14 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 				),
 				// Após a exclusão, busca lista atualizada de solicitações
 				switchMap(() =>
-					this.requestService.getAllRequests({
-						filtering: this.filterForOwnRequests,
+					this.solicitationService.getAllSolicitations({
+						filtering: this.filterForOwnSolicitations,
 						...this.queryForm.value,
 					})
 				),
 				// Atualiza a tabela com as solicitações atualizadas.
-				tap((requests) => {
-					this.requests.data = requests;
+				tap((solicitations) => {
+					this.solicitations.data = solicitations;
 				}),
 				catchError((error) => {
 					this._snackBar.open(
@@ -473,10 +474,10 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 	 * Navega para a rota '/editar/:id', onde ':id' é o ID da solicitação.
 	 * A navegação é relativa à rota ativa atual.
 	 *
-	 * @param {RequestInterface} request A solicitação a ser editada.
+	 * @param {SolicitationInterface} solicitation A solicitação a ser editada.
 	 */
-	editRequestRedirect(request: RequestInterface): void {
-		this.router.navigate(['editar', request.id], {
+	editSolicitationRedirect(solicitation: SolicitationInterface): void {
+		this.router.navigate(['editar', solicitation.id], {
 			relativeTo: this.activatedRoute,
 		});
 	}
@@ -487,10 +488,10 @@ export class ListRequestsComponent implements OnInit, OnDestroy {
 	 * Navega para a rota '/ver/:id', onde ':id' é o ID da solicitação.
 	 * A navegação é relativa à rota ativa atual.
 	 *
-	 * @param {RequestInterface} request A solicitação a ser visualizada.
+	 * @param {SolicitationInterface} solicitation A solicitação a ser visualizada.
 	 */
-	viewRequestRedirect(request: RequestInterface): void {
-		this.router.navigate(['ver', request.id], {
+	viewSolicitationRedirect(solicitation: SolicitationInterface): void {
+		this.router.navigate(['ver', solicitation.id], {
 			relativeTo: this.activatedRoute,
 		});
 	}

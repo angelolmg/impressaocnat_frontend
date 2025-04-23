@@ -28,7 +28,7 @@ import {
 	PageState,
 } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
-import { CopyInterface } from './../../models/copy.interface';
+import { CopyInterface } from '../../models/copy.interface';
 
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -46,12 +46,12 @@ import { environment } from '../../../environments/environment';
 import { ConfigBoxComponent } from '../../components/config-box/config-box.component';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
 import { NewCopyBoxComponent } from '../../components/new-copy-box/new-copy-box.component';
-import { RequestInterface } from '../../models/request.interface';
+import { SolicitationInterface } from '../../models/solicitation.interface';
 import { IconPipe } from '../../pipes/icon.pipe';
-import { RequestService } from '../../service/request.service';
+import { SolicitationService } from '../../service/solicitation.service';
 
 @Component({
-	selector: 'app-request-form',
+	selector: 'app-solicitation-form',
 	imports: [
 		MatButton,
 		FormsModule,
@@ -67,14 +67,14 @@ import { RequestService } from '../../service/request.service';
 		IconPipe,
 		MatProgressSpinnerModule,
 	],
-	templateUrl: './request-form.component.html',
-	styleUrl: './request-form.component.scss',
+	templateUrl: './solicitation-form.component.html',
+	styleUrl: './solicitation-form.component.scss',
 })
-export class RequestFormComponent implements OnDestroy, OnInit {
+export class SolicitationFormComponent implements OnDestroy, OnInit {
 	// Serviços
 	actionService = inject(ActionService);
 	dialogService = inject(DialogService);
-	requestService = inject(RequestService);
+	solicitationService = inject(SolicitationService);
 	_snackBar = inject(MatSnackBar);
 	route = inject(ActivatedRoute);
 	router = inject(Router);
@@ -89,13 +89,13 @@ export class RequestFormComponent implements OnDestroy, OnInit {
 	copies = new MatTableDataSource<CopyInterface>();
 
 	/** Tipo de página atual. Este componente pode ser dois tipos de página: nova solicitação OU edição */
-	pageState = PageState.newRequest;
+	pageState = PageState.newSolicitation;
 
 	/** Título da página. Varia se a página é do tipo nova solicitação OU edição  */
-	pageTitle: string = PageState.newRequest;
+	pageTitle: string = PageState.newSolicitation;
 
 	/** Nome deste componente */
-	componentName: string = 'request-form';
+	componentName: string = 'solicitation-form';
 	
 	/** Ações permitidas na listagem de arquivos. Varia se a página é do tipo nova solicitação OU edição */
 	allowedActions: ActionType[] = [];
@@ -107,7 +107,7 @@ export class RequestFormComponent implements OnDestroy, OnInit {
 	fileCount = signal(0);
 
 	/** Sinal para armazenar o contador de páginas da solicitação. */
-	requestPageCounter = signal(0);
+	solicitationPageCounter = signal(0);
 
 	/** Array de tempos para seleção de prazo. */
 	times: number[] = [48, 24, 12, 4, 2];
@@ -125,8 +125,8 @@ export class RequestFormComponent implements OnDestroy, OnInit {
 	];
 
 	/** ID da solicitação a ser editada (undefined para nova solicitação). */
-	editRequestId: number | undefined;
-	currentRequest: RequestInterface | undefined;
+	editSolicitationId: number | undefined;
+	currentSolicitation: SolicitationInterface | undefined;
 
 	/** Sinal para indicar se o upload da solicitação está em andamento. */
 	uploading = signal(false);
@@ -135,8 +135,8 @@ export class RequestFormComponent implements OnDestroy, OnInit {
 	loadingData = signal(false);
 
 	/** Getter para o tipo de página de edição de solicitação. */
-	public get editRequest(): PageState {
-		return PageState.editRequest;
+	public get editSolicitation(): PageState {
+		return PageState.editSolicitation;
 	}
 
 	/**
@@ -152,13 +152,13 @@ export class RequestFormComponent implements OnDestroy, OnInit {
 		let url = this.route.snapshot.url[0];
 		this.pageState =
 			url && url.path == 'editar'
-				? PageState.editRequest
-				: PageState.newRequest;
+				? PageState.editSolicitation
+				: PageState.newSolicitation;
 
 		// Define as ações permitidas com base no tipo de página.
-		if (this.pageState == PageState.newRequest)
-			this.allowedActions = actions.allowedActionsforNewRequest;
-		else this.allowedActions = actions.allowedActionsforEditRequest;
+		if (this.pageState == PageState.newSolicitation)
+			this.allowedActions = actions.allowedActionsforNewSolicitation;
+		else this.allowedActions = actions.allowedActionsforEditSolicitation;
 
 		// Observar eventos de deleção e edição
 		this.actionService.deleteCopy
@@ -173,27 +173,27 @@ export class RequestFormComponent implements OnDestroy, OnInit {
 			});
 
 		// Se a página for de edição, carrega os dados da solicitação.
-		if (this.pageState == PageState.editRequest) {
-			this.editRequestId = +this.route.snapshot.paramMap.get('id')!;
+		if (this.pageState == PageState.editSolicitation) {
+			this.editSolicitationId = +this.route.snapshot.paramMap.get('id')!;
 			this.pageTitle =
 				this.pageState +
 				' Nº ' +
-				this.editRequestId.toString().padStart(6, '0');
+				this.editSolicitationId.toString().padStart(6, '0');
 			this.loadingData.set(true);
 
 			// Obtém os dados da solicitação do serviço.
-			this.requestService
-				.getRequestById(this.editRequestId)
+			this.solicitationService
+				.getSolicitationById(this.editSolicitationId)
 				.pipe(
 					finalize(() => {
 						this.loadingData.set(false);
 					})
 				)
 				// Atualiza a página com os dados da solicitação.
-				.subscribe((request: RequestInterface) => {
-					this.currentRequest = request;
-					if (request.copies) this.copies.data = request.copies;
-					this.selectedTermControl.setValue(request.term / (60 * 60));
+				.subscribe((solicitation: SolicitationInterface) => {
+					this.currentSolicitation = solicitation;
+					if (solicitation.copies) this.copies.data = solicitation.copies;
+					this.selectedTermControl.setValue(solicitation.term / (60 * 60));
 					this.refreshTable();
 				});
 		}
@@ -211,7 +211,7 @@ export class RequestFormComponent implements OnDestroy, OnInit {
 	removeCopy(copy: CopyInterface): void {
 		// Verifica se a cópia é a última da lista e se a página é de edição.
 		let isLastCopy =
-			this.pageState == this.editRequest && this.copies.data.length == 1;
+			this.pageState == this.editSolicitation && this.copies.data.length == 1;
 		let lastCopyMessage = isLastCopy
 			? 'Esta é a única cópia e a solicitação também será removida. '
 			: '';
@@ -234,8 +234,8 @@ export class RequestFormComponent implements OnDestroy, OnInit {
 
 				// Se a cópia for a última, remove a solicitação inteira.
 				if (isLastCopy) {
-					this.requestService
-						.removeRequestById(this.editRequestId!)
+					this.solicitationService
+						.removeSolicitationById(this.editSolicitationId!)
 						.subscribe((response) => {
 							this._snackBar.open(response.message, 'Ok');
 							this.router.navigate([
@@ -434,7 +434,7 @@ export class RequestFormComponent implements OnDestroy, OnInit {
 	addCopyDialog(data?: CopyInterface): void {
 
 		// Desabilitar adições caso a solicitação esteja concluída
-		if(!!this.currentRequest?.conclusionDate) return;
+		if(!!this.currentSolicitation?.conclusionDate) return;
 
 		// Abre o diálogo para adicionar ou editar uma cópia.
 		this.dialogService
@@ -600,7 +600,7 @@ export class RequestFormComponent implements OnDestroy, OnInit {
 			counter += copy.printConfig.sheetsTotal;
 		});
 
-		this.requestPageCounter.set(counter);
+		this.solicitationPageCounter.set(counter);
 	}
 
 	/**
@@ -610,17 +610,17 @@ export class RequestFormComponent implements OnDestroy, OnInit {
 	 * para salvar ou editar a solicitação. Exibe mensagens de sucesso ou erro
 	 * e navega para a página apropriada após a conclusão.
 	 */
-	submitRequest(): void {
-		if(!!this.currentRequest?.conclusionDate) return;
+	submitSolicitation(): void {
+		if(!!this.currentSolicitation?.conclusionDate) return;
 
 		// Define o status de upload como verdadeiro.
 		this.uploading.set(true);
 
 		// Declara a variável para armazenar o observable da solicitação.
-		let requestObservable: Observable<any>;
+		let solicitationObservable: Observable<any>;
 
 		// Determina o tipo de solicitação (nova ou edição) com base no tipo de página.
-		if (this.pageState === PageState.newRequest) {
+		if (this.pageState === PageState.newSolicitation) {
 			// Se for uma nova solicitação, verifica se há cópias anexadas.
 			if (!this.anyCopiesAttached() || this.files.length === 0) {
 				// Se não houver cópias, exibe um snackbar de erro e cria um observable de erro.
@@ -628,7 +628,7 @@ export class RequestFormComponent implements OnDestroy, OnInit {
 					'É necessário adicionar pelo menos uma cópia à solicitação',
 					'Ok'
 				);
-				requestObservable = throwError(
+				solicitationObservable = throwError(
 					() =>
 						new Error(
 							'É necessário adicionar pelo menos uma cópia à solicitação'
@@ -636,31 +636,31 @@ export class RequestFormComponent implements OnDestroy, OnInit {
 				);
 			} else {
 				// Se houver cópias, chama o serviço para salvar a nova solicitação.
-				requestObservable = this.requestService.saveRequest(
+				solicitationObservable = this.solicitationService.saveSolicitation(
 					this.files,
 					this.copies.data,
 					this.selectedTermControl.value || 24,
-					this.requestPageCounter()
+					this.solicitationPageCounter()
 				);
 			}
-		} else if (this.pageState === PageState.editRequest) {
+		} else if (this.pageState === PageState.editSolicitation) {
 			// Se for uma edição de solicitação, chama o serviço para editar a solicitação existente.
-			requestObservable = this.requestService.editRequest(
-				this.editRequestId!,
+			solicitationObservable = this.solicitationService.editSolicitation(
+				this.editSolicitationId!,
 				this.files,
 				this.copies.data,
 				this.selectedTermControl.value || 24,
-				this.requestPageCounter()
+				this.solicitationPageCounter()
 			);
 		} else {
 			// Se o tipo de página for inválido, cria um observable de erro.
-			requestObservable = throwError(
+			solicitationObservable = throwError(
 				() => new Error('Tipo de página inválido')
 			);
 		}
 
 		// Processa o observable da solicitação.
-		requestObservable
+		solicitationObservable
 			.pipe(
 				// Executa efeitos colaterais (exibir snackbar, limpar cópias, navegar) em caso de sucesso.
 				tap((response) => {

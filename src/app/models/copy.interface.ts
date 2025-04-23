@@ -9,6 +9,6 @@ export interface CopyInterface {
 	printConfig: PrintConfig; // Configurações de impressão
 	fileInDisk?: boolean; // Se o arquivo esta salvo no backend
 	isPhysicalFile: boolean; // Se o arquivo é físico e não foi anexado digitalmente
-	requestId?: number; // ID da solicitação associada
+	solicitationId?: number; // ID da solicitação associada
 	notes: string; // Observações do usuário
 }
