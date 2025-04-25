@@ -236,8 +236,8 @@ export class SolicitationFormComponent implements OnDestroy, OnInit {
 				if (isLastCopy) {
 					this.solicitationService
 						.removeSolicitationById(this.editSolicitationId!)
-						.subscribe((response) => {
-							this._snackBar.open(response.message, 'Ok');
+						.subscribe((response: string) => {
+							this._snackBar.open(response, 'Ok');
 							this.router.navigate([
 								this.actionService.getLastPageState(true) ||
 									'nova-solicitacao',

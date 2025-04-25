@@ -380,8 +380,8 @@ export class ListSolicitationsComponent implements OnInit, OnDestroy {
 						.toggleSolicitationStatus(solicitationId)
 						.pipe(
 								// After the status change, fetch the updated list of solicitations
-								switchMap((response: Payload<any>) => {
-									this._snackBar.open(response.message, 'Ok');
+								switchMap((response: string) => {
+									this._snackBar.open(response, 'Ok');
 									return this.solicitationService.getAllSolicitations({
 										filtering: this.filterForOwnSolicitations,
 										...this.queryForm.value,
@@ -437,8 +437,8 @@ export class ListSolicitationsComponent implements OnInit, OnDestroy {
 				switchMap(() =>
 					this.solicitationService.removeSolicitationById(solicitationId).pipe(
 						// Exibe um snackbar com a mensagem de sucesso.
-						tap((response: Payload<any>) => {
-							this._snackBar.open(response.message, 'Ok');
+						tap((response: string) => {
+							this._snackBar.open(response, 'Ok');
 						}),
 						catchError((error) => {
 							this._snackBar.open(error.error.message, 'Ok');

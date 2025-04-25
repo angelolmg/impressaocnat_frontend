@@ -261,8 +261,8 @@ export class ViewSolicitationComponent implements OnInit {
 						// Se a cópia for a última, remove a solicitação inteira.
 						this.solicitationService
 							.removeSolicitationById(solicitationId)
-							.subscribe((response) => {
-								this._snackBar.open(response.message, 'Ok');
+							.subscribe((response: string) => {
+								this._snackBar.open(response, 'Ok');
 								this.router.navigate([
 									this.actionService.getLastPageState(true) ||
 										'nova-solicitacao',

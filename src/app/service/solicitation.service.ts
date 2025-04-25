@@ -75,7 +75,10 @@ export class SolicitationService {
 		};
 
 		// Cria objetos FormData e HttpHeaders para enviar uma solicitação com arquivos.
-		const { formData, headers } = this.buildSolicitation(solicitation, files);
+		const { formData, headers } = this.buildSolicitation(
+			solicitation,
+			files
+		);
 
 		return this.http.patch(this.solicitationUrl + '/' + id, formData, {
 			headers,
@@ -120,7 +123,10 @@ export class SolicitationService {
 		};
 
 		// Cria objetos FormData e HttpHeaders para enviar uma solicitação com arquivos.
-		const { formData, headers } = this.buildSolicitation(solicitation, files);
+		const { formData, headers } = this.buildSolicitation(
+			solicitation,
+			files
+		);
 
 		return this.http.post(this.solicitationUrl, formData, { headers });
 	}
@@ -131,11 +137,10 @@ export class SolicitationService {
 	 * @param {number} id O ID da solicitação cujo status será alterado.
 	 * @returns {Observable<Payload>} Um Observable que emite a resposta da requisição.
 	 */
-	toggleSolicitationStatus(id: number): Observable<Payload<any>> {
-		return this.http.patch<Payload<any>>(
-			this.solicitationUrl + '/' + id + '/status',
-			null
-		);
+	toggleSolicitationStatus(id: number): Observable<string> {
+		return this.http.patch(`${this.solicitationUrl}/${id}/status`, null, {
+			responseType: 'text',
+		});
 	}
 
 	/**
@@ -173,7 +178,7 @@ export class SolicitationService {
 		if (params?.startDate) {
 			httpParams = httpParams.set(
 				'startDate',
-				params.startDate.getTime().toString()
+				params.startDate.toISOString()
 			);
 		}
 
@@ -181,7 +186,7 @@ export class SolicitationService {
 		if (params?.endDate) {
 			httpParams = httpParams.set(
 				'endDate',
-				params.endDate.getTime().toString()
+				params.endDate.toISOString()
 			);
 		}
 
@@ -210,9 +215,12 @@ export class SolicitationService {
 		let httpParams = new HttpParams();
 		if (query) httpParams = httpParams.set('query', query);
 
-		return this.http.get<CopyInterface[]>(this.copyUrl + '/' + solicitationId, {
-			params: httpParams,
-		});
+		return this.http.get<CopyInterface[]>(
+			this.copyUrl + '/' + solicitationId,
+			{
+				params: httpParams,
+			}
+		);
 	}
 
 	/**
@@ -222,7 +230,9 @@ export class SolicitationService {
 	 * @returns {Observable<SolicitationInterface>} Um Observable que emite a solicitação correspondente.
 	 */
 	getSolicitationById(id: number): Observable<SolicitationInterface> {
-		return this.http.get<SolicitationInterface>(this.solicitationUrl + '/' + id);
+		return this.http.get<SolicitationInterface>(
+			this.solicitationUrl + '/' + id
+		);
 	}
 
 	/**
@@ -231,8 +241,10 @@ export class SolicitationService {
 	 * @param {number} id O ID da solicitação a ser removida.
 	 * @returns {Observable<Payload<any>>} Um Observable que emite a resposta da requisição.
 	 */
-	removeSolicitationById(id: number): Observable<Payload<any>> {
-		return this.http.delete<Payload<any>>(this.solicitationUrl + '/' + id);
+	removeSolicitationById(id: number): Observable<string> {
+		return this.http.delete(this.solicitationUrl + '/' + id, {
+			responseType: 'text',
+		});
 	}
 
 	/**
@@ -249,7 +261,10 @@ export class SolicitationService {
 		let copyIndex: number = -1;
 		try {
 			// Busca o índice da cópia a ser editada na lista de cópias da solicitação.
-			copyIndex = this.findCopyIndexInSolicitation(solicitation, copyToPatch.id);
+			copyIndex = this.findCopyIndexInSolicitation(
+				solicitation,
+				copyToPatch.id
+			);
 		} catch (error) {
 			// Retorna um Observable de erro se a cópia não for encontrada ou a solicitação for inválida.
 			return throwError(() => error);
@@ -288,18 +303,21 @@ export class SolicitationService {
 		let copyIndex: number = -1;
 		try {
 			// Busca o índice da cópia a ser removida na lista de cópias da solicitação.
-			copyIndex = this.findCopyIndexInSolicitation(solicitation, copyIdForRemoval);
+			copyIndex = this.findCopyIndexInSolicitation(
+				solicitation,
+				copyIdForRemoval
+			);
 		} catch (error) {
 			// Retorna um Observable de erro se a cópia não for encontrada ou a solicitação for inválida.
 			return throwError(() => error);
 		}
 
 		// Remove a cópia pelo índice
-		solicitation.copies!.splice(copyIndex, 1);
+		solicitation.copies.splice(copyIndex, 1);
 
 		// Recalcula o número total de páginas da solicitação.
 		var counter = 0;
-		solicitation.copies!.forEach((copy) => {
+		solicitation.copies.forEach((copy) => {
 			counter += copy.printConfig.sheetsTotal;
 		});
 
@@ -307,7 +325,7 @@ export class SolicitationService {
 		return this.editSolicitation(
 			solicitation.id!,
 			[],
-			solicitation.copies!,
+			solicitation.copies,
 			solicitation.deadline, // Converte o prazo de segundos para horas.
 			counter
 		);
@@ -329,12 +347,14 @@ export class SolicitationService {
 		// Verifica se solicitação é válida e há cópias anexas
 		if (!solicitation.id || !solicitation.copies?.length)
 			throw new Error('Solicitação inválida');
-		
+
 		// Verifica se ID da cópia a ser comparada é válido
 		if (!id) throw new Error('ID de cópia inválido');
 
 		// Verifica se a cópia a ser removida existe
-		const copyIndex = solicitation.copies.findIndex((copy) => copy.id === id);
+		const copyIndex = solicitation.copies.findIndex(
+			(copy) => copy.id === id
+		);
 
 		// Verifica se a cópia foi encontrada na lista de cópias.
 		if (copyIndex === -1)
