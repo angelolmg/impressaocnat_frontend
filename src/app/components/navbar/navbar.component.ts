@@ -5,7 +5,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router, RouterLink } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
-import { UserData } from '../../models/userData.interface';
 import {
 	ActionService,
 	DEFAULT_USER_PROFILE,
@@ -14,6 +13,7 @@ import {
 } from '../../service/action.service';
 import { UserService } from '../../service/user.service';
 import { DEFAULT_USER_OPTIONS } from './../../service/action.service';
+import { User } from '../../models/user.interface';
 
 @Component({
 	selector: 'app-navbar',
@@ -76,19 +76,19 @@ export class NavbarComponent {
 	/**
 	 * Atualiza as informações do usuário no signal.
 	 *
-	 * Se um objeto UserData for fornecido e contiver todas as propriedades necessárias,
+	 * Se um objeto SuapUserData for fornecido e contiver todas as propriedades necessárias,
 	 * as informações do usuário serão atualizadas. Caso contrário, as informações do usuário
 	 * serão redefinidas para o estado padrão.
 	 *
-	 * @param {UserData} [user] - O objeto UserData contendo as novas informações do usuário.
+	 * @param {User} [user] - O objeto SuapUserData contendo as novas informações do usuário.
 	 */
-	updateUser(user?: UserData): void {
-		if (user && user.matricula && user.nome_usual && user.url_foto_75x100) {
+	updateUser(user?: User): void {
+		if (user && user.registrationNumber && user.commonName && user.photoUrl) {
 			// Desestruturação de objeto (https://www.w3schools.com/js/js_destructuring.asp)
 			const {
-				matricula: registration,
-				nome_usual: name,
-				url_foto_75x100: pfp,
+				registrationNumber: registration,
+				commonName: name,
+				photoUrl: pfp,
 			} = user;
 
 			this.userSignal.set({ registration, name, pfp });

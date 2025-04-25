@@ -1,10 +1,12 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { EventEmitter, inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, Subscription, switchMap, tap, throwError } from 'rxjs';
-import { UserData } from '../models/userData.interface';
+import { Observable, switchMap, tap, throwError } from 'rxjs';
+import { SuapUserData } from '../models/suapUserData.interface';
 import { environment } from './../../environments/environment';
 import { AuthService } from './auth.service';
+import { User } from '../models/user.interface';
+import { Role } from '../models/enums/role.enum';
 
 @Injectable({
 	providedIn: 'root',
@@ -18,14 +20,14 @@ export class UserService {
 	authService = inject(AuthService);
 
 	/** Armazena os dados do usuário atual. */
-	user?: UserData;
+	user?: User;
 
 	/** Emite um evento quando os dados do usuário são atualizados. */
-	userUpdate = new EventEmitter<UserData>();
+	userUpdate = new EventEmitter<User>();
 
 	// Define a URL para buscar os dados do usuário no SUAP.
 	myDataUrl = `${environment.SUAP_URL}/api/rh/meus-dados/`;
-	fetchAdminUrl = `${environment.API_URL}/usuario/admin`;
+	fetchRoleUrl = `${environment.API_URL}/usuario/papel`;
 
 	constructor() {
 		// Busca os dados do usuário
@@ -76,8 +78,8 @@ export class UserService {
 		else console.warn('Aviso: Nenhum token de login encontrado');
 
 		// Remove o token e a permissão de administrador do armazenamento local.
-		localStorage.removeItem('suapToken');
-		localStorage.removeItem('suapAdmin');
+		localStorage.removeItem('impressaocnat:suapToken');
+		localStorage.removeItem('impressaocnat:role');
 		
 		// Navega para a rota raiz da aplicação.
 		this.router.navigate(['']);
@@ -92,7 +94,7 @@ export class UserService {
 		// Verifica se o token de autenticação e o token no armazenamento local existem.
 		return (
 			!!this.authService.client.getToken() &&
-			!!localStorage.getItem('suapToken')
+			!!localStorage.getItem('impressaocnat:suapToken')
 		);
 	}
 
@@ -101,28 +103,28 @@ export class UserService {
 	 *
 	 * @returns {Observable<boolean>} Um Observable que emite `true` se a busca e verificação forem bem-sucedidas, `false` caso contrário.
 	 */
-	fetchUserData(): Observable<boolean> {
+	fetchUserData(): Observable<Role> {
 		// Obtém o token de autenticação do serviço AuthService.
 		const token = this.authService.client.getToken();
 
 		// Verifica se o token existe.
 		if (!token) {
-			return throwError(() => new Error('Nenhum usuário conectado'));
+			return throwError(() => new Error('Nenhum usuário conectado.'));
 		}
 
 		// Faz a requisição GET para buscar os dados do usuário no SUAP.
-		return this.http.get<UserData>(this.myDataUrl).pipe(
+		return this.http.get<SuapUserData>(this.myDataUrl).pipe(
 			// Encadeia a requisição de permissão de administrador.
-			switchMap((data: UserData) => {
+			switchMap((suapData: SuapUserData) => {
 				// Obtém a matrícula do usuário dos dados recebidos.
-				const userRegistration = data.matricula;
+				const userRegistration = suapData.matricula;
 
 				// Verifica se a matrícula está definida.
 				if (!userRegistration) {
 					return throwError(
 						() =>
 							new Error(
-								`Não foi possível recuperar dados do usuário`
+								`Não foi possível recuperar dados do usuário.`
 							)
 					);
 				}
@@ -130,7 +132,7 @@ export class UserService {
 				// Busca a permissão de administrador usando a matrícula do usuário.
 				return this.fetchAdminPermission(userRegistration).pipe(
 					// Define o usuário e sua permissão de administrador.
-					tap((isAdmin: boolean) => this.setUser(data, isAdmin))
+					tap((role: Role) => this.setUser(suapData, role))
 				);
 			})
 		);
@@ -139,16 +141,24 @@ export class UserService {
 	/**
 	 * Define o usuário atual e sua permissão de administrador.
 	 *
-	 * @param {UserData} data Os dados do usuário a serem definidos.
-	 * @param {boolean} isAdmin Indica se o usuário é um administrador.
+	 * @param {SuapUserData} data Os dados do usuário a serem definidos.
+	 * @param {boolean} isAdminOrManager Indica se o usuário é um administrador.
 	 */
-	setUser(data: UserData, isAdmin: boolean): void {
+	setUser(data: SuapUserData, role: Role): void {
 		// Atribui dados ao usuário
-		this.user = data;
-		this.user.is_admin = isAdmin;
+
+		this.user = {
+			commonName: data.nome_usual, // Nome usual
+			registrationNumber: data.matricula, // Matrícula
+			email: data.email, // E-mail
+			phoneNumbers: data.vinculo.telefones_institucionais.join(", "), // Telefones
+			sector: data.vinculo.setor_suap, // Setor suap
+			photoUrl: data.url_foto_150x200, // url Foto
+			role: role // Papel
+		};
 
 		// Armazena a permissão de administrador no localStorage.
-		localStorage.setItem('suapAdmin', isAdmin.toString());
+		localStorage.setItem('impressaocnat:role', role);
 
 		// Emite um evento 'userUpdate' com os dados do usuário atualizados.
 		this.userUpdate.emit(this.user);
@@ -157,9 +167,9 @@ export class UserService {
 	/**
 	 * Obtém os dados do usuário atual.
 	 *
-	 * @returns {UserData | undefined} Os dados do usuário atual ou undefined se não houver usuário.
+	 * @returns {SuapUserData | undefined} Os dados do usuário atual ou undefined se não houver usuário.
 	 */
-	getCurrentUser(): UserData | undefined {
+	getCurrentUser(): User | undefined {
 		return this.user;
 	}
 
@@ -169,13 +179,13 @@ export class UserService {
 	 * @param {string} registration A matrícula do usuário.
 	 * @returns {Observable<boolean>} Um Observable que emite `true` se o usuário for administrador, `false` caso contrário.
 	 */
-	fetchAdminPermission(registration: string): Observable<boolean> {
+	fetchAdminPermission(registration: string): Observable<Role> {
 		// Cria um objeto HttpParams para adicionar o parâmetro de matrícula.
 		let httpParams = new HttpParams();
 		httpParams = httpParams.set('registration', registration);
 
 		// Faz a requisição GET para buscar a permissão de administrador.
-		return this.http.get<boolean>(this.fetchAdminUrl, { params: httpParams });
+		return this.http.get<Role>(this.fetchRoleUrl, { params: httpParams });
 	}
 
 	/**
@@ -183,11 +193,12 @@ export class UserService {
 	 *
 	 * @returns {boolean} `true` se o usuário for um administrador, `false` caso contrário.
 	 */
-	isUserAdmin(): boolean {
+	isUserAdminOrManager(): boolean {
 		// Obtém o usuário atual.
-		const user: UserData | undefined = this.user;
+		const user: User | undefined = this.user;
 
-		// Verifica se o usuário existe e se a propriedade 'is_admin' é verdadeira.
-		return user ? !!user.is_admin : false;
+		// Verifica se o usuário existe e se tem permissão de ADMIN ou MANAGER.
+		if (user && user.role) return user.role === Role.ADMIN || user.role === Role.MANAGER;
+		return false;
 	}
 }

@@ -53,7 +53,7 @@ export const authInterceptor: HttpInterceptorFn = (
 							'Sua sessão expirou. Por favor, faça login novamente.',
 							'Fechar'
 						);
-						localStorage.removeItem('suapToken');
+						localStorage.removeItem('impressaocnat:suapToken');
 						router.navigate(['']);
 						break;
 					case 403:
@@ -73,8 +73,8 @@ export const authInterceptor: HttpInterceptorFn = (
 							'Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.',
 							'Fechar'
 						);
-						localStorage.removeItem('suapToken');
-						router.navigate(['']);
+						// localStorage.removeItem('impressaocnat:suapToken');
+						// router.navigate(['']);
 						break;
 				}
 			}

@@ -125,7 +125,7 @@
 					Prazo (horas)
 				</th>
 				<td mat-cell *matCellDef="let element">
-					{{ element.term / 3600 }}
+					{{ element.deadline }}
 				</td>
 			</ng-container>
 
@@ -139,7 +139,7 @@
 					Solicitante
 				</th>
 				<td mat-cell *matCellDef="let element">
-					{{ element.username }}
+					{{ element.user.commonName }}
 				</td>
 			</ng-container>
 
@@ -153,7 +153,7 @@
 					Matrícula
 				</th>
 				<td mat-cell *matCellDef="let element">
-					{{ element.registration }}
+					{{ element.user.registrationNumber }}
 				</td>
 			</ng-container>
 

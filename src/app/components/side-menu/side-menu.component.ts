@@ -18,6 +18,8 @@ import {
 	ADMIN_USER_OPTIONS,
 	DEFAULT_USER_OPTIONS,
 } from './../../service/action.service';
+import { Role } from '../../models/enums/role.enum';
+import { User } from '../../models/user.interface';
 
 @Component({
 	selector: 'app-side-menu',
@@ -71,7 +73,8 @@ export class SideMenuComponent implements AfterViewInit {
 		this.userService.userUpdate
 			.pipe(takeUntil(this.ngUnsubscribe))
 			.subscribe(() => {
-				if (this.userService.getCurrentUser()?.is_admin) {
+				let currUser: User = this.userService.getCurrentUser()!;
+				if (currUser.role == Role.ADMIN || currUser.role == Role.MANAGER) {
 					this.sideMenuOptions.update((curr: Option[]) =>
 						curr.concat(ADMIN_USER_OPTIONS)
 					);

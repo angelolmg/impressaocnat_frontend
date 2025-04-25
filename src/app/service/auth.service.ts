@@ -1,7 +1,7 @@
 import { EventEmitter, inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { environment } from './../../environments/environment';
-import { UserData } from './../models/userData.interface';
+import { SuapUserData } from '../models/suapUserData.interface';
 
 /**
  * Serviço para autenticação e gerenciamento de usuários utilizando o SUAP.
@@ -17,7 +17,7 @@ export class AuthService {
 	client!: SuapClient;
 
 	/** Evento para notificar atualizações nos dados do usuário. */
-	userUpdate = new EventEmitter<UserData>();
+	userUpdate = new EventEmitter<SuapUserData>();
 
 	constructor() {
 		// Inicializa o cliente SUAP com as configurações do ambiente.
@@ -30,7 +30,7 @@ export class AuthService {
 
 		// Verifica se há um token armazenado no localStorage.
 		// Se houver um token, inicializa o cliente com o token armazenado.
-		let token = localStorage.getItem('suapToken');
+		let token = localStorage.getItem('impressaocnat:suapToken');
 		if (token) this.client.initializeToken('localStorage');
 	}
 }
@@ -148,12 +148,12 @@ class SuapClient {
 			scope = this.extractScope();
 		} else if (source === 'localStorage') {
 			// Extrai as informações do token do localStorage.
-			tokenValue = localStorage.getItem('suapToken');
+			tokenValue = localStorage.getItem('impressaocnat:suapToken');
 			tokenStartTimeMs =
-				+localStorage.getItem('suapTokenStartTime')! || 0;
+				+localStorage.getItem('impressaocnat:suapTokenStartTime')! || 0;
 			tokenDurationSecs =
-				+localStorage.getItem('suapTokenExpirationTime')! || 0;
-			scope = localStorage.getItem('suapScope');
+				+localStorage.getItem('impressaocnat:suapTokenExpirationTime')! || 0;
+			scope = localStorage.getItem('impressaocnat:suapScope');
 		}
 
 		// Verifica se todas as informações do token foram obtidas com sucesso.
@@ -187,7 +187,7 @@ class SuapClient {
 	 *
 	 * @return {string} URI de redirecionamento.
 	 */
-	public getRedirectURI() {
+	public getRedirectURI(): string {
 		return this.redirectURI;
 	}
 
@@ -195,7 +195,7 @@ class SuapClient {
 	 * Retorna se o usuário está autenticado ou não com base no estado do token.
 	 * @return {Boolean} true se o usuário estiver autenticado; false caso contrário.
 	 */
-	public isAuthenticated() {
+	public isAuthenticated(): boolean {
 		return this.token.isValid();
 	}
 
@@ -256,13 +256,13 @@ class Token {
 		this.scope = scope;
 
 		// Armazena o token e seus metadados no localStorage.
-		localStorage.setItem('suapToken', value);
-		localStorage.setItem('suapTokenStartTime', this.startTime.toString());
+		localStorage.setItem('impressaocnat:suapToken', value);
+		localStorage.setItem('impressaocnat:suapTokenStartTime', this.startTime.toString());
 		localStorage.setItem(
-			'suapTokenExpirationTime',
+			'impressaocnat:suapTokenExpirationTime',
 			this.expirationTimeInSeconds.toString()
 		);
-		localStorage.setItem('suapScope', scope);
+		localStorage.setItem('impressaocnat:suapScope', scope);
 	}
 
 	/**
@@ -299,7 +299,7 @@ class Token {
 	 */
 	public isValid(): boolean {
 		return (
-			!!localStorage.getItem('suapToken') &&
+			!!localStorage.getItem('impressaocnat:suapToken') &&
 			!!this.getValue() &&
 			!this.hasExpired()
 		);
@@ -328,9 +328,9 @@ class Token {
 		this.expirationTimeInSeconds = undefined;
 		this.scope = undefined;
 
-		localStorage.removeItem('suapToken');
-		localStorage.removeItem('suapTokenStartTime');
-		localStorage.removeItem('suapTokenExpirationTime');
-		localStorage.removeItem('suapScope');
+		localStorage.removeItem('impressaocnat:suapToken');
+		localStorage.removeItem('impressaocnat:suapTokenStartTime');
+		localStorage.removeItem('impressaocnat:suapTokenExpirationTime');
+		localStorage.removeItem('impressaocnat:suapScope');
 	}
 }

@@ -181,7 +181,7 @@ export class ActionService {
 		action?: ActionType
 	): boolean {
 		const isViewMySolicitations = state === PageState.viewMySolicitations;
-		const isUserAdmin = this.userService.isUserAdmin();
+		const isUserAdminOrManager = this.userService.isUserAdminOrManager();
 
 		// Deve ocultar a ação se:
 		switch (action) {
@@ -190,14 +190,14 @@ export class ActionService {
 				// ...e NÃO tiver data de conclusão OU (estiver no estado de visualização de solicitações E o usuario não for admin)
 				return (
 					!element.conclusionDate ||
-					(isViewMySolicitations && !isUserAdmin)
+					(isViewMySolicitations && !isUserAdminOrManager)
 				);
 			// For uma ação de FECHAR...
 			case ActionType.FECHAR:
 				// ...e TIVER data de conclusão OU (estiver no estado de visualização de solicitações E o usuario não for admin)
 				return (
 					!!element.conclusionDate ||
-					(isViewMySolicitations && !isUserAdmin)
+					(isViewMySolicitations && !isUserAdminOrManager)
 				);
 			default:
 				// Caso contrário, não oculte a ação
@@ -338,7 +338,7 @@ export class ActionService {
 			['list-solicitations'].includes(component) &&
 			[ActionType.VISUALIZAR, ActionType.EDITAR].includes(action)
 		)
-			localStorage.setItem('lastPageState', pageStateRoutes[state]);
+			localStorage.setItem('impressaocnat:lastPageState', pageStateRoutes[state]);
 
 		// Emite o evento de ação correspondente.
 		this.emitAction(action, element);
@@ -351,7 +351,7 @@ export class ActionService {
 	 * @returns {string | undefined} Retorna o último estado da página como uma string ou undefined se não houver estado armazenado.
 	 */
 	getLastPageState(asRoute?: boolean): string | undefined {
-		let pageState = localStorage.getItem('lastPageState');
+		let pageState = localStorage.getItem('impressaocnat:lastPageState');
 		if (pageState) {
 			if (asRoute) return pageState;
 			else return routePageStates[pageState] as string;

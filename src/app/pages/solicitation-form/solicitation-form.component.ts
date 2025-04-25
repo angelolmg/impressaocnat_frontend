@@ -193,7 +193,7 @@ export class SolicitationFormComponent implements OnDestroy, OnInit {
 				.subscribe((solicitation: SolicitationInterface) => {
 					this.currentSolicitation = solicitation;
 					if (solicitation.copies) this.copies.data = solicitation.copies;
-					this.selectedTermControl.setValue(solicitation.term / (60 * 60));
+					this.selectedTermControl.setValue(solicitation.deadline);
 					this.refreshTable();
 				});
 		}

@@ -11,9 +11,9 @@ import { FileDownloadResponse } from '../models/dialogData.interface';
 import { SolicitationInterface } from '../models/solicitation.interface';
 import { CopyInterface } from '../models/copy.interface';
 import { UserService } from './user.service';
-import { UserData } from '../models/userData.interface';
 import { Payload } from '../models/dto/payload.interface';
 import { SolicitationDTO } from '../models/dto/solicitationDTO.interface';
+import { User } from '../models/user.interface';
 
 @Injectable({
 	providedIn: 'root',
@@ -35,7 +35,7 @@ export class SolicitationService {
 	 * @param {number} id O ID da solicitação a ser editada.
 	 * @param {File[]} files A lista de arquivos anexados à solicitação.
 	 * @param {CopyInterface[]} copies A lista de cópias da solicitação.
-	 * @param {number} term O prazo da solicitação em horas.
+	 * @param {number} deadline O prazo da solicitação em horas.
 	 * @param {number} totalPageCount O número total de páginas da solicitação.
 	 * @returns {Observable<any>} Um Observable que emite a resposta da requisição.
 	 */
@@ -43,11 +43,11 @@ export class SolicitationService {
 		id: number,
 		files: File[],
 		copies: CopyInterface[],
-		term: number,
+		deadline: number,
 		totalPageCount: number
 	): Observable<any> {
 		// Verifica se há prazo anexado e número total de páginas
-		if (term <= 0 || totalPageCount <= 0) {
+		if (deadline <= 0 || totalPageCount <= 0) {
 			return throwError(
 				() =>
 					new Error(
@@ -57,7 +57,7 @@ export class SolicitationService {
 		}
 
 		// Obtém o usuário atual
-		let currentUser: UserData;
+		let currentUser: User;
 		try {
 			currentUser = this.getCurrentUser();
 		} catch (error) {
@@ -68,11 +68,10 @@ export class SolicitationService {
 		// TODO: trocar para SolicitationDTO
 		let solicitation: Partial<SolicitationInterface> = {
 			id: id, // ID da solicitação a ser editada.
-			term: term * 60 * 60, // Converte o prazo de horas para segundos.
+			deadline: deadline, // Converte o prazo de horas para segundos.
 			totalPageCount: totalPageCount,
-			username: currentUser.nome_usual,
-			registration: currentUser.matricula,
-			copies: copies,
+			user: currentUser, // Usuário atual.
+			copies: copies, // Cópias da solicitação.
 		};
 
 		// Cria objetos FormData e HttpHeaders para enviar uma solicitação com arquivos.
@@ -88,21 +87,21 @@ export class SolicitationService {
 	 *
 	 * @param {File[]} files A lista de arquivos anexados à solicitação.
 	 * @param {CopyInterface[]} copies A lista de cópias da solicitação.
-	 * @param {number} term O prazo da solicitação em horas.
+	 * @param {number} deadline O prazo da solicitação em horas.
 	 * @param {number} totalPageCount O número total de páginas da solicitação.
 	 * @returns {Observable<any>} Um Observable que emite a resposta da requisição.
 	 */
 	saveSolicitation(
 		files: File[],
 		copies: CopyInterface[],
-		term: number,
+		deadline: number,
 		totalPageCount: number
 	): Observable<any> {
 		// Verifica se os dados do formulário estão completos e consistentes.
 		if (
 			files.length <= 0 ||
 			files.length !== copies.length ||
-			!term ||
+			!deadline ||
 			!totalPageCount
 		) {
 			return throwError(
@@ -115,7 +114,7 @@ export class SolicitationService {
 
 		// Cria o objeto de solicitação com os dados fornecidos.
 		let solicitation: SolicitationDTO = {
-			term: term * 60 * 60, // Converte o prazo de horas para segundos.
+			deadline: deadline, // Converte o prazo de horas para segundos.
 			totalPageCount: totalPageCount,
 			copies: copies,
 		};
@@ -270,7 +269,7 @@ export class SolicitationService {
 			solicitation.id!,
 			[],
 			solicitation.copies!,
-			solicitation.term / (60 * 60), // Converte o prazo de segundos para horas.
+			solicitation.deadline, // Converte o prazo de segundos para horas.
 			counter
 		);
 	}
@@ -309,7 +308,7 @@ export class SolicitationService {
 			solicitation.id!,
 			[],
 			solicitation.copies!,
-			solicitation.term / (60 * 60), // Converte o prazo de segundos para horas.
+			solicitation.deadline, // Converte o prazo de segundos para horas.
 			counter
 		);
 	}
@@ -438,10 +437,10 @@ export class SolicitationService {
 	 * Obtém o usuário atual.
 	 *
 	 * @private
-	 * @returns {UserData} O objeto de dados do usuário atual.
+	 * @returns {User} O objeto de dados do usuário atual.
 	 * @throws {Error} Se nenhum usuário for encontrado.
 	 */
-	private getCurrentUser(): UserData {
+	private getCurrentUser(): User {
 		// Obtém o usuário atual.
 		let currentUser = this.userService.getCurrentUser();
 		if (!currentUser) {
@@ -450,7 +449,7 @@ export class SolicitationService {
 			);
 		}
 
-		if (!currentUser.nome_usual || !currentUser.matricula) {
+		if (!currentUser.commonName || !currentUser.registrationNumber) {
 			throw new Error(
 				'Dados de usuário incompletos. Não foi possível enviar requisição.'
 			);
