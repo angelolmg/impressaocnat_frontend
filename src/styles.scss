@@ -1,4 +1,5 @@
 @use "@angular/material" as mat;
+@use "sass:color";
 
 // Customize the entire app. Change :root to your selector if you want to scope the styles.
 :root {
@@ -72,11 +73,16 @@
 	--text-color: #333;
 	--text-color-secondary: #44474e; // Peguei essa cor no </mat-dialog-content> do angular material (--mat-sys-on-surface-variant)
 	--accent: #66b3ff;
+	--accent-secondary: #add6ff;
+	--warning: #ff9800;
+	--error: #f44336;
 	--summary-chip: #ffffff;
 	--font-family-primary: Roboto, "Helvetica Neue", sans-serif;
 	--transparent-overlay: rgba(56, 118, 82, 0.1);
 	--spinner: #387652;
+	--muted: #777;
 }
+
 
 * {
 	margin: 0;
@@ -93,10 +99,7 @@ app-root {
 	display: flex;
 	height: 100%;
 }
-html,
-body {
-	height: 100%;
-}
+
 body {
 	margin: 0;
 	font-family: var(--font-family-primary);
@@ -105,3 +108,27 @@ body {
 mat-icon {
 	cursor: pointer;
 }
+
+.status-chip {
+	font-size: 0.9rem;
+	padding: 0.3rem 0.4rem;
+	margin-right: 0.2rem;
+	border-radius: 0 0.25rem 0.25rem 0;
+  
+	$statuses: (
+	  "opened":    #add6ff,
+	  "closed":    #ffdddd,
+	  "edited":    #ffeeba,
+	  "archived":  #f0f0f0,
+	);
+  
+	@each $status, $color in $statuses {
+	  &-#{$status} {
+		background-color: $color;
+		border-left: 0.2rem solid color.adjust($color, $lightness: -15%);
+		border-top: 1px solid color.adjust($color, $lightness: -15%);
+		border-right: 1px solid color.adjust($color, $lightness: -15%);
+		border-bottom: 1px solid color.adjust($color, $lightness: -15%);
+	  }
+	}
+  }

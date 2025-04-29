@@ -1,60 +1,97 @@
 <div class="content">
 	<!-- Cabeçalho -->
-	<div class="top-shelf">
-		<h2 class="page-title">
-			<!-- Navegação breadcrumb para a última página -->
-			@if(actionService.getLastPageState()) {
-			<span (click)="navigateTo(actionService.getLastPageState(true))">{{
-				actionService.getLastPageState()
-			}}</span>
-			<mat-icon>chevron_right</mat-icon>
+
+	<h2 class="page-title">
+		<!-- Navegação breadcrumb para a última página -->
+		@if(actionService.getLastPageState()) {
+		<span class="last-page-label" (click)="navigateTo(actionService.getLastPageState(true))">{{
+			actionService.getLastPageState()
+		}}</span>
+		<mat-icon>chevron_right</mat-icon>
+		}
+
+		<!-- Título e estado da solicitação (aberta, fechada ou arquivada) -->
+		<div
+			>Solicitação Nº
+			{{ solicitationId!.toString().padStart(6, "0") }}
+			@if(mySolicitation?.archived) {
+				<span class="status-chip status-chip-archived">Arquivada</span>
+			} @else if (mySolicitation?.conclusionDate) {
+				<span class="status-chip status-chip-closed">Fechada</span>
+			} @else {
+				<span class="status-chip status-chip-opened">Aberta</span>
 			}
+		</div>
+	</h2>
 
-			<!-- Título e estado da solicitação (aberta, fechada ou arquivada) -->
-			<span
-				>Solicitação Nº {{ solicitationId!.toString().padStart(6, "0") }}
-				{{
-					mySolicitation?.archived
-						? "(ARQUIVADA)"
-						: mySolicitation?.conclusionDate
-						? "(FECHADA)"
-						: ""
-				}}</span
-			>
-		</h2>
+	<p class="subtitle">Dados do solicitante</p>
 
-		<!-- Filtro por nome de arquivo -->
-		<form [formGroup]="queryForm">
-			<mat-form-field class="search-bar">
-				<mat-label>Filtrar por Arquivo</mat-label>
-				<input
-					matInput
-					placeholder="Nome do Arquivo"
-					formControlName="query"
-				/>
-				<mat-icon matSuffix>search</mat-icon>
-			</mat-form-field>
-			<button mat-button (click)="clearFilters()">Limpar Filtros</button>
-		</form>
+	<div class="user-info-container">
+		<img
+			class="user-photo"
+			src="{{ mySolicitation?.user?.photoUrl }}"
+			alt="user-photo"
+		/>
+		<div class="user-info user-name">
+			<span>Interessado:</span
+			><span>{{ mySolicitation?.user?.commonName }}</span>
+		</div>
+		<div class="user-info user-registration">
+			<span>Matrícula:</span
+			><span>{{ mySolicitation?.user?.registrationNumber }}</span>
+		</div>
+		<div class="user-info user-sector">
+			<span>Setor atual:</span
+			><span>{{ mySolicitation?.user?.sector }}</span>
+		</div>
+		<div class="user-info user-phones">
+			<span>Telefones institucionais:</span>
+			@for (phone of mySolicitation?.user?.phoneNumbers | split; track
+			$index) {
+			<span>{{ phone }}</span>
+			} @empty {
+			<span>Nenhum telefone institucional cadastrado.</span>
+			}
+		</div>
 	</div>
+
+	<!-- Filtro por nome de arquivo -->
+	<!-- <form [formGroup]="queryForm">
+		<mat-form-field class="search-bar">
+			<mat-label>Filtrar por Arquivo</mat-label>
+			<input
+				matInput
+				placeholder="Nome do Arquivo"
+				formControlName="query"
+			/>
+			<mat-icon matSuffix>search</mat-icon>
+		</mat-form-field>
+		<button mat-button (click)="clearFilters()">Limpar Filtros</button>
+	</form> -->
+
+	<p class="subtitle">Arquivos anexados ({{ mySolicitation?.copies?.length }})</p>
+
 	<div class="table-wrapper">
 		<!-- TODO: Aqui [style.height.%] calcula a altura da tabela de acordo com o número de itens que 
 		 aparecem na página atual da listagem, relativo a lista de todas as solicitações. 
 		 Isso garante que todos os itens tenham sempre a "mesma" altura.  
 		 Solução itermediária até ser implementada paginação. -->
-		<table
-			mat-table
-			[dataSource]="copies"
-			matSort
-			class="mat-elevation-z8"
-			[style.height.%]="
+
+		<!-- 
+		 matSort
+		 [style.height.%]="
 				10 +
 				9 *
 					(paginator.pageSize / paginator.length != 1 &&
 					paginator.pageIndex == paginator.getNumberOfPages() - 1
 						? paginator.length % paginator.pageSize
 						: paginator.pageSize)
-			"
+			" -->
+		<table
+			mat-table
+			[dataSource]="copies"
+			class="mat-elevation-z8"
+			[style.height.%]="10"
 		>
 			<ng-container matColumnDef="id">
 				<th mat-header-cell *matHeaderCellDef>ID</th>
@@ -108,7 +145,7 @@
 			</ng-container>
 
 			<!-- Botão de detalhes: mostra as configurações de impressão de uma cópia específica -->
-			<ng-container matColumnDef="pageConfig">
+			<!-- <ng-container matColumnDef="pageConfig">
 				<th
 					mat-header-cell
 					*matHeaderCellDef
@@ -122,10 +159,10 @@
 					style="text-align: center"
 				>
 					<mat-icon (click)="showConfigs(element)">{{
-						detalhes | icon
+						configs | icon
 					}}</mat-icon>
 				</td>
-			</ng-container>
+			</ng-container> -->
 
 			<!-- Botões de ação -->
 			<ng-container matColumnDef="actions">
@@ -176,7 +213,9 @@
 	<div class="copy-summary">
 		<mat-chip-set aria-label="Sumário de cópias">
 			<mat-chip>Arquivos: {{ fileCount() }}</mat-chip>
-			<mat-chip>Contagem de folhas: {{ solicitationPageCounter() }}</mat-chip>
+			<mat-chip
+				>Contagem de folhas: {{ solicitationPageCounter() }}</mat-chip
+			>
 			<img
 				style="margin-left: 0.5rem"
 				matTooltip="Prévia de acordo com as configurações de impressão de todos os arquivos anexados"
@@ -188,14 +227,91 @@
 		</mat-chip-set>
 	</div>
 
-	<!-- Paginação -->
-	<mat-paginator
-		#paginator
-		showFirstLastButtons
-		[length]="100"
-		[pageSize]="10"
-		[pageSizeOptions]="[10]"
-		aria-label="Select page"
-	>
-	</mat-paginator>
+	<div class="timeline-label subtitle">
+		<p>Linha do tempo ({{ mySolicitation?.timeline?.length }})</p>
+		<img
+			style="margin-left: 0.5rem"
+			matTooltip="Lista de iterações da solicitação"
+			matTooltipPosition="after"
+			class="help-icon"
+			src="assets/help.svg"
+			alt="Icone de Ajuda"
+		/>
+	</div>
+	<div class="timeline-wrapper">
+		<ul class="timeline-container">
+			@for (step of mySolicitation?.timeline; track $index) {
+			<li class="timeline-container-event">
+				<div class="timeline-times">
+					<span>{{ step.creationDate | date : "dd/MM/yyyy" }}</span>
+					<span>{{ step.creationDate | date : "HH:mm:ss" }}</span>
+				</div>
+				<div class="circular-portrait">
+					<img src="{{ step.user.photoUrl }}" alt="Foto de perfil" />
+				</div>
+				<div class="timeline-content">
+					<div class="timeline-speech-bubble">
+						<div class="timeline-speech-bubble-tail"></div>
+					</div>
+					<div class="timeline-text">
+						@if(step.type == 'REQUEST_OPENING') {
+						<p>
+							Solicitação
+							<span class="status-chip status-chip-opened"
+								>Aberta</span
+							>
+							por
+							<strong>{{ step?.user?.commonName }}</strong> ({{
+								step?.user?.registrationNumber
+							}})
+						</p>
+						} @else if (step.type == 'REQUEST_CLOSING') {
+						<p>
+							Solicitação
+							<span class="status-chip status-chip-closed"
+								>Fechada</span
+							>
+							por
+							<strong>{{ step?.user?.commonName }}</strong> ({{
+								step?.user?.registrationNumber
+							}})
+						</p>
+						} @else if (step.type == 'REQUEST_EDITING') {
+						<p>
+							Solicitação
+							<span class="status-chip status-chip-edited"
+								>Editada</span
+							>
+							por
+							<strong>{{ step?.user?.commonName }}</strong> ({{
+								step?.user?.registrationNumber
+							}})
+						</p>
+						} @else if (step.type == 'REQUEST_ARCHIVING') {
+						<p>
+							Solicitação
+							<span class="status-chip status-chip-archived"
+								>Arquivada</span
+							>
+							automaticamente pelo sistema
+						</p>
+						} @else if (step.type == 'COMMENT') {
+						<p>
+							<strong>{{ step?.user?.commonName }}</strong>
+							comentou:
+						</p>
+						<p>{{ step.content }}</p>
+						}
+					</div>
+				</div>
+			</li>
+			}
+		</ul>
+	</div>
 </div>
+
+<!-- COMMENT = "COMMENT", // comentário
+REQUEST_OPENING = "REQUEST_OPENING", // abertura de solicitação
+REQUEST_CLOSING = "REQUEST_CLOSING", // fechamento de solicitação
+REQUEST_ARCHIVING = "REQUEST_ARCHIVING", // arquivamento de solicitação
+REQUEST_EDITING = "REQUEST_EDITING" // edição de solicitação -->

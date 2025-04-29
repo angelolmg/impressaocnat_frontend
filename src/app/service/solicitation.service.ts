@@ -11,7 +11,6 @@ import { FileDownloadResponse } from '../models/dialogData.interface';
 import { SolicitationInterface } from '../models/solicitation.interface';
 import { CopyInterface } from '../models/copy.interface';
 import { UserService } from './user.service';
-import { Payload } from '../models/dto/payload.interface';
 import { SolicitationDTO } from '../models/dto/solicitationDTO.interface';
 import { User } from '../models/user.interface';
 
@@ -271,11 +270,11 @@ export class SolicitationService {
 		}
 
 		// Atualiza a cópia dentro da requisição
-		solicitation.copies![copyIndex] = copyToPatch;
+		solicitation.copies[copyIndex] = copyToPatch;
 
 		// Recalcula o número total de páginas da solicitação.
 		var counter = 0;
-		solicitation.copies!.forEach((copy) => {
+		solicitation.copies.forEach((copy) => {
 			counter += copy.printConfig.sheetsTotal;
 		});
 
@@ -283,7 +282,7 @@ export class SolicitationService {
 		return this.editSolicitation(
 			solicitation.id!,
 			[],
-			solicitation.copies!,
+			solicitation.copies,
 			solicitation.deadline, // Converte o prazo de segundos para horas.
 			counter
 		);

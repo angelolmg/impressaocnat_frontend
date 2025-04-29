@@ -1,15 +1,9 @@
-import {
-	Component,
-	inject,
-	OnDestroy,
-	OnInit,
-	signal
-} from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import {
 	FormControl,
 	FormGroup,
 	FormsModule,
-	ReactiveFormsModule
+	ReactiveFormsModule,
 } from '@angular/forms';
 import { MatButton, MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
@@ -96,12 +90,12 @@ export class SolicitationFormComponent implements OnDestroy, OnInit {
 
 	/** Nome deste componente */
 	componentName: string = 'solicitation-form';
-	
+
 	/** Ações permitidas na listagem de arquivos. Varia se a página é do tipo nova solicitação OU edição */
 	allowedActions: ActionType[] = [];
 
 	/** Usado em conjunto com o pipe de icone */
-	detalhes = ActionType.DETALHES;
+	configs = ActionType.CONFIGURACOES;
 
 	/** Sinal para armazenar o número de arquivos selecionados. */
 	fileCount = signal(0);
@@ -120,7 +114,6 @@ export class SolicitationFormComponent implements OnDestroy, OnInit {
 		'fileName',
 		'pageCount',
 		'copyCount',
-		'pageConfig',
 		'actions',
 	];
 
@@ -171,6 +164,11 @@ export class SolicitationFormComponent implements OnDestroy, OnInit {
 			.subscribe((copy) => {
 				this.editCopyDialog(copy);
 			});
+		this.actionService.showCopyConfigs
+			.pipe(takeUntil(this.ngUnsubscribe))
+			.subscribe((copy: CopyInterface) => {
+				this.showConfigs(copy);
+			});
 
 		// Se a página for de edição, carrega os dados da solicitação.
 		if (this.pageState == PageState.editSolicitation) {
@@ -192,7 +190,8 @@ export class SolicitationFormComponent implements OnDestroy, OnInit {
 				// Atualiza a página com os dados da solicitação.
 				.subscribe((solicitation: SolicitationInterface) => {
 					this.currentSolicitation = solicitation;
-					if (solicitation.copies) this.copies.data = solicitation.copies;
+					if (solicitation.copies)
+						this.copies.data = solicitation.copies;
 					this.selectedTermControl.setValue(solicitation.deadline);
 					this.refreshTable();
 				});
@@ -211,7 +210,8 @@ export class SolicitationFormComponent implements OnDestroy, OnInit {
 	removeCopy(copy: CopyInterface): void {
 		// Verifica se a cópia é a última da lista e se a página é de edição.
 		let isLastCopy =
-			this.pageState == this.editSolicitation && this.copies.data.length == 1;
+			this.pageState == this.editSolicitation &&
+			this.copies.data.length == 1;
 		let lastCopyMessage = isLastCopy
 			? 'Esta é a única cópia e a solicitação também será removida. '
 			: '';
@@ -432,9 +432,8 @@ export class SolicitationFormComponent implements OnDestroy, OnInit {
 	 * @param {CopyInterface} [data] Dados da cópia a serem editados (opcional).
 	 */
 	addCopyDialog(data?: CopyInterface): void {
-
 		// Desabilitar adições caso a solicitação esteja concluída
-		if(!!this.currentSolicitation?.conclusionDate) return;
+		if (!!this.currentSolicitation?.conclusionDate) return;
 
 		// Abre o diálogo para adicionar ou editar uma cópia.
 		this.dialogService
@@ -611,7 +610,7 @@ export class SolicitationFormComponent implements OnDestroy, OnInit {
 	 * e navega para a página apropriada após a conclusão.
 	 */
 	submitSolicitation(): void {
-		if(!!this.currentSolicitation?.conclusionDate) return;
+		if (!!this.currentSolicitation?.conclusionDate) return;
 
 		// Define o status de upload como verdadeiro.
 		this.uploading.set(true);
@@ -636,12 +635,13 @@ export class SolicitationFormComponent implements OnDestroy, OnInit {
 				);
 			} else {
 				// Se houver cópias, chama o serviço para salvar a nova solicitação.
-				solicitationObservable = this.solicitationService.saveSolicitation(
-					this.files,
-					this.copies.data,
-					this.selectedTermControl.value || 24,
-					this.solicitationPageCounter()
-				);
+				solicitationObservable =
+					this.solicitationService.saveSolicitation(
+						this.files,
+						this.copies.data,
+						this.selectedTermControl.value || 24,
+						this.solicitationPageCounter()
+					);
 			}
 		} else if (this.pageState === PageState.editSolicitation) {
 			// Se for uma edição de solicitação, chama o serviço para editar a solicitação existente.
@@ -672,7 +672,8 @@ export class SolicitationFormComponent implements OnDestroy, OnInit {
 					);
 					this.clearCopies();
 					this.router.navigate([
-						this.actionService.getLastPageState(true) || 'minhas-solicitacoes',
+						this.actionService.getLastPageState(true) ||
+							'minhas-solicitacoes',
 					]);
 				}),
 				// Trata erros dentro do fluxo do observable (exibe snackbar de erro).

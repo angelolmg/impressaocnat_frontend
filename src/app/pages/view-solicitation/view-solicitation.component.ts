@@ -20,6 +20,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import {MatStepperModule} from '@angular/material/stepper';
 import {
 	actions,
 	ActionService,
@@ -55,6 +56,8 @@ import { IconPipe } from '../../pipes/icon.pipe';
 import {
 	SolicitationService,
 } from '../../service/solicitation.service';
+import { SplitPipe } from '../../pipes/split.pipe';
+import { DatePipe } from '@angular/common';
 
 /**
  * Componente para visualização de uma solicitação específica.
@@ -75,7 +78,10 @@ import {
 		MatSelectModule,
 		MatChipsModule,
 		IconPipe,
+		DatePipe,
+		SplitPipe,
 		MatProgressSpinnerModule,
+		MatStepperModule
 	],
 	templateUrl: './view-solicitation.component.html',
 	styleUrl: './view-solicitation.component.scss',
@@ -117,7 +123,7 @@ export class ViewSolicitationComponent implements OnInit {
 	loadingData = signal(false);
 
 	/** Tipo de ação para detalhes. */
-	detalhes = ActionType.DETALHES;
+	configs = ActionType.CONFIGURACOES;
 
 	/** Instância do validador de estado de erro personalizado. */
 	matcher = new FormErrorStateMatcher();
@@ -139,7 +145,6 @@ export class ViewSolicitationComponent implements OnInit {
 		'fileName',
 		'pageCount',
 		'copyCount',
-		'pageConfig',
 		'actions',
 	];
 
@@ -169,6 +174,11 @@ export class ViewSolicitationComponent implements OnInit {
 			.pipe(takeUntil(this.ngUnsubscribe))
 			.subscribe((copy: CopyInterface) => {
 				this.downloadFileAndOpenInNewWindow(copy);
+			});
+		this.actionService.showCopyConfigs
+			.pipe(takeUntil(this.ngUnsubscribe))
+			.subscribe((copy: CopyInterface) => {
+				this.showConfigs(copy);
 			});
 
 		// Busca a solicicitação no view init e carrega os dados da tabela de cópias

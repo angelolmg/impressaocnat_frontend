@@ -53,7 +53,7 @@ export enum ActionType {
 	EXCLUIR = 'Excluir',
 	ABRIR = 'Abrir',
 	BAIXAR = 'Baixar',
-	DETALHES = 'Detalhes',
+	CONFIGURACOES = 'Configurações',
 }
 
 /**
@@ -70,7 +70,7 @@ export const actions = {
 
 	allowedActionsforEditSolicitation: [ActionType.EDITAR, ActionType.EXCLUIR],
 	allowedActionsforNewSolicitation: [ActionType.EDITAR, ActionType.EXCLUIR],
-	allowedActionsforViewSolicitation: [ActionType.BAIXAR, ActionType.EXCLUIR],
+	allowedActionsforViewSolicitation: [ActionType.BAIXAR, ActionType.CONFIGURACOES],
 };
 
 // Gerencia botões e rotas da barra de navegação, além do display padrão do usuário
@@ -143,6 +143,7 @@ export class ActionService {
 	deleteCopy = new EventEmitter<CopyInterface>();
 	editCopy = new EventEmitter<CopyInterface>();
 	downloadCopy = new EventEmitter<CopyInterface>();
+	showCopyConfigs = new EventEmitter<CopyInterface>();
 	deleteSolicitation = new EventEmitter<SolicitationInterface>();
 	editSolicitation = new EventEmitter<SolicitationInterface>();
 	viewSolicitation = new EventEmitter<SolicitationInterface>();
@@ -305,6 +306,7 @@ export class ActionService {
 			[ActionType.BAIXAR, this.downloadCopy],
 			[ActionType.FECHAR, this.toggleSolicitationStatus],
 			[ActionType.ABRIR, this.toggleSolicitationStatus],
+			[ActionType.CONFIGURACOES, this.showCopyConfigs],
 		]);
 
 		// Obtém o evento emissor correspondente ao tipo de ação.

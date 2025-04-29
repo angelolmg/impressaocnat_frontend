@@ -5,23 +5,25 @@
     width: 100%;
     font-family: "Arial", sans-serif;
     background-color: var(--background);
+
     app-navbar {
         height: 7%;
     }
-}
 
-.content {
-    display: flex;
-    height: 100%;
-}
-
-.my-content {
-    background-color: var(--main);
-	border-radius: 1rem;
-	box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    padding: 1.5rem;
-    margin: 0 1rem 1rem 1rem;
-    width: 100%;
+    .outer-content {
+        display: flex;
+        height: 93%;
+    
+        .main-content {
+            background-color: var(--main);
+            border-radius: 1rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            margin: 0 1rem 1rem 1rem;
+            width: 100%;
+            height: -webkit-fill-available;
+        }
+    }
 }
 
 .warning {

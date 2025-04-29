@@ -22,7 +22,7 @@ export class IconPipe implements PipeTransform {
 				return 'edit';
 			case ActionType.BAIXAR:
 				return 'open_in_new';
-			case ActionType.DETALHES:
+			case ActionType.CONFIGURACOES:
 				return 'settings';
 			default:
 				return 'question_mark';
