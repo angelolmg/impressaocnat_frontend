@@ -4,22 +4,24 @@
 	<h2 class="page-title">
 		<!-- Navegação breadcrumb para a última página -->
 		@if(actionService.getLastPageState()) {
-		<span class="last-page-label" (click)="navigateTo(actionService.getLastPageState(true))">{{
-			actionService.getLastPageState()
-		}}</span>
+		<span
+			class="last-page-label"
+			(click)="navigateTo(actionService.getLastPageState(true))"
+			>{{ actionService.getLastPageState() }}</span
+		>
 		<mat-icon>chevron_right</mat-icon>
 		}
 
 		<!-- Título e estado da solicitação (aberta, fechada ou arquivada) -->
-		<div
-			>Solicitação Nº
+		<div>
+			Solicitação Nº
 			{{ solicitationId!.toString().padStart(6, "0") }}
-			@if(mySolicitation?.archived) {
-				<span class="status-chip status-chip-archived">Arquivada</span>
-			} @else if (mySolicitation?.conclusionDate) {
-				<span class="status-chip status-chip-closed">Fechada</span>
+			@if(mySolicitation()?.archived) {
+			<span class="status-chip status-chip-archived">Arquivada</span>
+			} @else if (mySolicitation()?.conclusionDate) {
+			<span class="status-chip status-chip-closed">Fechada</span>
 			} @else {
-				<span class="status-chip status-chip-opened">Aberta</span>
+			<span class="status-chip status-chip-opened">Aberta</span>
 			}
 		</div>
 	</h2>
@@ -29,24 +31,24 @@
 	<div class="user-info-container">
 		<img
 			class="user-photo"
-			src="{{ mySolicitation?.user?.photoUrl }}"
+			src="{{ mySolicitation()?.user?.photoUrl }}"
 			alt="user-photo"
 		/>
 		<div class="user-info user-name">
 			<span>Interessado:</span
-			><span>{{ mySolicitation?.user?.commonName }}</span>
+			><span>{{ mySolicitation()?.user?.commonName }}</span>
 		</div>
 		<div class="user-info user-registration">
 			<span>Matrícula:</span
-			><span>{{ mySolicitation?.user?.registrationNumber }}</span>
+			><span>{{ mySolicitation()?.user?.registrationNumber }}</span>
 		</div>
 		<div class="user-info user-sector">
 			<span>Setor atual:</span
-			><span>{{ mySolicitation?.user?.sector }}</span>
+			><span>{{ mySolicitation()?.user?.sector }}</span>
 		</div>
 		<div class="user-info user-phones">
 			<span>Telefones institucionais:</span>
-			@for (phone of mySolicitation?.user?.phoneNumbers | split; track
+			@for (phone of mySolicitation()?.user?.phoneNumbers | split; track
 			$index) {
 			<span>{{ phone }}</span>
 			} @empty {
@@ -69,7 +71,9 @@
 		<button mat-button (click)="clearFilters()">Limpar Filtros</button>
 	</form> -->
 
-	<p class="subtitle">Arquivos anexados ({{ mySolicitation?.copies?.length }})</p>
+	<p class="subtitle">
+		Arquivos anexados ({{ mySolicitation()?.copies?.length }})
+	</p>
 
 	<div class="table-wrapper">
 		<!-- TODO: Aqui [style.height.%] calcula a altura da tabela de acordo com o número de itens que 
@@ -176,7 +180,7 @@
 								'view-solicitation',
 								pageState,
 								action,
-								mySolicitation
+								mySolicitation()
 							)
 						"
 						mat-icon-button
@@ -228,7 +232,7 @@
 	</div>
 
 	<div class="timeline-label subtitle">
-		<p>Linha do tempo ({{ mySolicitation?.timeline?.length }})</p>
+		<p>Linha do tempo ({{ mySolicitation()?.timeline?.length }})</p>
 		<img
 			style="margin-left: 0.5rem"
 			matTooltip="Lista de iterações da solicitação"
@@ -240,7 +244,50 @@
 	</div>
 	<div class="timeline-wrapper">
 		<ul class="timeline-container">
-			@for (step of mySolicitation?.timeline; track $index) {
+			<li
+				class="timeline-container-event"
+				[style.display]="mySolicitation()?.archived ? 'none' : 'flex'"
+			>
+				<div class="timeline-times" style="visibility: hidden">
+					<span>{{
+						mySolicitation()?.creationDate | date : "dd/MM/yyyy"
+					}}</span>
+				</div>
+				<div class="circular-portrait">
+					<img
+						src="{{
+							userSignal()?.photoUrl ||
+								defaultUserProfile.photoUrl
+						}}"
+						alt="Foto do usuário"
+					/>
+				</div>
+				<div class="timeline-content">
+					<div class="timeline-speech-bubble">
+						<div class="timeline-speech-bubble-tail"></div>
+					</div>
+					<div class="timeline-textarea-wrapper">
+						<textarea
+							placeholder="Adicione um comentário..."
+							#commentInput
+							(input)="updateCharacterCount()"
+							[maxLength]="maxlength"
+						></textarea>
+						<div class="textarea-controls">
+							<span class="character-count"
+								>{{ characterCount }}/{{ maxlength }}</span
+							>
+							<button
+								class="send-button"
+								(click)="sendComment(commentInput.value)"
+							>
+								Enviar
+							</button>
+						</div>
+					</div>
+				</div>
+			</li>
+			@for (step of mySolicitation()?.timeline; track $index) {
 			<li class="timeline-container-event">
 				<div class="timeline-times">
 					<span>{{ step.creationDate | date : "dd/MM/yyyy" }}</span>
@@ -309,9 +356,3 @@
 		</ul>
 	</div>
 </div>
-
-<!-- COMMENT = "COMMENT", // comentário
-REQUEST_OPENING = "REQUEST_OPENING", // abertura de solicitação
-REQUEST_CLOSING = "REQUEST_CLOSING", // fechamento de solicitação
-REQUEST_ARCHIVING = "REQUEST_ARCHIVING", // arquivamento de solicitação
-REQUEST_EDITING = "REQUEST_EDITING" // edição de solicitação -->

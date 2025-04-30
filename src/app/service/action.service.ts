@@ -2,6 +2,8 @@ import { EventEmitter, inject, Injectable } from '@angular/core';
 import { CopyInterface } from '../models/copy.interface';
 import { SolicitationInterface } from '../models/solicitation.interface';
 import { UserService } from './user.service';
+import { Role } from '../models/enums/role.enum';
+import { User } from '../models/user.interface';
 
 /**
  * Gerencia o estado dos botões de ação em componentes de listagem.
@@ -70,7 +72,10 @@ export const actions = {
 
 	allowedActionsforEditSolicitation: [ActionType.EDITAR, ActionType.EXCLUIR],
 	allowedActionsforNewSolicitation: [ActionType.EDITAR, ActionType.EXCLUIR],
-	allowedActionsforViewSolicitation: [ActionType.BAIXAR, ActionType.CONFIGURACOES],
+	allowedActionsforViewSolicitation: [
+		ActionType.BAIXAR,
+		ActionType.CONFIGURACOES,
+	],
 };
 
 // Gerencia botões e rotas da barra de navegação, além do display padrão do usuário
@@ -85,21 +90,16 @@ export interface Option {
 }
 
 /**
- * Interface que define a estrutura de um usuário (usado no display).
- */
-export interface UserProfile {
-	registration: string;
-	name: string;
-	pfp: string;
-}
-
-/**
  * Informações padrão do usuário quando nenhum usuário está logado ou as informações não estão disponíveis.
  */
-export const DEFAULT_USER_PROFILE: UserProfile = {
-	registration: '-',
-	name: '-',
-	pfp: 'assets/user-01.svg',
+export const DEFAULT_USER_PROFILE: User = {
+	commonName: '-',
+	registrationNumber: '-',
+	email: '-',
+	phoneNumbers: '-',
+	sector: '-',
+	photoUrl: 'assets/user-01.svg',
+	role: Role.USER,
 };
 
 /**
@@ -224,10 +224,17 @@ export class ActionService {
 		parentElement?: SolicitationInterface
 	): boolean {
 		const isSolicitation = this.instanceOfSolicitation(element);
-		const concludedSolicitation = isSolicitation ? !!element.conclusionDate : false;
-		const archivedSolicitation = isSolicitation ? element.archived : parentElement?.archived;
+		const concludedSolicitation = isSolicitation
+			? !!element.conclusionDate
+			: false;
+		const archivedSolicitation = isSolicitation
+			? element.archived
+			: parentElement?.archived;
 
 		const isCopy = this.instanceOfCopy(element);
+
+		// Nunca desabilite verificação de configurações, mesmo arquivada
+		if (isCopy && action === ActionType.CONFIGURACOES) return false;
 
 		// Desabilita todas as ações de cópias caso a solicitação esteja arquivada
 		if (isCopy && archivedSolicitation) return true;
@@ -241,7 +248,11 @@ export class ActionService {
 			return true;
 
 		// Desabilita todas as ações, exceto visualização, de uma solicitação arquivada
-		if (isSolicitation && archivedSolicitation && action !== ActionType.VISUALIZAR)
+		if (
+			isSolicitation &&
+			archivedSolicitation &&
+			action !== ActionType.VISUALIZAR
+		)
 			return true;
 
 		// Desabilita botões de 'Excluir' e 'Editar' caso solicitação tenha data de conclusão (solicitação concluída) mas não obsoleta/arquivada.
@@ -259,7 +270,9 @@ export class ActionService {
 		if (
 			isCopy &&
 			['view-solicitation'].includes(component) &&
-			(!element.fileInDisk || element.isPhysicalFile || archivedSolicitation) &&
+			(!element.fileInDisk ||
+				element.isPhysicalFile ||
+				archivedSolicitation) &&
 			action === ActionType.BAIXAR
 		) {
 			return true;
@@ -300,7 +313,9 @@ export class ActionService {
 			],
 			[
 				ActionType.EDITAR,
-				this.instanceOfCopy(element) ? this.editCopy : this.editSolicitation,
+				this.instanceOfCopy(element)
+					? this.editCopy
+					: this.editSolicitation,
 			],
 			[ActionType.VISUALIZAR, this.viewSolicitation],
 			[ActionType.BAIXAR, this.downloadCopy],
@@ -340,7 +355,10 @@ export class ActionService {
 			['list-solicitations'].includes(component) &&
 			[ActionType.VISUALIZAR, ActionType.EDITAR].includes(action)
 		)
-			localStorage.setItem('impressaocnat:lastPageState', pageStateRoutes[state]);
+			localStorage.setItem(
+				'impressaocnat:lastPageState',
+				pageStateRoutes[state]
+			);
 
 		// Emite o evento de ação correspondente.
 		this.emitAction(action, element);

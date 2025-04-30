@@ -14,10 +14,10 @@
 	<!-- Saudação, foto do usuário e botão de logout -->
 	<div class="user-card">
 		@if(userSignal() != defaultUserInfo) {
-		<p>Bem vindo, {{ userSignal().name }}</p>
+		<p>Bem vindo, {{ userSignal().commonName }}</p>
 		<img
-			[matTooltip]="userSignal().name + ' - ' + userSignal().registration"
-			[src]="userSignal().pfp"
+			[matTooltip]="userSignal().commonName + ' - ' + userSignal().registrationNumber"
+			[src]="userSignal().photoUrl"
 			alt="user-pfp"
 			class="user-pp"
 		/>

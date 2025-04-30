@@ -11,6 +11,7 @@ form {
 	box-shadow: 0 2px 4px rgb(0 0 0 / 12%);
 	border-radius: 1rem;
 	overflow-y: scroll;
+	height: 20%;
 
 	&::-webkit-scrollbar-track {
 		border-radius: 1rem;
@@ -39,7 +40,7 @@ form {
 	}
 
 	.status-chip {
-		margin-left: .6rem;
+		margin-left: 0.6rem;
 		font-weight: normal;
 	}
 }
@@ -48,7 +49,7 @@ form {
 	display: flex;
 	flex-direction: column;
 	height: 100%;
-	gap: 1rem;
+	gap: 0.6rem;
 
 	.subtitle {
 		margin-top: 0.5rem;
@@ -181,7 +182,23 @@ th:last-child {
 }
 
 .timeline-wrapper {
-	height: 100%;
+	height: 40%;
+	margin: 0.5rem 0 0 1rem;
+
+	.circular-portrait {
+		border-radius: 50%;
+		width: 2rem;
+		height: 2rem;
+		box-shadow: 0 0 0 0.25rem var(--table-row-concluded);
+		z-index: 1;
+
+		img {
+			width: 2rem;
+			height: 2rem;
+			border-radius: 50%;
+			clip-path: circle();
+		}
+	}
 
 	.timeline-container {
 		display: flex;
@@ -195,12 +212,13 @@ th:last-child {
 		}
 
 		&::-webkit-scrollbar {
-			width: 0.5rem; /* Slightly reduced scrollbar width */
+			width: 1rem;
 		}
 
 		&::-webkit-scrollbar-thumb {
 			border-radius: 1rem;
 			background-color: var(--table-header);
+			border-left: 2px white solid;
 		}
 
 		.timeline-container-event {
@@ -215,23 +233,74 @@ th:last-child {
 				font-size: 0.8rem; /* Slightly smaller font for times */
 				color: var(--muted); /* Muted color for times */
 			}
-
-			.circular-portrait {
-				border-radius: 50%;
-				width: 2rem;
-				height: 2rem;
-				box-shadow: 0 0 0 0.25rem var(--table-row-concluded); /* Using rem for consistent sizing */
-				img {
-					width: 2rem;
-					height: 2rem;
-					border-radius: 50%;
-					clip-path: circle(); /* Clip to a circle with 50% radius */
-				}
-			}
-
+		
 			.timeline-content {
 				display: flex;
 				width: 100%;
+
+				&::before {
+					background-color: var(--table-row-concluded);
+					bottom: 0;
+					content: "";
+					position: relative;
+					left: -34px;
+					top: -38px;
+					width: 4px;
+					z-index: 0;
+				}
+
+				.timeline-textarea-wrapper {
+					background-color: var(--table-row-concluded);
+					border-radius: 0.5rem;
+					padding: 0.75rem;
+					width: 100%;
+					display: flex;
+					flex-direction: column;
+
+					textarea {
+						border: none;
+						background-color: transparent;
+						width: 100%;
+						height: auto;
+						font-size: 0.9rem;
+						color: inherit;
+						resize: none; // Disabled resizing
+						outline: none;
+						margin-bottom: 0.5rem; // Space for controls
+
+						&::placeholder {
+							color: #aaa;
+						}
+					}
+
+					.textarea-controls {
+						display: flex;
+						justify-content: space-between;
+						align-items: center;
+						font-size: 0.8rem;
+						color: var(--muted);
+
+						.send-button {
+							background-color: var(--button);
+							color: white;
+							border: none;
+							border-radius: 0.25rem;
+							padding: 0.3rem 0.6rem;
+							cursor: pointer;
+							font-size: 0.9rem;
+
+							&:hover {
+								opacity: 0.9;
+							}
+
+							&:focus {
+								outline: none;
+								box-shadow: 0 0 0 0.2rem
+									rgba(var(--button-rgb), 0.5); // Example focus style
+							}
+						}
+					}
+				}
 
 				.timeline-speech-bubble {
 					display: flex;
@@ -252,12 +321,14 @@ th:last-child {
 					flex-direction: column;
 					background-color: var(--table-row-concluded);
 					width: 100%;
-					padding: 0.75rem; /* Reduced padding */
-					border-radius: 0.3rem; /* Slightly smaller border radius */
-					font-size: 0.9rem; /* Slightly smaller font size for content */
+					padding: 0.75rem;
+					border-radius: 0.3rem;
+					font-size: 0.9rem;
+					gap: 0.3rem;
+
 					strong {
 						color: var(--button);
-						font-weight: bold; /* Ensure strong text is bold */
+						font-weight: bold;
 					}
 				}
 			}

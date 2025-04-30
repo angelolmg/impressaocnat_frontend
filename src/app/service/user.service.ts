@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { EventEmitter, inject, Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable, switchMap, tap, throwError } from 'rxjs';
+import { BehaviorSubject, Observable, switchMap, tap, throwError } from 'rxjs';
 import { SuapUserData } from '../models/suapUserData.interface';
 import { environment } from './../../environments/environment';
 import { AuthService } from './auth.service';
@@ -23,7 +23,8 @@ export class UserService {
 	user?: User;
 
 	/** Emite um evento quando os dados do usuário são atualizados. */
-	userUpdate = new EventEmitter<User>();
+	private userUpdate = new BehaviorSubject<User | undefined>(undefined);
+	userUpdate$ = this.userUpdate.asObservable();
 
 	// Define a URL para buscar os dados do usuário no SUAP.
 	myDataUrl = `${environment.SUAP_URL}/api/rh/meus-dados/`;
@@ -33,7 +34,7 @@ export class UserService {
 		// Busca os dados do usuário
 		this.fetchUserData().subscribe({
 			error: (err) => console.warn(err),
-			complete: () => console.log('Tentativa de login concluída'),
+			complete: () => console.log('Tentativa de login concluída.'),
 		});
 	}
 
@@ -161,7 +162,7 @@ export class UserService {
 		localStorage.setItem('impressaocnat:role', role);
 
 		// Emite um evento 'userUpdate' com os dados do usuário atualizados.
-		this.userUpdate.emit(this.user);
+		this.userUpdate.next(this.user);
 	}
 
 	/**

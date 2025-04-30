@@ -10,7 +10,7 @@ import {
 	FormControl,
 	FormGroup,
 	FormsModule,
-	ReactiveFormsModule
+	ReactiveFormsModule,
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
@@ -20,11 +20,12 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import {MatStepperModule} from '@angular/material/stepper';
+import { MatStepperModule } from '@angular/material/stepper';
 import {
 	actions,
 	ActionService,
 	ActionType,
+	DEFAULT_USER_PROFILE,
 } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
 import { CopyInterface } from '../../models/copy.interface';
@@ -45,6 +46,7 @@ import {
 	Subject,
 	switchMap,
 	takeUntil,
+	tap,
 	throwError,
 } from 'rxjs';
 import { ConfigBoxComponent } from '../../components/config-box/config-box.component';
@@ -53,11 +55,11 @@ import { FormErrorStateMatcher } from '../../configs/validators.config';
 import { FileDownloadResponse } from '../../models/dialogData.interface';
 import { SolicitationInterface } from '../../models/solicitation.interface';
 import { IconPipe } from '../../pipes/icon.pipe';
-import {
-	SolicitationService,
-} from '../../service/solicitation.service';
+import { SolicitationService } from '../../service/solicitation.service';
 import { SplitPipe } from '../../pipes/split.pipe';
 import { DatePipe } from '@angular/common';
+import { UserService } from '../../service/user.service';
+import { User } from '../../models/user.interface';
 
 /**
  * Componente para visualização de uma solicitação específica.
@@ -81,22 +83,13 @@ import { DatePipe } from '@angular/common';
 		DatePipe,
 		SplitPipe,
 		MatProgressSpinnerModule,
-		MatStepperModule
+		MatStepperModule,
 	],
 	templateUrl: './view-solicitation.component.html',
 	styleUrl: './view-solicitation.component.scss',
 	changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ViewSolicitationComponent implements OnInit {
-
-	// Serviços
-	route = inject(ActivatedRoute);
-	actionService = inject(ActionService);
-	dialogService = inject(DialogService);
-	solicitationService = inject(SolicitationService);
-	_snackBar = inject(MatSnackBar);
-	router = inject(Router);
-
 	/** Subject para desinscrição de observables no ngOnDestroy. */
 	private ngUnsubscribe = new Subject<void>();
 
@@ -104,8 +97,20 @@ export class ViewSolicitationComponent implements OnInit {
 	@ViewChild(MatSort) sort!: MatSort;
 	@ViewChild(MatPaginator) paginator!: MatPaginator;
 
+	// Serviços
+	route = inject(ActivatedRoute);
+	actionService = inject(ActionService);
+	dialogService = inject(DialogService);
+	userService = inject(UserService);
+	solicitationService = inject(SolicitationService);
+	_snackBar = inject(MatSnackBar);
+	router = inject(Router);
+
+	/** Informações padrão do usuário */
+	defaultUserProfile = DEFAULT_USER_PROFILE;
+
 	/** Objeto da solicitação atual. */
-	mySolicitation?: SolicitationInterface;
+	mySolicitation = signal<SolicitationInterface | undefined>(undefined);
 
 	/** ID da solicitação atual. */
 	solicitationId?: number;
@@ -140,6 +145,12 @@ export class ViewSolicitationComponent implements OnInit {
 	/** Rota da página anterior. */
 	previousPage: string = '';
 
+	/** Nº de caracteres na caixa de comentários. */
+	characterCount: number = 0;
+
+	/** Nº máximo de caracteres permitidos na caixa de comentários. */
+	maxlength: number = 300;
+
 	/** Colunas a serem exibidas na tabela de cópias. */
 	displayedColumns: string[] = [
 		'fileName',
@@ -152,6 +163,8 @@ export class ViewSolicitationComponent implements OnInit {
 	queryForm = new FormGroup({
 		query: new FormControl(),
 	});
+
+	userSignal = signal<User | undefined>(undefined);
 
 	/**
 	 * Inicializa o componente.
@@ -181,6 +194,13 @@ export class ViewSolicitationComponent implements OnInit {
 				this.showConfigs(copy);
 			});
 
+		this.userService.userUpdate$
+			.pipe(takeUntil(this.ngUnsubscribe))
+			.subscribe((data) => {
+				// Atualiza as informações do usuário com os dados recebidos.
+				this.userSignal.set(data);
+			});
+
 		// Busca a solicicitação no view init e carrega os dados da tabela de cópias
 		this.loadingData.set(true);
 		this.solicitationService
@@ -188,7 +208,7 @@ export class ViewSolicitationComponent implements OnInit {
 			.pipe(finalize(() => this.loadingData.set(false)))
 			.subscribe({
 				next: (solicitation: SolicitationInterface) => {
-					this.mySolicitation = solicitation;
+					this.mySolicitation.set(solicitation);
 					this.copies.sort = this.sort;
 					this.copies.paginator = this.paginator;
 					this.updateTable(solicitation.copies);
@@ -210,9 +230,12 @@ export class ViewSolicitationComponent implements OnInit {
 				map((params) => params.query?.trim() || ''), // Remover espaços em branco e tornar em string
 				filter((query) => query.length == 0 || query.length >= 3), // Continuar apenas se a query tiver 0 ou 3+ caracteres
 				switchMap((query) => {
-					if(!this.solicitationId) return throwError(() => {
-						return new Error('Nenhum ID de solicitação definido')
-					})
+					if (!this.solicitationId)
+						return throwError(() => {
+							return new Error(
+								'Nenhum ID de solicitação definido'
+							);
+						});
 					this.loadingData.set(true);
 					return this.solicitationService
 						.getCopiesBySolicitationId(this.solicitationId, query)
@@ -229,6 +252,61 @@ export class ViewSolicitationComponent implements OnInit {
 					);
 				},
 			});
+	}
+
+	updateCharacterCount() {
+		const textarea = document.querySelector('textarea');
+		if (textarea) {
+			this.characterCount = textarea.value.length;
+		}
+	}
+
+	sendComment(comment: string) {
+		if (comment.trim()) {
+			this.loadingData.set(true);
+			this.solicitationService
+				.addCommentToSolicitation(this.solicitationId!, {
+					message: comment,
+				})
+				.pipe(
+					tap((response: string) => {
+						this._snackBar.open(response, 'Ok');
+						this.clearCommentInput();
+					}),
+					switchMap(() =>
+						this.solicitationService
+							.getSolicitationById(this.solicitationId!)
+							.pipe(finalize(() => this.loadingData.set(false)))
+					),
+					tap((solicitation: SolicitationInterface) => {
+						this.mySolicitation.set(solicitation);
+					})
+				)
+				.subscribe({
+					error: (error) => {
+						console.error(
+							'Erro ao enviar comentário e/ou buscar solicitação:',
+							error
+						);
+						this._snackBar.open(
+							'Erro ao enviar comentário ou atualizar solicitação. Tente novamente.',
+							'Ok'
+						);
+					},
+				});
+		} else {
+			this._snackBar.open('Comentário não pode ser vazio.', 'Ok', {
+				duration: 2000,
+			});
+		}
+	}
+
+	private clearCommentInput() {
+		const textarea = document.querySelector('textarea');
+		if (textarea) {
+			textarea.value = '';
+			this.characterCount = 0;
+		}
 	}
 
 	/**
@@ -263,7 +341,7 @@ export class ViewSolicitationComponent implements OnInit {
 			})
 			.afterClosed()
 			.subscribe((shouldRemove: boolean) => {
-				let solicitationId = this.mySolicitation?.id;
+				let solicitationId = this.mySolicitation()?.id;
 
 				// Se o usuário confirmar a remoção e o ID da solicitação existir.
 				if (shouldRemove && solicitationId) {
@@ -280,17 +358,20 @@ export class ViewSolicitationComponent implements OnInit {
 							});
 					} else {
 						// Remove a cópia da solicitação e atualiza a tabela.
-						let removeCopy = this.solicitationService.removeCopyById(
-							copy.id!,
-							this.mySolicitation!
-						);
+						let removeCopy =
+							this.solicitationService.removeCopyById(
+								copy.id!,
+								this.mySolicitation()!
+							);
 						let getUpdatedSolicitation =
-							this.solicitationService.getSolicitationById(solicitationId);
+							this.solicitationService.getSolicitationById(
+								solicitationId
+							);
 
 						// Combina os observables para garantir que a tabela seja atualizada após a remoção da cópia.
 						concat(removeCopy, getUpdatedSolicitation).subscribe(
 							(solicitation: SolicitationInterface) => {
-								this.mySolicitation = solicitation;
+								this.mySolicitation.set(solicitation);
 								this.updateTable(solicitation.copies);
 								this._snackBar.open(
 									'Cópia removida com sucesso.',

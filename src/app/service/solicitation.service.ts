@@ -13,6 +13,7 @@ import { CopyInterface } from '../models/copy.interface';
 import { UserService } from './user.service';
 import { SolicitationDTO } from '../models/dto/solicitationDTO.interface';
 import { User } from '../models/user.interface';
+import { CommentDTO } from '../models/dto/commentDTO.interface';
 
 @Injectable({
 	providedIn: 'root',
@@ -331,39 +332,6 @@ export class SolicitationService {
 	}
 
 	/**
-	 * Encontra o índice de uma cópia em uma solicitação.
-	 *
-	 * @private
-	 * @param {SolicitationInterface} solicitation A solicitação que contém a cópia.
-	 * @param {number} [id] O ID da cópia a ser encontrada.
-	 * @returns {number} O índice da cópia na lista de cópias da solicitação.
-	 * @throws {Error} Se a solicitação for inválida ou a cópia não pertencer à solicitação.
-	 */
-	private findCopyIndexInSolicitation(
-		solicitation: SolicitationInterface,
-		id?: number
-	): number {
-		// Verifica se solicitação é válida e há cópias anexas
-		if (!solicitation.id || !solicitation.copies?.length)
-			throw new Error('Solicitação inválida');
-
-		// Verifica se ID da cópia a ser comparada é válido
-		if (!id) throw new Error('ID de cópia inválido');
-
-		// Verifica se a cópia a ser removida existe
-		const copyIndex = solicitation.copies.findIndex(
-			(copy) => copy.id === id
-		);
-
-		// Verifica se a cópia foi encontrada na lista de cópias.
-		if (copyIndex === -1)
-			throw new Error('Cópia não pertence à solicitação');
-
-		// Retorna o índice da cópia.
-		return copyIndex;
-	}
-
-	/**
 	 * Faz o download de um arquivo de uma solicitação.
 	 *
 	 * @param {number} solicitationId O ID da solicitação que contém o arquivo.
@@ -387,6 +355,15 @@ export class SolicitationService {
 					data: response.body!,
 				}))
 			);
+	}
+
+	addCommentToSolicitation(solicitationId: number, comment: CommentDTO): Observable<string> {
+		// Faz a requisição POST para adicionar um comentário à solicitação.
+		return this.http.patch(
+			this.solicitationUrl + '/' + solicitationId + '/comentario',
+			comment,
+			{ responseType: 'text' }
+		);
 	}
 
 	/**
@@ -451,6 +428,39 @@ export class SolicitationService {
 
 	/*********************/
 	/** Métodos privados */
+
+	/**
+	 * Encontra o índice de uma cópia em uma solicitação.
+	 *
+	 * @private
+	 * @param {SolicitationInterface} solicitation A solicitação que contém a cópia.
+	 * @param {number} [id] O ID da cópia a ser encontrada.
+	 * @returns {number} O índice da cópia na lista de cópias da solicitação.
+	 * @throws {Error} Se a solicitação for inválida ou a cópia não pertencer à solicitação.
+	 */
+	private findCopyIndexInSolicitation(
+		solicitation: SolicitationInterface,
+		id?: number
+	): number {
+		// Verifica se solicitação é válida e há cópias anexas
+		if (!solicitation.id || !solicitation.copies?.length)
+			throw new Error('Solicitação inválida');
+
+		// Verifica se ID da cópia a ser comparada é válido
+		if (!id) throw new Error('ID de cópia inválido');
+
+		// Verifica se a cópia a ser removida existe
+		const copyIndex = solicitation.copies.findIndex(
+			(copy) => copy.id === id
+		);
+
+		// Verifica se a cópia foi encontrada na lista de cópias.
+		if (copyIndex === -1)
+			throw new Error('Cópia não pertence à solicitação');
+
+		// Retorna o índice da cópia.
+		return copyIndex;
+	}
 
 	/**
 	 * Obtém o usuário atual.

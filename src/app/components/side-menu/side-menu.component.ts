@@ -70,11 +70,10 @@ export class SideMenuComponent implements AfterViewInit {
 		this.setMenuOptionsDefault();
 
 		// Observa mudanças no usuário para atualizar as opções do menu.
-		this.userService.userUpdate
+		this.userService.userUpdate$
 			.pipe(takeUntil(this.ngUnsubscribe))
-			.subscribe(() => {
-				let currUser: User = this.userService.getCurrentUser()!;
-				if (currUser.role == Role.ADMIN || currUser.role == Role.MANAGER) {
+			.subscribe((currUser) => {
+				if (currUser && (currUser.role == Role.ADMIN || currUser.role == Role.MANAGER)) {
 					this.sideMenuOptions.update((curr: Option[]) =>
 						curr.concat(ADMIN_USER_OPTIONS)
 					);

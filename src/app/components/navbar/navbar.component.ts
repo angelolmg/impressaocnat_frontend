@@ -9,7 +9,6 @@ import {
 	ActionService,
 	DEFAULT_USER_PROFILE,
 	Option,
-	UserProfile,
 } from '../../service/action.service';
 import { UserService } from '../../service/user.service';
 import { DEFAULT_USER_OPTIONS } from './../../service/action.service';
@@ -43,7 +42,7 @@ export class NavbarComponent {
 	defaultUserInfo = DEFAULT_USER_PROFILE;
 
 	/** Signal contendo as informações do usuário. */
-	userSignal = signal<UserProfile>(this.defaultUserInfo);
+	userSignal = signal<User>(this.defaultUserInfo);
 
 	/** Signal contendo as opções do usuário. */
 	options = signal<Option[]>([]);
@@ -58,11 +57,11 @@ export class NavbarComponent {
 		this.setOptionsDefault();
 
 		// Inscreve-se para receber atualizações do usuário através do UserService.
-		this.userService.userUpdate
+		this.userService.userUpdate$
 			.pipe(takeUntil(this.ngUnsubscribe)) // Garante que a inscrição seja cancelada ao destruir o componente.
-			.subscribe((data) => {
+			.subscribe((user) => {
 				// Atualiza as informações do usuário com os dados recebidos.
-				this.updateUser(data);
+				this.updateUser(user);
 			});
 	}
 
@@ -76,24 +75,17 @@ export class NavbarComponent {
 	/**
 	 * Atualiza as informações do usuário no signal.
 	 *
-	 * Se um objeto SuapUserData for fornecido e contiver todas as propriedades necessárias,
+	 * Se um objeto User for fornecido e contiver todas as propriedades necessárias,
 	 * as informações do usuário serão atualizadas. Caso contrário, as informações do usuário
 	 * serão redefinidas para o estado padrão.
 	 *
 	 * @param {User} [user] - O objeto SuapUserData contendo as novas informações do usuário.
 	 */
 	updateUser(user?: User): void {
-		if (user && user.registrationNumber && user.commonName && user.photoUrl) {
-			// Desestruturação de objeto (https://www.w3schools.com/js/js_destructuring.asp)
-			const {
-				registrationNumber: registration,
-				commonName: name,
-				photoUrl: pfp,
-			} = user;
-
-			this.userSignal.set({ registration, name, pfp });
-		} else {
+		if (!user) {
 			this.resetUser();
+		} else {
+			this.userSignal.set(user);
 		}
 	}
 
