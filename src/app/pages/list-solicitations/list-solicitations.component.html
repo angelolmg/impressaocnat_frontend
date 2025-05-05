@@ -56,7 +56,9 @@
 					aria-label="Generate report button"
 					(click)="generateReport()"
 					[matBadge]="
-						solicitations.data.length < 99 ? solicitations.data.length : '99+'
+						solicitations.data.length < 99
+							? solicitations.data.length
+							: '99+'
 					"
 					[matBadgeHidden]="solicitations.data.length <= 0"
 				>
@@ -68,7 +70,6 @@
 
 	<!-- Tabela de solicitações -->
 	<div class="table-wrapper">
-
 		<!-- TODO: Aqui [style.height.%] calcula a altura da tabela de acordo com o número de itens que 
 		 aparecem na página atual da listagem, relativo a lista de todas as solicitações. 
 		 Isso garante que todos os itens tenham sempre a "mesma" altura.  
@@ -77,14 +78,16 @@
 			mat-table
 			[dataSource]="solicitations"
 			matSort
+			(matSortChange)="handleSort($event)"
 			class="mat-elevation-z8"
 			[style.height.%]="
 				10 +
 				9 *
-					(paginator.length % paginator.pageSize != 0 &&
-					paginator.pageIndex == paginator.getNumberOfPages() - 1
-						? paginator.length % paginator.pageSize
-						: paginator.pageSize)
+					(currentPage()?.totalElements! % currentPage()?.size! !=
+						0 &&
+					currentPage()?.number! == currentPage()?.totalPages! - 1
+						? currentPage()?.totalElements! % currentPage()?.size!
+						: currentPage()?.size!)
 			"
 		>
 			<ng-container matColumnDef="id">
@@ -115,7 +118,7 @@
 				</td>
 			</ng-container>
 
-			<ng-container matColumnDef="term">
+			<ng-container matColumnDef="deadline">
 				<th
 					mat-header-cell
 					*matHeaderCellDef
@@ -129,7 +132,7 @@
 				</td>
 			</ng-container>
 
-			<ng-container matColumnDef="username">
+			<ng-container matColumnDef="commonName">
 				<th
 					mat-header-cell
 					*matHeaderCellDef
@@ -143,7 +146,7 @@
 				</td>
 			</ng-container>
 
-			<ng-container matColumnDef="registration">
+			<ng-container matColumnDef="registrationNumber">
 				<th
 					mat-header-cell
 					*matHeaderCellDef
@@ -252,12 +255,13 @@
 	<!-- Paginação -->
 	<mat-paginator
 		#paginator
-		showFirstLastButtons
-		(page)="handlePageEvent($event)"
-		[length]="100"
-		[pageSize]="10"
-		[pageSizeOptions]="[10]"
 		aria-label="Select page"
+		showFirstLastButtons
+		[length]="currentPage()?.totalElements"
+		[pageSize]="currentPage()?.size"
+		[pageIndex]="currentPage()?.number"
+		[pageSizeOptions]="[10]"
+		(page)="handlePageEvent($event)"
 	>
 	</mat-paginator>
 </div>

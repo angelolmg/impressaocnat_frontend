@@ -30,7 +30,7 @@ import {
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { MatSort, MatSortModule } from '@angular/material/sort';
+import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -45,10 +45,13 @@ import {
 	Subject,
 	switchMap,
 	takeUntil,
-	tap
+	tap,
 } from 'rxjs';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
-import { SolicitationInterface } from '../../models/solicitation.interface';
+import {
+	SolicitationInterface,
+	SolicitationPage,
+} from '../../models/solicitation.interface';
 import { IconPipe } from '../../pipes/icon.pipe';
 import {
 	actions,
@@ -58,7 +61,6 @@ import {
 } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
 import { SolicitationService } from '../../service/solicitation.service';
-import { Payload } from '../../models/dto/payload.interface';
 
 @Component({
 	selector: 'app-list-solicitations',
@@ -100,10 +102,10 @@ export class ListSolicitationsComponent implements OnInit, OnDestroy {
 	/** Colunas a serem exibidas na tabela de solicitações. */
 	displayedColumns: string[] = [
 		'id',
-		'registration',
-		'username',
+		'registrationNumber',
+		'commonName',
 		'creationDate',
-		'term',
+		'deadline',
 		'conclusionDate',
 		'actions',
 	];
@@ -137,6 +139,14 @@ export class ListSolicitationsComponent implements OnInit, OnDestroy {
 		endDate: new FormControl<Date | null>(null),
 		query: new FormControl(),
 	});
+
+	currentPage: WritableSignal<SolicitationPage | undefined> =
+		signal(undefined);
+
+	pageIndex: number = 0;
+	pageSize: number = 10;
+	sortingColumn?: string;
+	sortingDirection?: string;
 
 	/**
 	 * Método do ciclo de vida chamado na inicialização do componente.
@@ -183,11 +193,12 @@ export class ListSolicitationsComponent implements OnInit, OnDestroy {
 				'minhas-solicitacoes';
 
 		// Se a listagem deve filtrar as próprias requisições, atualiza o tipo da página.
-		if (this.filterForOwnSolicitations) this.pageState = PageState.viewMySolicitations;
+		if (this.filterForOwnSolicitations)
+			this.pageState = PageState.viewMySolicitations;
 
 		// Obtém todas as requisições do serviço, aplicando filtros e parâmetros do formulário.
 		this.solicitationService
-			.getAllSolicitations({
+			.getPageSolicitations(this.pageIndex, this.pageSize, {
 				filtering: this.filterForOwnSolicitations,
 				...this.queryForm.value,
 			})
@@ -200,10 +211,12 @@ export class ListSolicitationsComponent implements OnInit, OnDestroy {
 			)
 			.subscribe({
 				// Atualiza a tabela de requisições com os dados recebidos.
-				next: (solicitations: SolicitationInterface[]) => {
-					this.solicitations.data = solicitations;
-					this.solicitations.sort = this.sort;
-					this.solicitations.paginator = this.paginator;
+				next: (solicitations: SolicitationPage) => {
+					this.currentPage.set(solicitations);
+					this.solicitations.data = solicitations.content;
+
+					// this.solicitations.sort = this.sort;
+					// this.solicitations.paginator = this.paginator;
 				},
 				error: (err) => {
 					console.error(err);
@@ -220,7 +233,7 @@ export class ListSolicitationsComponent implements OnInit, OnDestroy {
 					this.loadingData.set(true);
 					// Obtém as requisições filtradas com base nos parâmetros do formulário.
 					return this.solicitationService
-						.getAllSolicitations({
+						.getPageSolicitations(this.pageIndex, this.pageSize, {
 							filtering: this.filterForOwnSolicitations,
 							...params,
 						})
@@ -229,8 +242,9 @@ export class ListSolicitationsComponent implements OnInit, OnDestroy {
 			)
 			.subscribe({
 				// Atualiza a tabela com as requisições filtradas.
-				next: (solicitations: SolicitationInterface[]) => {
-					this.solicitations.data = solicitations;
+				next: (solicitations: SolicitationPage) => {
+					this.currentPage.set(solicitations);
+					this.solicitations.data = solicitations.content;
 				},
 				error: (error) => {
 					console.error(error);
@@ -335,8 +349,85 @@ export class ListSolicitationsComponent implements OnInit, OnDestroy {
 		}
 	}
 
-	handlePageEvent($event: PageEvent): void {
-		console.log($event);
+	handleSort(event: Sort) {
+		// Atualiza os parâmetros de ordenação com base na interação do usuário.
+		this.sortingColumn = event.active;
+		this.sortingDirection = event.direction;
+
+		// Filtro base
+		let filters: any = {
+			filtering: this.filterForOwnSolicitations,
+			...this.queryForm.value,
+		};
+
+		// Se estamos ordenando, insira os parâmetros de ordenação no filtro.
+		if (this.sortingDirection) {
+			filters = {
+				...filters,
+				sortingColumn: this.sortingColumn,
+				sortingDirection: this.sortingDirection,
+			};
+		}
+
+		this.solicitationService
+			.getPageSolicitations(this.pageIndex, this.pageSize, filters)
+			.pipe(
+				tap(() => this.loadingData.set(true)),
+				// Garante que o indicador de carregamento seja desativado após a conclusão da requisição.
+				finalize(() => {
+					this.loadingData.set(false);
+					return of([]);
+				})
+			)
+			.subscribe({
+				// Atualiza a tabela de requisições com os dados recebidos.
+				next: (solicitations: SolicitationPage) => {
+					this.currentPage.set(solicitations);
+					this.solicitations.data = solicitations.content;
+				},
+				error: (err) => {
+					console.error(err);
+				},
+			});
+	}
+
+	handlePageEvent(event: PageEvent): void {
+		
+		// Filtro base
+		let filters: any = {
+			filtering: this.filterForOwnSolicitations,
+			...this.queryForm.value,
+		};
+
+		// Se estamos ordenando, insira os parâmetros de ordenação no filtro.
+		if (this.sortingDirection) {
+			filters = {
+				...filters,
+				sortingColumn: this.sortingColumn,
+				sortingDirection: this.sortingDirection,
+			};
+		}
+
+		this.solicitationService
+			.getPageSolicitations(event.pageIndex, event.pageSize, filters)
+			.pipe(
+				tap(() => this.loadingData.set(true)),
+				// Garante que o indicador de carregamento seja desativado após a conclusão da requisição.
+				finalize(() => {
+					this.loadingData.set(false);
+					return of([]);
+				})
+			)
+			.subscribe({
+				// Atualiza a tabela de requisições com os dados recebidos.
+				next: (solicitations: SolicitationPage) => {
+					this.currentPage.set(solicitations);
+					this.solicitations.data = solicitations.content;
+				},
+				error: (err) => {
+					console.error(err);
+				},
+			});
 	}
 
 	/**
@@ -379,24 +470,27 @@ export class ListSolicitationsComponent implements OnInit, OnDestroy {
 					return this.solicitationService
 						.toggleSolicitationStatus(solicitationId)
 						.pipe(
-								// After the status change, fetch the updated list of solicitations
-								switchMap((response: string) => {
-									this._snackBar.open(response, 'Ok');
-									return this.solicitationService.getAllSolicitations({
-										filtering: this.filterForOwnSolicitations,
+							// After the status change, fetch the updated list of solicitations
+							switchMap((response: string) => {
+								this._snackBar.open(response, 'Ok');
+								return this.solicitationService.getAllSolicitations(
+									{
+										filtering:
+											this.filterForOwnSolicitations,
 										...this.queryForm.value,
-									});
-								}),
-								// Update the table with the updated solicitations.
-								tap((solicitations) => {
-									this.solicitations.data = solicitations;
-								}),
-								catchError((error) => {
-									console.log(error);
-									this._snackBar.open(error.error.message, 'Ok');
-									return EMPTY;
-								})
-							);
+									}
+								);
+							}),
+							// Update the table with the updated solicitations.
+							tap((solicitations) => {
+								this.solicitations.data = solicitations;
+							}),
+							catchError((error) => {
+								console.log(error);
+								this._snackBar.open(error.error.message, 'Ok');
+								return EMPTY;
+							})
+						);
 				})
 			)
 			.subscribe();
@@ -435,16 +529,18 @@ export class ListSolicitationsComponent implements OnInit, OnDestroy {
 				filter((confirmed) => confirmed),
 				// Mapeia para a operação de exclusão
 				switchMap(() =>
-					this.solicitationService.removeSolicitationById(solicitationId).pipe(
-						// Exibe um snackbar com a mensagem de sucesso.
-						tap((response: string) => {
-							this._snackBar.open(response, 'Ok');
-						}),
-						catchError((error) => {
-							this._snackBar.open(error.error.message, 'Ok');
-							return EMPTY;
-						})
-					)
+					this.solicitationService
+						.removeSolicitationById(solicitationId)
+						.pipe(
+							// Exibe um snackbar com a mensagem de sucesso.
+							tap((response: string) => {
+								this._snackBar.open(response, 'Ok');
+							}),
+							catchError((error) => {
+								this._snackBar.open(error.error.message, 'Ok');
+								return EMPTY;
+							})
+						)
 				),
 				// Após a exclusão, busca lista atualizada de solicitações
 				switchMap(() =>

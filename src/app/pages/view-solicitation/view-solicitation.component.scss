@@ -52,7 +52,7 @@ form {
 	gap: 0.6rem;
 
 	.subtitle {
-		margin-top: 0.5rem;
+		margin-top: 0.6rem;
 	}
 }
 
@@ -233,7 +233,7 @@ th:last-child {
 				font-size: 0.8rem; /* Slightly smaller font for times */
 				color: var(--muted); /* Muted color for times */
 			}
-		
+
 			.timeline-content {
 				display: flex;
 				width: 100%;
@@ -296,7 +296,7 @@ th:last-child {
 							&:focus {
 								outline: none;
 								box-shadow: 0 0 0 0.2rem
-									rgba(var(--button-rgb), 0.5); // Example focus style
+									rgba(var(--button-rgb), 0.5);
 							}
 						}
 					}
@@ -305,7 +305,7 @@ th:last-child {
 				.timeline-speech-bubble {
 					display: flex;
 					align-items: center; /* Vertically align the tail */
-					width: 1rem; /* Reduced width */
+					width: 1rem;
 
 					.timeline-speech-bubble-tail {
 						width: 0;

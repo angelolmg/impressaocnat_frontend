@@ -177,13 +177,13 @@ export class UserService {
 	/**
 	 * Busca a permissão de administrador para um usuário com base na matrícula.
 	 *
-	 * @param {string} registration A matrícula do usuário.
+	 * @param {string} registrationNumber A matrícula do usuário.
 	 * @returns {Observable<boolean>} Um Observable que emite `true` se o usuário for administrador, `false` caso contrário.
 	 */
-	fetchAdminPermission(registration: string): Observable<Role> {
+	fetchAdminPermission(registrationNumber: string): Observable<Role> {
 		// Cria um objeto HttpParams para adicionar o parâmetro de matrícula.
 		let httpParams = new HttpParams();
-		httpParams = httpParams.set('registration', registration);
+		httpParams = httpParams.set('registrationNumber', registrationNumber);
 
 		// Faz a requisição GET para buscar a permissão de administrador.
 		return this.http.get<Role>(this.fetchRoleUrl, { params: httpParams });

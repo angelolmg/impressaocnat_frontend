@@ -2,6 +2,35 @@ import { CopyInterface } from "./copy.interface";
 import { TimelineEvent } from "./timelineEvent.interface";
 import { User } from "./user.interface";
 
+export interface SolicitationPage {
+	content: SolicitationInterface[];
+	pageable: {
+	  offset: number;
+	  pageNumber: number;
+	  pageSize: number;
+	  paged: boolean;
+	  sort: {
+		empty: boolean;
+		sorted: boolean;
+		unsorted: boolean;
+	  };
+	  unpaged: boolean;
+	};
+	last: boolean;
+	totalPages: number;
+	totalElements: number;
+	first: boolean;
+	number: number;
+	numberOfElements: number;
+	size: number;
+	sort: {
+	  empty: boolean;
+	  sorted: boolean;
+	  unsorted: boolean;
+	};
+	empty: boolean;
+  }
+
 export interface SolicitationInterface {
 	id?: number;
 	deadline: number; // Prazo

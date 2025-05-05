@@ -38,7 +38,7 @@
 			<span>Interessado:</span
 			><span>{{ mySolicitation()?.user?.commonName }}</span>
 		</div>
-		<div class="user-info user-registration">
+		<div class="user-info user-registrationNumber">
 			<span>Matrícula:</span
 			><span>{{ mySolicitation()?.user?.registrationNumber }}</span>
 		</div>
@@ -242,10 +242,11 @@
 			alt="Icone de Ajuda"
 		/>
 	</div>
+
 	<div class="timeline-wrapper">
 		<ul class="timeline-container">
 			<li
-				class="timeline-container-event"
+				class="timeline-container-event comment-box"
 				[style.display]="mySolicitation()?.archived ? 'none' : 'flex'"
 			>
 				<div class="timeline-times" style="visibility: hidden">

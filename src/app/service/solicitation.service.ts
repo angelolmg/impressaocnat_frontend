@@ -8,7 +8,7 @@ import { inject, Injectable } from '@angular/core';
 import { map, Observable, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { FileDownloadResponse } from '../models/dialogData.interface';
-import { SolicitationInterface } from '../models/solicitation.interface';
+import { SolicitationInterface, SolicitationPage } from '../models/solicitation.interface';
 import { CopyInterface } from '../models/copy.interface';
 import { UserService } from './user.service';
 import { SolicitationDTO } from '../models/dto/solicitationDTO.interface';
@@ -196,6 +196,71 @@ export class SolicitationService {
 		}
 
 		return this.http.get<SolicitationInterface[]>(this.solicitationUrl, {
+			params: httpParams,
+		});
+	}
+
+	getPageSolicitations(
+		pageNo: number, 
+		pageSize: number,
+		params: Partial<{
+			filtering: boolean | null;
+			concluded: boolean | null;
+			startDate: Date | null;
+			endDate: Date | null;
+			query: string | null;
+			sortingColumn: string | null,
+			sortingDirection: string | null,
+		}>
+	): Observable<SolicitationPage> {
+		// Cria um objeto HttpParams para adicionar os parâmetros de filtro.
+		let httpParams = new HttpParams();
+
+		httpParams = httpParams.set('pageNo', pageNo.toString());
+		httpParams = httpParams.set('pageSize', pageSize.toString());
+
+		// Adiciona o parâmetro 'filtering' se fornecido.
+		if (params?.filtering) {
+			httpParams = httpParams.set(
+				'filtering',
+				params.filtering.toString()
+			);
+		}
+
+		// Diferente pois são 3 estados possiveis de filtragem (true, false e null)
+		if (params?.concluded != null) {
+			httpParams = httpParams.set('concluded', params.concluded);
+		}
+
+		// Adiciona o parâmetro 'startDate' se fornecido.
+		if (params?.startDate) {
+			httpParams = httpParams.set(
+				'startDate',
+				params.startDate.toISOString()
+			);
+		}
+
+		// Adiciona o parâmetro 'endDate' se fornecido.
+		if (params?.endDate) {
+			httpParams = httpParams.set(
+				'endDate',
+				params.endDate.toISOString()
+			);
+		}
+
+		// Adiciona o parâmetro 'query' se fornecido.
+		if (params?.query) {
+			httpParams = httpParams.set('query', params.query);
+		}
+
+		if(params?.sortingColumn) {
+			httpParams = httpParams.set('sortingColumn', params.sortingColumn);
+		}
+		if(params?.sortingDirection) {
+			httpParams = httpParams.set('sortingDirection', params.sortingDirection);
+		}
+
+		return this.http.get<SolicitationPage>(this.solicitationUrl + "/pagina", {
 			params: httpParams,
 		});
 	}
