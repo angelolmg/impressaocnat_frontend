@@ -30,7 +30,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { FormErrorStateMatcher, pageRangeValidator } from '../../configs/validators.config';
 import { CopyInterface } from '../../models/copy.interface';
-import { DialogData, FileProfile } from '../../models/dialogData.interface';
+import { DialogDataInput, FileProfile } from '../../models/dialogData.interface';
 import { SolicitationService } from '../../service/solicitation.service';
 import { PrintConfig } from '../../models/printConfig.interface';
 
@@ -69,7 +69,7 @@ export class NewCopyBoxComponent {
 	readonly dialogRef = inject(MatDialogRef<NewCopyBoxComponent>);
 
 	/** Dados passados para o diálogo, contendo a configuração de cópia. */
-	readonly data = inject<DialogData>(MAT_DIALOG_DATA);
+	readonly data = inject<DialogDataInput>(MAT_DIALOG_DATA);
 
 	/** Serviço para realizar requisições relacionadas a cópias. */
 	solicitationService = inject(SolicitationService);

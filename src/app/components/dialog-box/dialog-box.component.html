@@ -1,13 +1,29 @@
 @if (data.title) {
 <h2 mat-dialog-title>{{ data.title }}</h2>
-} @if (data.message) {
-<mat-dialog-content>{{ data.message }}</mat-dialog-content>
+
 } @if (data.warning) {
-<mat-dialog-content style="color: red"><strong>{{ data.warning }}</strong></mat-dialog-content>
+<mat-dialog-content>
+	<strong>{{ data.warning }}</strong>
+</mat-dialog-content>
+
+} @if (data.message) {
+<mat-dialog-content>
+	{{ data.message }}
+</mat-dialog-content>
+
+} @if(data.show_notification_option) {
+<mat-dialog-content style="padding: 3rem 2rem 0.5rem 1rem">
+	<mat-checkbox [formControl]="sendNotification">
+		Notificar todos os interessados
+	</mat-checkbox>
+</mat-dialog-content>
 }
+
 <mat-dialog-actions>
-	<button mat-button [mat-dialog-close]="false">{{ data.negative_label }}</button>
-	<button mat-button [mat-dialog-close]="true" cdkFocusInitial>
+	<button mat-button [mat-dialog-close]="confirm(false)">
+		{{ data.negative_label }}
+	</button>
+	<button mat-button [mat-dialog-close]="confirm(true)" cdkFocusInitial>
 		{{ data.positive_label }}
 	</button>
 </mat-dialog-actions>

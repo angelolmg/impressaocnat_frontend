@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
-import { DialogData } from '../models/dialogData.interface';
+import { DialogDataInput } from '../models/dialogData.interface';
 
 /**
  * Serviço para gerenciamento de diálogos (modais) na aplicação.
@@ -22,7 +22,7 @@ export class DialogService {
      */
 	openDialog(
 		dialogBoxComponent: any,
-		data?: DialogData,
+		data?: DialogDataInput,
 		disableClose: boolean = false
 	): MatDialogRef<any> {
 

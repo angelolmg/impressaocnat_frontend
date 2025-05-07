@@ -43,6 +43,7 @@ import { NewCopyBoxComponent } from '../../components/new-copy-box/new-copy-box.
 import { SolicitationInterface } from '../../models/solicitation.interface';
 import { IconPipe } from '../../pipes/icon.pipe';
 import { SolicitationService } from '../../service/solicitation.service';
+import { DialogDataResponse } from '../../models/dialogData.interface';
 
 @Component({
 	selector: 'app-solicitation-form',
@@ -229,13 +230,16 @@ export class SolicitationFormComponent implements OnDestroy, OnInit {
 				negative_label: 'Não',
 			})
 			.afterClosed()
-			.subscribe((shouldRemove: boolean) => {
-				if (!shouldRemove) return;
+			.subscribe((dialog: DialogDataResponse) => {
+				if (!dialog.confirmation) return;
 
 				// Se a cópia for a última, remove a solicitação inteira.
 				if (isLastCopy) {
 					this.solicitationService
-						.removeSolicitationById(this.editSolicitationId!)
+						.removeSolicitationById(
+							this.editSolicitationId!,
+							dialog.sendNotification
+						)
 						.subscribe((response: string) => {
 							this._snackBar.open(response, 'Ok');
 							this.router.navigate([

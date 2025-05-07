@@ -61,6 +61,8 @@ import {
 } from '../../service/action.service';
 import { DialogService } from '../../service/dialog.service';
 import { SolicitationService } from '../../service/solicitation.service';
+import { DialogDataResponse } from '../../models/dialogData.interface';
+import { TimelineService } from '../../service/timeline.service';
 
 @Component({
 	selector: 'app-list-solicitations',
@@ -92,6 +94,7 @@ export class ListSolicitationsComponent implements OnInit, OnDestroy {
 	dialogService = inject(DialogService);
 	actionService = inject(ActionService);
 	solicitationService = inject(SolicitationService);
+	timelineService = inject(TimelineService);
 	_snackBar = inject(MatSnackBar);
 	router = inject(Router);
 	activatedRoute = inject(ActivatedRoute);
@@ -392,7 +395,6 @@ export class ListSolicitationsComponent implements OnInit, OnDestroy {
 	}
 
 	handlePageEvent(event: PageEvent): void {
-		
 		// Filtro base
 		let filters: any = {
 			filtering: this.filterForOwnSolicitations,
@@ -460,37 +462,45 @@ export class ListSolicitationsComponent implements OnInit, OnDestroy {
 				} a solicitação Nº ${solicitation.id}?`,
 				positive_label: 'Sim',
 				negative_label: 'Não',
+				show_notification_option: true,
 			})
 			.afterClosed()
 			.pipe(
+				tap(() => this.loadingData.set(true)),
 				// Continua somente se o usuário confirmar a alteração
-				filter((confirmed) => confirmed),
+				filter((dialog: DialogDataResponse) => dialog.confirmation),
 				// Mapeia para a operação de alteração
-				switchMap(() => {
-					return this.solicitationService
+				switchMap((dialog: DialogDataResponse) =>
+					this.solicitationService
 						.toggleSolicitationStatus(solicitationId)
 						.pipe(
-							// After the status change, fetch the updated list of solicitations
-							switchMap((response: string) => {
-								this._snackBar.open(response, 'Ok');
-								return this.solicitationService.getAllSolicitations(
-									{
-										filtering:
-											this.filterForOwnSolicitations,
-										...this.queryForm.value,
-									}
-								);
-							}),
-							// Update the table with the updated solicitations.
+							// Após a edição, busca lista atualizada de solicitações
+							switchMap(() =>
+								this.solicitationService.getAllSolicitations({
+									filtering: this.filterForOwnSolicitations,
+									...this.queryForm.value,
+								})
+							),
+							// Atualiza a tabela com as solicitações atualizadas.
 							tap((solicitations) => {
 								this.solicitations.data = solicitations;
 							}),
 							catchError((error) => {
-								console.log(error);
 								this._snackBar.open(error.error.message, 'Ok');
 								return EMPTY;
 							})
-						);
+						)
+				),
+				catchError((error) => {
+					this._snackBar.open(
+						`Erro ao atualizar solicitações: ${error.error.message}`,
+						'Ok'
+					);
+					return EMPTY;
+				}),
+				finalize(() => {
+					this.loadingData.set(false);
+					return of([]);
 				})
 			)
 			.subscribe();
@@ -522,43 +532,51 @@ export class ListSolicitationsComponent implements OnInit, OnDestroy {
 				warning: 'Esta ação é permanente',
 				positive_label: 'Sim',
 				negative_label: 'Não',
+				show_notification_option: true,
 			})
 			.afterClosed()
 			.pipe(
+				tap(() => this.loadingData.set(true)),
 				// Continua somente se o usuário confirmar a exclusão
-				filter((confirmed) => confirmed),
+				filter((dialog: DialogDataResponse) => dialog.confirmation),
 				// Mapeia para a operação de exclusão
-				switchMap(() =>
-					this.solicitationService
-						.removeSolicitationById(solicitationId)
+				switchMap((dialog: DialogDataResponse) => {
+					return this.solicitationService
+						.removeSolicitationById(
+							solicitationId,
+							dialog.sendNotification
+						)
 						.pipe(
-							// Exibe um snackbar com a mensagem de sucesso.
 							tap((response: string) => {
 								this._snackBar.open(response, 'Ok');
+							}),
+							// Após a exclusão, busca lista atualizada de solicitações
+							switchMap(() =>
+								this.solicitationService.getAllSolicitations({
+									filtering: this.filterForOwnSolicitations,
+									...this.queryForm.value,
+								})
+							),
+							// Atualiza a tabela com as solicitações atualizadas.
+							tap((solicitations) => {
+								this.solicitations.data = solicitations;
 							}),
 							catchError((error) => {
 								this._snackBar.open(error.error.message, 'Ok');
 								return EMPTY;
 							})
-						)
-				),
-				// Após a exclusão, busca lista atualizada de solicitações
-				switchMap(() =>
-					this.solicitationService.getAllSolicitations({
-						filtering: this.filterForOwnSolicitations,
-						...this.queryForm.value,
-					})
-				),
-				// Atualiza a tabela com as solicitações atualizadas.
-				tap((solicitations) => {
-					this.solicitations.data = solicitations;
+						);
 				}),
 				catchError((error) => {
 					this._snackBar.open(
-						`Erro ao atualizar solicitações: ${error.message}`,
+						`Erro ao atualizar solicitações: ${error.error.message}`,
 						'Ok'
 					);
 					return EMPTY;
+				}),
+				finalize(() => {
+					this.loadingData.set(false);
+					return of([]);
 				})
 			)
 			.subscribe();

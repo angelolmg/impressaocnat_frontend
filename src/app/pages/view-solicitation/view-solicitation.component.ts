@@ -52,7 +52,10 @@ import {
 import { ConfigBoxComponent } from '../../components/config-box/config-box.component';
 import { DialogBoxComponent } from '../../components/dialog-box/dialog-box.component';
 import { FormErrorStateMatcher } from '../../configs/validators.config';
-import { FileDownloadResponse } from '../../models/dialogData.interface';
+import {
+	DialogDataResponse,
+	FileDownloadResponse,
+} from '../../models/dialogData.interface';
 import { SolicitationInterface } from '../../models/solicitation.interface';
 import { IconPipe } from '../../pipes/icon.pipe';
 import { SolicitationService } from '../../service/solicitation.service';
@@ -295,9 +298,7 @@ export class ViewSolicitationComponent implements OnInit {
 					},
 				});
 		} else {
-			this._snackBar.open('Comentário não pode ser vazio.', 'Ok', {
-				duration: 2000,
-			});
+			this._snackBar.open('Comentário não pode ser vazio.', 'Ok');
 		}
 	}
 
@@ -340,15 +341,18 @@ export class ViewSolicitationComponent implements OnInit {
 				negative_label: 'Não',
 			})
 			.afterClosed()
-			.subscribe((shouldRemove: boolean) => {
+			.subscribe((dialog: DialogDataResponse) => {
 				let solicitationId = this.mySolicitation()?.id;
 
 				// Se o usuário confirmar a remoção e o ID da solicitação existir.
-				if (shouldRemove && solicitationId) {
+				if (dialog.confirmation && solicitationId) {
 					if (isLastCopy) {
 						// Se a cópia for a última, remove a solicitação inteira.
 						this.solicitationService
-							.removeSolicitationById(solicitationId)
+							.removeSolicitationById(
+								solicitationId,
+								dialog.sendNotification
+							)
 							.subscribe((response: string) => {
 								this._snackBar.open(response, 'Ok');
 								this.router.navigate([

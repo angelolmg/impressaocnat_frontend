@@ -24,7 +24,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatStepper, MatStepperModule } from '@angular/material/stepper';
 import { FormErrorStateMatcher, pageRangeValidator } from '../../configs/validators.config';
 import { CopyInterface } from '../../models/copy.interface';
-import { DialogData } from '../../models/dialogData.interface';
+import { DialogDataInput } from '../../models/dialogData.interface';
 import { SolicitationService } from '../../service/solicitation.service';
 
 @Component({
@@ -61,7 +61,7 @@ export class EditCopyBoxComponent implements OnInit {
 	readonly dialogRef = inject(MatDialogRef<EditCopyBoxComponent>);
 
 	/** Dados passados para o diálogo, contendo a configuração de cópia. */
-	readonly data = inject<DialogData>(MAT_DIALOG_DATA);
+	readonly data = inject<DialogDataInput>(MAT_DIALOG_DATA);
 
 	/** Serviço de requisições. */
 	solicitationService = inject(SolicitationService);

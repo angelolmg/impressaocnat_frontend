@@ -8,7 +8,10 @@ import { inject, Injectable } from '@angular/core';
 import { map, Observable, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { FileDownloadResponse } from '../models/dialogData.interface';
-import { SolicitationInterface, SolicitationPage } from '../models/solicitation.interface';
+import {
+	SolicitationInterface,
+	SolicitationPage,
+} from '../models/solicitation.interface';
 import { CopyInterface } from '../models/copy.interface';
 import { UserService } from './user.service';
 import { SolicitationDTO } from '../models/dto/solicitationDTO.interface';
@@ -201,7 +204,7 @@ export class SolicitationService {
 	}
 
 	getPageSolicitations(
-		pageNo: number, 
+		pageNo: number,
 		pageSize: number,
 		params: Partial<{
 			filtering: boolean | null;
@@ -209,8 +212,8 @@ export class SolicitationService {
 			startDate: Date | null;
 			endDate: Date | null;
 			query: string | null;
-			sortingColumn: string | null,
-			sortingDirection: string | null,
+			sortingColumn: string | null;
+			sortingDirection: string | null;
 		}>
 	): Observable<SolicitationPage> {
 		// Cria um objeto HttpParams para adicionar os parâmetros de filtro.
@@ -253,16 +256,22 @@ export class SolicitationService {
 			httpParams = httpParams.set('query', params.query);
 		}
 
-		if(params?.sortingColumn) {
+		if (params?.sortingColumn) {
 			httpParams = httpParams.set('sortingColumn', params.sortingColumn);
 		}
-		if(params?.sortingDirection) {
-			httpParams = httpParams.set('sortingDirection', params.sortingDirection);
+		if (params?.sortingDirection) {
+			httpParams = httpParams.set(
+				'sortingDirection',
+				params.sortingDirection
+			);
 		}
 
-		return this.http.get<SolicitationPage>(this.solicitationUrl + "/pagina", {
-			params: httpParams,
-		});
+		return this.http.get<SolicitationPage>(
+			this.solicitationUrl + '/pagina',
+			{
+				params: httpParams,
+			}
+		);
 	}
 
 	/**
@@ -304,10 +313,23 @@ export class SolicitationService {
 	 * Remove uma solicitação por ID.
 	 *
 	 * @param {number} id O ID da solicitação a ser removida.
-	 * @returns {Observable<Payload<any>>} Um Observable que emite a resposta da requisição.
+	 * @param {boolean} sendNotification (Opcional) Indica se os usuários interessados devem ser notificados após a exclusão.
+	 * @returns {Observable<string>} Um Observable que emite a resposta da requisição (texto).
 	 */
-	removeSolicitationById(id: number): Observable<string> {
-		return this.http.delete(this.solicitationUrl + '/' + id, {
+	removeSolicitationById(
+		id: number,
+		sendNotification?: boolean
+	): Observable<string> {
+		let params = new HttpParams();
+		if (sendNotification !== undefined) {
+			params = params.set(
+				'sendNotification',
+				sendNotification.toString()
+			);
+		}
+
+		return this.http.delete(`${this.solicitationUrl}/${id}`, {
+			params: params,
 			responseType: 'text',
 		});
 	}
@@ -422,7 +444,10 @@ export class SolicitationService {
 			);
 	}
 
-	addCommentToSolicitation(solicitationId: number, comment: CommentDTO): Observable<string> {
+	addCommentToSolicitation(
+		solicitationId: number,
+		comment: CommentDTO
+	): Observable<string> {
 		// Faz a requisição POST para adicionar um comentário à solicitação.
 		return this.http.patch(
 			this.solicitationUrl + '/' + solicitationId + '/comentario',
