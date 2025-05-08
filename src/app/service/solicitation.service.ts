@@ -140,8 +140,17 @@ export class SolicitationService {
 	 * @param {number} id O ID da solicitação cujo status será alterado.
 	 * @returns {Observable<Payload>} Um Observable que emite a resposta da requisição.
 	 */
-	toggleSolicitationStatus(id: number): Observable<string> {
+	toggleSolicitationStatus(id: number, sendNotification: boolean): Observable<string> {
+		let params = new HttpParams();
+		if (sendNotification !== undefined) {
+			params = params.set(
+				'sendNotification',
+				sendNotification.toString()
+			);
+		}
+
 		return this.http.patch(`${this.solicitationUrl}/${id}/status`, null, {
+			params: params,
 			responseType: 'text',
 		});
 	}

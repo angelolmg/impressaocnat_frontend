@@ -62,7 +62,6 @@ import {
 import { DialogService } from '../../service/dialog.service';
 import { SolicitationService } from '../../service/solicitation.service';
 import { DialogDataResponse } from '../../models/dialogData.interface';
-import { TimelineService } from '../../service/timeline.service';
 
 @Component({
 	selector: 'app-list-solicitations',
@@ -94,7 +93,6 @@ export class ListSolicitationsComponent implements OnInit, OnDestroy {
 	dialogService = inject(DialogService);
 	actionService = inject(ActionService);
 	solicitationService = inject(SolicitationService);
-	timelineService = inject(TimelineService);
 	_snackBar = inject(MatSnackBar);
 	router = inject(Router);
 	activatedRoute = inject(ActivatedRoute);
@@ -472,9 +470,12 @@ export class ListSolicitationsComponent implements OnInit, OnDestroy {
 				// Mapeia para a operação de alteração
 				switchMap((dialog: DialogDataResponse) =>
 					this.solicitationService
-						.toggleSolicitationStatus(solicitationId)
+						.toggleSolicitationStatus(
+							solicitationId,
+							dialog.sendNotification
+						)
 						.pipe(
-							// Após a edição, busca lista atualizada de solicitações
+							// Busca lista atualizada de solicitações
 							switchMap(() =>
 								this.solicitationService.getAllSolicitations({
 									filtering: this.filterForOwnSolicitations,
