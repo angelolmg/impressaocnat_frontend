@@ -73,10 +73,24 @@ export class SideMenuComponent implements AfterViewInit {
 		this.userService.userUpdate$
 			.pipe(takeUntil(this.ngUnsubscribe))
 			.subscribe((currUser) => {
-				if (currUser && (currUser.role == Role.ADMIN || currUser.role == Role.MANAGER)) {
-					this.sideMenuOptions.update((curr: Option[]) =>
-						curr.concat(ADMIN_USER_OPTIONS)
-					);
+				if (
+					currUser &&
+					(currUser.role == Role.ADMIN ||
+						currUser.role == Role.MANAGER)
+				) {
+					// Atualiza as opções do menu para usuários com permissões de ADMIN ou MANAGER.
+					this.sideMenuOptions.update((curr: Option[]) => {
+						// Filtra as opções do menu para incluir apenas as que não estão presentes atualmente.
+						const newOptions = ADMIN_USER_OPTIONS.filter(
+							(option) =>
+								!curr.some(
+									(existingOption) =>
+										existingOption.routerLink ===
+										option.routerLink
+								)
+						);
+						return curr.concat(newOptions);
+					});
 				}
 			});
 
