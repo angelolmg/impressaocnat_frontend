@@ -218,10 +218,6 @@ export class ViewSolicitationComponent implements OnInit {
 				},
 				error: (error) => {
 					console.error(error);
-					this._snackBar.open(
-						`Erro ao buscar solicitação. Tente novamente mais tarde.`,
-						'Ok'
-					);
 				},
 			});
 

@@ -30,11 +30,23 @@ export class AppComponent implements OnInit {
 
 				// Abrir dialogo de login caso o usuário não esteja logado
 				// Não abrir dialogo na tela de redirecionamento
-				if (
-					event.url != '/redirect' &&
-					!this.userService.isLoggedIn()
-				) {
-					this.dialogService.openDialog(LoginBoxComponent, {}, true);
+				if (!event.url.startsWith('/redirect')) {
+					// Salva a URL atual no localStorage para redirecionamento posterior.
+					// Isso é útil para redirecionar o usuário após o login.
+					if (event.url != '/') {
+						localStorage.setItem(
+							'impressaocnat:redirectTo',
+							event.url
+						);
+					}
+
+					if (!this.userService.isLoggedIn()) {
+						this.dialogService.openDialog(
+							LoginBoxComponent,
+							{},
+							true
+						);
+					}
 				}
 			}
 		});

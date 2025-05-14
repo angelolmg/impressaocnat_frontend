@@ -7,7 +7,7 @@ import { AuthService } from './../../service/auth.service';
 
 /**
  * Componente de redirecionamento do login OAuth2 para tela principal
- * 
+ *
  * Inicializa o token por meio da URI, busca e armazena dados do usuário e redireciona
  */
 @Component({
@@ -29,7 +29,19 @@ export class RedirectComponent {
 		// Busca dados do usuário a partir do token passado
 		this.userService
 			.fetchUserData()
-			.pipe(finalize(() => this.router.navigate(['nova-solicitacao'])))
+			.pipe(
+				finalize(() => {
+					const redirectTo = localStorage.getItem(
+						'impressaocnat:redirectTo'
+					);
+					if (redirectTo) {
+						localStorage.removeItem('impressaocnat:redirectTo');
+						this.router.navigate([redirectTo]);
+					} else {
+						this.router.navigate(['minhas-solicitacoes']);
+					}
+				})
+			)
 			.subscribe({
 				error: (err) => console.warn(err),
 			});

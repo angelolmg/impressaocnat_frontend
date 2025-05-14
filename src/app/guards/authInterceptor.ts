@@ -47,34 +47,42 @@ export const authInterceptor: HttpInterceptorFn = (
 	return next(req).pipe(
 		catchError((error) => {
 			if (error instanceof HttpErrorResponse) {
+				snackBar.open(error.error, 'Ok');
 				switch (error.status) {
+					// Requisição inválida
+					case 400:
+						break;
+
+					// Não autorizado
 					case 401:
-						snackBar.open(
-							'Sua sessão expirou. Por favor, faça login novamente.',
-							'Fechar'
-						);
 						localStorage.removeItem('impressaocnat:suapToken');
-						router.navigate(['']);
+						router.navigate(['/nova-solicitacao']);
 						break;
+
+					// Proibido
 					case 403:
-						snackBar.open(
-							'Você não tem permissão para acessar este recurso.',
-							'Fechar'
-						);
+						router.navigate(['/nova-solicitacao']);
 						break;
+
+					// Não encontrado
+					case 404:
+						break;
+
+					// Conflito
+					case 410:
+						break;
+
+					// Erro interno do servidor
 					case 500:
-						snackBar.open(
-							'Ocorreu um erro interno no servidor. Por favor, tente novamente mais tarde.',
-							'Fechar'
-						);
 						break;
+
 					default:
 						snackBar.open(
 							'Ocorreu um erro inesperado. Por favor, tente novamente mais tarde.',
 							'Fechar'
 						);
-						// localStorage.removeItem('impressaocnat:suapToken');
-						// router.navigate(['']);
+						localStorage.removeItem('impressaocnat:suapToken');
+						router.navigate(['']);
 						break;
 				}
 			}

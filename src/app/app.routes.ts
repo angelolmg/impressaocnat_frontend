@@ -4,6 +4,7 @@ import { RedirectComponent } from './pages/redirect/redirect.component';
 import { ViewSolicitationComponent } from './pages/view-solicitation/view-solicitation.component';
 import { PageState, pageStateRoutes } from './service/action.service';
 import { SolicitationFormComponent } from './pages/solicitation-form/solicitation-form.component';
+import { AllSolicitationsGuard } from './guards/all-solicitations.guard';
 
 export const routes: Routes = [
 	{
@@ -30,6 +31,7 @@ export const routes: Routes = [
 	},
 	{
 		path: pageStateRoutes[PageState.viewAllSolicitations],
+		canActivate: [AllSolicitationsGuard],
 		children: [
 			{
 				path: '',
