@@ -56,12 +56,12 @@ export const authInterceptor: HttpInterceptorFn = (
 					// Não autorizado
 					case 401:
 						localStorage.removeItem('impressaocnat:suapToken');
-						router.navigate(['/nova-solicitacao']);
+						router.navigate(['']);
 						break;
 
 					// Proibido
 					case 403:
-						router.navigate(['/nova-solicitacao']);
+						router.navigate(['']);
 						break;
 
 					// Não encontrado
