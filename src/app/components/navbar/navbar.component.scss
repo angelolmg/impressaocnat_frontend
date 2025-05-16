@@ -16,14 +16,19 @@
 		gap: 0.5rem;
 
 		.header-logo {
-			width: 1.6rem;
-			font-size: 01.5rem;
+			width: 2rem;
 			cursor: pointer;
+			position: relative;
+			top: 5px;
+			opacity: 60%;
+			&:hover {
+				opacity: 100%;
+			}
 		}
 
 		p {
 			font-size: 1.1rem;
-    		margin-left: 0.3rem;
+			margin-left: 0.3rem;
 			padding-top: 0.3rem;
 		}
 	}
@@ -32,10 +37,7 @@
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
-		// background-color: var(--user-card);
-		// margin-top: auto;
 		border-radius: 0.5rem;
-		// box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
 		justify-content: space-between;
 
 		.user-info {
