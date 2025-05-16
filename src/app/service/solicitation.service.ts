@@ -7,16 +7,16 @@ import {
 import { inject, Injectable } from '@angular/core';
 import { map, Observable, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
+import { CopyInterface } from '../models/copy.interface';
 import { FileDownloadResponse } from '../models/dialogData.interface';
+import { CommentDTO } from '../models/dto/commentDTO.interface';
+import { SolicitationDTO } from '../models/dto/solicitationDTO.interface';
 import {
 	SolicitationInterface,
 	SolicitationPage,
 } from '../models/solicitation.interface';
-import { CopyInterface } from '../models/copy.interface';
-import { UserService } from './user.service';
-import { SolicitationDTO } from '../models/dto/solicitationDTO.interface';
 import { User } from '../models/user.interface';
-import { CommentDTO } from '../models/dto/commentDTO.interface';
+import { UserService } from './user.service';
 
 @Injectable({
 	providedIn: 'root',
@@ -31,6 +31,10 @@ export class SolicitationService {
 	solicitationUrl = `${this.apiUrl}/solicitacoes`;
 	copyUrl = `${this.apiUrl}/copias`;
 	reportUrl = `${this.apiUrl}/relatorio`;
+
+	/** Variável para controlar o estado do upload */
+	canRedirect = true;
+
 
 	/**
 	 * Edita uma solicitação existente.

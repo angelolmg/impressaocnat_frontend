@@ -13,6 +13,7 @@ import {
 import { UserService } from '../../service/user.service';
 import { DEFAULT_USER_OPTIONS } from './../../service/action.service';
 import { User } from '../../models/user.interface';
+import { SolicitationService } from '../../service/solicitation.service';
 
 @Component({
 	selector: 'app-navbar',
@@ -35,6 +36,7 @@ export class NavbarComponent {
 
 	/** Serviços */
 	actionService = inject(ActionService);
+	solicitationService = inject(SolicitationService);
 	userService = inject(UserService);
 	router = inject(Router);
 
@@ -108,10 +110,18 @@ export class NavbarComponent {
 	 * Desconecta o usuário e redireciona para a página inicial.
 	 */
 	logoutUser(): void {
-		this.userService.logoutUser();
-		this.updateUser();
-		this.router.navigate(['']);
-		console.info('Usuário desconectado com sucesso');
+		// Verifica se o upload de solicitação não foi clicado.
+		if (
+			!this.solicitationService.canRedirect &&
+			confirm('Você tem alterações não salvas. Deseja realmente sair?')
+		) {
+			console.log('Desconectando usuário...');
+
+			this.userService.logoutUser();
+			this.updateUser();
+			this.router.navigate(['']);
+			console.info('Usuário desconectado com sucesso');
+		}
 	}
 
 	/**

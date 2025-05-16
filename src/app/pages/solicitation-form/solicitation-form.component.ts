@@ -1,4 +1,11 @@
-import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
+import {
+	Component,
+	HostListener,
+	inject,
+	OnDestroy,
+	OnInit,
+	signal,
+} from '@angular/core';
 import {
 	FormControl,
 	FormGroup,
@@ -25,7 +32,7 @@ import { DialogService } from '../../service/dialog.service';
 import { CopyInterface } from '../../models/copy.interface';
 
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, UrlTree } from '@angular/router';
 import {
 	catchError,
 	finalize,
@@ -44,6 +51,7 @@ import { SolicitationInterface } from '../../models/solicitation.interface';
 import { IconPipe } from '../../pipes/icon.pipe';
 import { SolicitationService } from '../../service/solicitation.service';
 import { DialogDataResponse } from '../../models/dialogData.interface';
+import { CanComponentDeactivate } from '../../guards/can-deactivate-form.guard';
 
 @Component({
 	selector: 'app-solicitation-form',
@@ -65,7 +73,9 @@ import { DialogDataResponse } from '../../models/dialogData.interface';
 	templateUrl: './solicitation-form.component.html',
 	styleUrl: './solicitation-form.component.scss',
 })
-export class SolicitationFormComponent implements OnDestroy, OnInit {
+export class SolicitationFormComponent
+	implements OnDestroy, OnInit, CanComponentDeactivate
+{
 	// Serviços
 	actionService = inject(ActionService);
 	dialogService = inject(DialogService);
@@ -153,6 +163,14 @@ export class SolicitationFormComponent implements OnDestroy, OnInit {
 		if (this.pageState == PageState.newSolicitation)
 			this.allowedActions = actions.allowedActionsforNewSolicitation;
 		else this.allowedActions = actions.allowedActionsforEditSolicitation;
+
+		this.solicitationService.canRedirect = true;
+
+		this.selectedTermControl.valueChanges
+			.pipe(takeUntil(this.ngUnsubscribe))
+			.subscribe(() => {
+				this.solicitationService.canRedirect = false;
+			});
 
 		// Observar eventos de deleção e edição
 		this.actionService.deleteCopy
@@ -592,7 +610,7 @@ export class SolicitationFormComponent implements OnDestroy, OnInit {
 	 */
 	refreshTable(): void {
 		// Atualizar objeto data source de cópias da tabela
-		// Angular Material is weird
+		// "Angular Material is weird"
 		this.copies.data = this.copies.data;
 
 		this.fileCount.set(this.copies.data.length);
@@ -604,98 +622,125 @@ export class SolicitationFormComponent implements OnDestroy, OnInit {
 		});
 
 		this.solicitationPageCounter.set(counter);
+		this.solicitationService.canRedirect = false;
 	}
 
 	/**
-	 * Envia uma solicitação de nova cópia ou edita uma solicitação existente.
+	 * Envia a solicitação com os arquivos e cópias anexadas.
 	 *
-	 * Dependendo do tipo de página (`this.pageState`), chama o serviço apropriado
-	 * para salvar ou editar a solicitação. Exibe mensagens de sucesso ou erro
-	 * e navega para a página apropriada após a conclusão.
+	 * Verifica se a solicitação já foi concluída antes de enviar.
+	 * Se não houver cópias anexadas ou arquivos, exibe uma mensagem de erro.
+	 * Caso contrário, chama o serviço de solicitação para enviar os dados.
 	 */
 	submitSolicitation(): void {
-		if (!!this.currentSolicitation?.conclusionDate) return;
-
-		// Define o status de upload como verdadeiro.
-		this.uploading.set(true);
-
-		// Declara a variável para armazenar o observable da solicitação.
-		let solicitationObservable: Observable<any>;
-
-		// Determina o tipo de solicitação (nova ou edição) com base no tipo de página.
-		if (this.pageState === PageState.newSolicitation) {
-			// Se for uma nova solicitação, verifica se há cópias anexadas.
-			if (!this.anyCopiesAttached() || this.files.length === 0) {
-				// Se não houver cópias, exibe um snackbar de erro e cria um observable de erro.
-				this._snackBar.open(
-					'É necessário adicionar pelo menos uma cópia à solicitação',
-					'Ok'
-				);
-				solicitationObservable = throwError(
-					() =>
-						new Error(
-							'É necessário adicionar pelo menos uma cópia à solicitação'
-						)
-				);
-			} else {
-				// Se houver cópias, chama o serviço para salvar a nova solicitação.
-				solicitationObservable =
-					this.solicitationService.saveSolicitation(
-						this.files,
-						this.copies.data,
-						this.selectedTermControl.value || 24,
-						this.solicitationPageCounter()
-					);
-			}
-		} else if (this.pageState === PageState.editSolicitation) {
-			// Se for uma edição de solicitação, chama o serviço para editar a solicitação existente.
-			solicitationObservable = this.solicitationService.editSolicitation(
-				this.editSolicitationId!,
-				this.files,
-				this.copies.data,
-				this.selectedTermControl.value || 24,
-				this.solicitationPageCounter()
-			);
-		} else {
-			// Se o tipo de página for inválido, cria um observable de erro.
-			solicitationObservable = throwError(
-				() => new Error('Tipo de página inválido')
-			);
+		if (this.currentSolicitation?.conclusionDate) {
+			console.warn('Solicitação já concluída, não é possível editar.');
+			return;
 		}
 
-		// Processa o observable da solicitação.
-		solicitationObservable
+		// Define o status de upload como verdadeiro.
+		// Este primeiro gerencia o DOM do componente atual
+		this.uploading.set(true);
+
+		// Este segundo é um sinal global que pode ser acessado por outros componentes
+		// E.g. o botão de logout
+		this.solicitationService.canRedirect = false;
+
+		const solicitationObservable$ = this.getSolicitationObservable();
+
+		solicitationObservable$
 			.pipe(
-				// Executa efeitos colaterais (exibir snackbar, limpar cópias, navegar) em caso de sucesso.
-				tap((response) => {
-					this._snackBar.open(
-						'Cadastro bem sucedido (ID: ' +
-							response.id.toString().padStart(6, '0') +
-							')',
-						'Ok'
-					);
-					this.clearCopies();
-					this.router.navigate([
-						this.actionService.getLastPageState(true) ||
-							'minhas-solicitacoes',
-					]);
+				tap((response: any) => {
+					// Add a type for response if possible
+					if (response) {
+						// Ensure response is not null (from handled errors)
+						this.handleSuccessfulSubmission(response);
+					}
 				}),
-				// Trata erros dentro do fluxo do observable (exibe snackbar de erro).
-				catchError((error) => {
-					console.error(error);
-					this._snackBar.open(
-						error.message || 'Ocorreu um erro',
-						'Ok'
-					);
-					return of(null); // Retorna um observable de sucesso para continuar o fluxo.
-				}),
-				// Garante que o status de upload seja atualizado após a conclusão (sucesso ou erro).
+				catchError((error: Error) => this.handleSubmissionError(error)),
 				finalize(() => {
 					this.uploading.set(false);
 				})
 			)
-			// Se inscreve no observable para iniciar o fluxo.
 			.subscribe();
+	}
+
+	private getSolicitationObservable(): Observable<any> {
+		// Add a more specific type than 'any' if possible
+		const commonPayload = {
+			files: this.files,
+			copies: this.copies.data,
+			term: this.selectedTermControl.value ?? 24, // Use nullish coalescing for default
+			pageCounter: this.solicitationPageCounter(),
+		};
+
+		switch (this.pageState) {
+			case PageState.newSolicitation:
+				if (!this.anyCopiesAttached() || this.files.length === 0) {
+					const errorMessage =
+						'É necessário adicionar pelo menos uma cópia à solicitação';
+					this.showErrorSnackbar(errorMessage);
+					this.solicitationService.canRedirect = true; // Reset as per original logic
+					return throwError(() => new Error(errorMessage));
+				}
+				return this.solicitationService.saveSolicitation(
+					commonPayload.files,
+					commonPayload.copies,
+					commonPayload.term,
+					commonPayload.pageCounter
+				);
+
+			case PageState.editSolicitation:
+				if (!this.editSolicitationId) {
+					const errorMessage =
+						'ID da solicitação para edição não encontrado.';
+					this.showErrorSnackbar(errorMessage);
+					this.solicitationService.canRedirect = true; // Or handle as a more critical error
+					return throwError(() => new Error(errorMessage));
+				}
+				return this.solicitationService.editSolicitation(
+					this.editSolicitationId,
+					commonPayload.files,
+					commonPayload.copies,
+					commonPayload.term,
+					commonPayload.pageCounter
+				);
+
+			default:
+				const errorMessage = 'Tipo de página inválido.';
+				this.showErrorSnackbar(errorMessage); // Potentially no snackbar if this is a programmatic error
+				this.solicitationService.canRedirect = true; // Reset as per original logic
+				console.error(errorMessage, 'Page state:', this.pageState); // Log for debugging
+				return throwError(() => new Error(errorMessage));
+		}
+	}
+
+	private handleSuccessfulSubmission(response: { id: number }): void {
+		this._snackBar.open(
+			`Cadastro bem sucedido (ID: ${response.id
+				.toString()
+				.padStart(6, '0')})`,
+			'Ok'
+		);
+		this.clearCopies();
+		this.solicitationService.canRedirect = true; // Reset as per original logic
+		this.router.navigate([
+			this.actionService.getLastPageState(true) || 'minhas-solicitacoes',
+		]);
+	}
+
+	private handleSubmissionError(error: Error): Observable<null> {
+		console.error('Submission error:', error);
+		this.showErrorSnackbar(
+			error.message || 'Ocorreu um erro na submissão.'
+		);
+		this.solicitationService.canRedirect = true; // Reset as per original logic
+		return of(null); // Return a "successful" observable to allow finalize to run
+		// and prevent the main stream from erroring out if not desired.
+	}
+
+	private showErrorSnackbar(message: string): void {
+		this._snackBar.open(message, 'Ok');
 	}
 
 	/**
@@ -716,6 +761,28 @@ export class SolicitationFormComponent implements OnDestroy, OnInit {
 	navigateTo(route?: string): void {
 		if (route) {
 			this.router.navigate([route]);
+		}
+	}
+
+	// Verifica se o usuário pode sair da página atual.
+	canDeactivate():
+		| Observable<boolean | UrlTree>
+		| Promise<boolean | UrlTree>
+		| boolean
+		| UrlTree {
+		if (!this.solicitationService.canRedirect) {
+			return confirm(
+				'Você tem alterações não salvas. Deseja realmente sair?'
+			);
+		}
+		return true;
+	}
+
+	// Lidar com o fechamento da aba/janela do navegador
+	@HostListener('window:beforeunload', ['$event'])
+	unloadNotification($event: any): void {
+		if (!this.solicitationService.canRedirect) {
+			$event.returnValue = true; // Exibe o aviso de saída
 		}
 	}
 
