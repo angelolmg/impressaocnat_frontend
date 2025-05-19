@@ -1,9 +1,22 @@
 <div class="main-container">
-  <app-navbar></app-navbar>
-  <div class="outer-content">
-    <app-side-menu></app-side-menu>
-    <div class="main-content">
-      <router-outlet></router-outlet>
-    </div>
-  </div>
+	<app-navbar></app-navbar>
+
+	@if(breakpointService.isWeb()) {
+	<div class="web-content">
+		<app-side-menu></app-side-menu>
+		<div class="main-content">
+			<router-outlet></router-outlet>
+		</div>
+	</div>
+	} @else {
+	<div class="mobile-content">
+		<div class="mobile-warning">
+			<h2>Versão Mobile Indisponível</h2>
+			<p>
+				Esta página ainda não possui suporte para dispositivos móveis.
+			</p>
+			<p>Por favor, acesse em um dispositivo com resolução maior.</p>
+		</div>
+	</div>
+	}
 </div>

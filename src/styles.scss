@@ -108,6 +108,11 @@ mat-icon {
 	cursor: pointer;
 }
 
+.warning {
+	color: #c0392b;
+}
+
+
 // Previne que parágrafos com paravras muito grandes quebrem divs
 p {
 	overflow-wrap: break-word;

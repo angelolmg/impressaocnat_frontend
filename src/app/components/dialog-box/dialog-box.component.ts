@@ -13,7 +13,10 @@ import {
 } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { DialogDataInput, DialogDataResponse } from '../../models/dialogData.interface';
+import {
+	DialogDataInput,
+	DialogDataResponse,
+} from '../../models/dialogData.interface';
 
 @Component({
 	selector: 'app-dialog-box',
@@ -28,7 +31,7 @@ import { DialogDataInput, DialogDataResponse } from '../../models/dialogData.int
 		MatDialogActions,
 		MatDialogClose,
 		MatCheckboxModule,
-		ReactiveFormsModule
+		ReactiveFormsModule,
 	],
 	templateUrl: './dialog-box.component.html',
 	styleUrl: './dialog-box.component.scss',
@@ -36,13 +39,16 @@ import { DialogDataInput, DialogDataResponse } from '../../models/dialogData.int
 export class DialogBoxComponent {
 	readonly dialogRef = inject(MatDialogRef<DialogBoxComponent>);
 	readonly data = inject<DialogDataInput>(MAT_DIALOG_DATA);
-	sendNotification = new FormControl<boolean>(true, { nonNullable: true });
+	sendNotification = new FormControl<boolean>(false, { nonNullable: true });
 
 	onNoClick(): void {
 		this.dialogRef.close();
 	}
 
 	confirm(value: boolean): DialogDataResponse {
-		return {confirmation: value, sendNotification: this.sendNotification.value};
+		return {
+			confirmation: value,
+			sendNotification: this.sendNotification.value,
+		};
 	}
 }

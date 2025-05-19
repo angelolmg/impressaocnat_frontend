@@ -10,8 +10,8 @@ mat-dialog-content {
 	.header {
 		display: flex;
 		align-items: center;
-		gap: 1rem;
-		padding: .8rem;
+		gap: 1.4rem;
+		padding: 0.8rem;
 		padding-bottom: 0;
 
 		img {
@@ -19,14 +19,13 @@ mat-dialog-content {
 		}
 
 		.header-logo {
-			width: 1.8rem;
-			font-size: xx-large;
-			cursor: pointer;
+			position: relative;
+			top: 0.2rem;
+			width: 2.5rem;
 		}
 
 		p {
 			font-weight: 500;
-			margin-left: .8rem;
 			color: var(--text-color);
 			font-size: 1.35rem;
 		}

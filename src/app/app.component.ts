@@ -8,6 +8,7 @@ import {
 import { LoginBoxComponent } from './components/login-box/login-box.component';
 import { NavbarComponent } from './components/navbar/navbar.component';
 import { SideMenuComponent } from './components/side-menu/side-menu.component';
+import { BreakpointService } from './service/breakpoint.service';
 import { DialogService } from './service/dialog.service';
 import { UserService } from './service/user.service';
 
@@ -23,6 +24,8 @@ export class AppComponent implements OnInit {
 	private router = inject(Router);
 	private userService = inject(UserService);
 	private dialogService = inject(DialogService);
+
+	protected readonly breakpointService = inject(BreakpointService);
 
 	ngOnInit() {
 		this.router.events.subscribe((event) => {

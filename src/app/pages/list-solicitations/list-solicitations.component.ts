@@ -215,9 +215,6 @@ export class ListSolicitationsComponent implements OnInit, OnDestroy {
 				next: (solicitations: SolicitationPage) => {
 					this.currentPage.set(solicitations);
 					this.solicitations.data = solicitations.content;
-
-					// this.solicitations.sort = this.sort;
-					// this.solicitations.paginator = this.paginator;
 				},
 				error: (err) => {
 					console.error(err);
