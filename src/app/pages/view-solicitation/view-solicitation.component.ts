@@ -218,6 +218,8 @@ export class ViewSolicitationComponent implements OnInit {
 				},
 				error: (error) => {
 					console.error(error);
+					// Falha ao buscar solicitação, redirecione o usuário
+					this.router.navigate(['']);
 				},
 			});
 
@@ -232,7 +234,7 @@ export class ViewSolicitationComponent implements OnInit {
 					if (!this.solicitationId)
 						return throwError(() => {
 							return new Error(
-								'Nenhum ID de solicitação definido'
+								'Nenhum ID de solicitação definido.'
 							);
 						});
 					this.loadingData.set(true);

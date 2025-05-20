@@ -207,12 +207,21 @@ export class SolicitationFormComponent
 					})
 				)
 				// Atualiza a página com os dados da solicitação.
-				.subscribe((solicitation: SolicitationInterface) => {
-					this.currentSolicitation = solicitation;
-					if (solicitation.copies)
-						this.copies.data = solicitation.copies;
-					this.selectedTermControl.setValue(solicitation.deadline);
-					this.refreshTable();
+				.subscribe({
+					next: (solicitation: SolicitationInterface) => {
+						this.currentSolicitation = solicitation;
+						if (solicitation.copies)
+							this.copies.data = solicitation.copies;
+						this.selectedTermControl.setValue(
+							solicitation.deadline
+						);
+						this.refreshTable();
+					},
+					error: (error) => {
+						console.error(error);
+						// Falha ao buscar solicitação, redirecione o usuário
+						this.router.navigate(['']);
+					},
 				});
 		}
 	}

@@ -484,14 +484,16 @@ export class ListSolicitationsComponent implements OnInit, OnDestroy {
 								this.solicitations.data = solicitations;
 							}),
 							catchError((error) => {
-								this._snackBar.open(error.error.message, 'Ok');
+								console.error(error);
+								this._snackBar.open(error.error, 'Ok');
 								return EMPTY;
 							})
 						)
 				),
 				catchError((error) => {
+					console.log(error);
 					this._snackBar.open(
-						`Erro ao atualizar solicitações: ${error.error.message}`,
+						`Erro ao atualizar solicitações: ${error.error}`,
 						'Ok'
 					);
 					return EMPTY;
