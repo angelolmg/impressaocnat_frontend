@@ -223,6 +223,9 @@ export class ActionService {
 		action?: ActionType,
 		parentElement?: SolicitationInterface
 	): boolean {
+		const isUserAdmin = this.userService.isUserAdmin();
+		const userRegistrationNumber =
+			this.userService.getCurrentUser()?.registrationNumber;			
 		const isSolicitation = this.instanceOfSolicitation(element);
 		const concludedSolicitation = isSolicitation
 			? !!element.conclusionDate
@@ -263,6 +266,19 @@ export class ActionService {
 			!archivedSolicitation &&
 			(action === ActionType.EXCLUIR || action === ActionType.EDITAR)
 		) {
+			return true;
+		}
+
+		// Desabilita 'Excluir' caso usuário não seja admin ou não seja o dono da solicitação
+		if (
+			isSolicitation &&
+			['list-solicitations'].includes(component) &&
+			(!isUserAdmin &&
+				element.user.registrationNumber !== userRegistrationNumber) &&
+			action === ActionType.EXCLUIR
+		) {
+			console.log(!isUserAdmin);
+			
 			return true;
 		}
 

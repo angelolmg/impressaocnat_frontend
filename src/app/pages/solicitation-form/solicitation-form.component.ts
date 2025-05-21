@@ -209,16 +209,25 @@ export class SolicitationFormComponent
 				// Atualiza a página com os dados da solicitação.
 				.subscribe({
 					next: (solicitation: SolicitationInterface) => {
+
+						// Verifica se a solicitação existe e não está concluída ou arquivada.
+						// Se for o caso, redireciona o usuário para a página inicial.
+						if (!solicitation || solicitation.conclusionDate || solicitation.archived) {
+							this.router.navigate(['']);
+							return;
+						}
+
 						this.currentSolicitation = solicitation;
 						if (solicitation.copies)
 							this.copies.data = solicitation.copies;
 						this.selectedTermControl.setValue(
-							solicitation.deadline
+							solicitation.deadline, {emitEvent: false}
 						);
-						this.refreshTable();
+						// this.refreshTable();
 					},
 					error: (error) => {
 						console.error(error);
+
 						// Falha ao buscar solicitação, redirecione o usuário
 						this.router.navigate(['']);
 					},
@@ -631,7 +640,7 @@ export class SolicitationFormComponent
 		});
 
 		this.solicitationPageCounter.set(counter);
-		this.solicitationService.canRedirect = false;
+		this.solicitationService.canRedirect = false;	
 	}
 
 	/**
@@ -689,7 +698,7 @@ export class SolicitationFormComponent
 					const errorMessage =
 						'É necessário adicionar pelo menos uma cópia à solicitação';
 					this.showErrorSnackbar(errorMessage);
-					this.solicitationService.canRedirect = true; // Reset as per original logic
+					this.solicitationService.canRedirect = true; // Reset
 					return throwError(() => new Error(errorMessage));
 				}
 				return this.solicitationService.saveSolicitation(
@@ -718,7 +727,7 @@ export class SolicitationFormComponent
 			default:
 				const errorMessage = 'Tipo de página inválido.';
 				this.showErrorSnackbar(errorMessage); // Potentially no snackbar if this is a programmatic error
-				this.solicitationService.canRedirect = true; // Reset as per original logic
+				this.solicitationService.canRedirect = true; // Reset
 				console.error(errorMessage, 'Page state:', this.pageState); // Log for debugging
 				return throwError(() => new Error(errorMessage));
 		}

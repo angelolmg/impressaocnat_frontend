@@ -246,11 +246,10 @@ export class ViewSolicitationComponent implements OnInit {
 			.subscribe({
 				next: (copies: CopyInterface[]) => (this.copies.data = copies),
 				error: (error) => {
-					console.error(error);
-					this._snackBar.open(
-						`Erro ao buscar solicitações. Tente novamente mais tarde.`,
-						'Ok'
-					);
+					console.error(
+							'Erro ao buscar solicitações:',
+							error
+						);
 				},
 			});
 	}
@@ -288,10 +287,6 @@ export class ViewSolicitationComponent implements OnInit {
 						console.error(
 							'Erro ao enviar comentário e/ou buscar solicitação:',
 							error
-						);
-						this._snackBar.open(
-							'Erro ao enviar comentário ou atualizar solicitação. Tente novamente.',
-							'Ok'
 						);
 					},
 				});

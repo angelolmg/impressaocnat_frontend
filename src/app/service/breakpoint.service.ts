@@ -11,10 +11,7 @@ export class BreakpointService {
 
 	private readonly layoutChanges = toSignal(
 		this.breakpointObserver.observe(Object.values(Breakpoints)).pipe(
-			map(({ breakpoints }) => breakpoints),
-			tap((breakpoints) =>
-				console.log('Breakpoint changes:', breakpoints)
-			)
+			map(({ breakpoints }) => breakpoints)
 		)
 	);
 

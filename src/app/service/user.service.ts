@@ -202,4 +202,13 @@ export class UserService {
 		if (user && user.role) return user.role === Role.ADMIN || user.role === Role.MANAGER;
 		return false;
 	}
+
+	isUserAdmin(): boolean {
+		// Obtém o usuário atual.
+		const user: User | undefined = this.user;
+
+		// Verifica se o usuário existe e se tem permissão de ADMIN ou MANAGER.
+		if (user && user.role) return user.role === Role.ADMIN;
+		return false;
+	}
 }
