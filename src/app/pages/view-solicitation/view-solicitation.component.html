@@ -24,6 +24,18 @@
 			<span class="status-chip status-chip-opened">Aberta</span>
 			}
 		</div>
+		<button
+			class="edit-button"
+			[hidden]="mySolicitation()?.archived"
+			[disabled]="mySolicitation()?.conclusionDate"
+			mat-fab
+			extended
+			aria-label="Action button"
+			(click)="goToEditSolicitation()"
+		>
+			<mat-icon>edit</mat-icon>
+			Editar
+		</button>
 	</h2>
 
 	<p class="subtitle">Dados do solicitante</p>

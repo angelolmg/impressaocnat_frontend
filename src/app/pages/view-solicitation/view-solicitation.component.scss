@@ -43,6 +43,13 @@ form {
 		margin-left: 0.6rem;
 		font-weight: normal;
 	}
+
+	.edit-button {
+		margin-left: auto;
+		margin-top: -0.4rem; // This I call 'fell lazy' alignment
+		height: 2.5rem;
+		box-shadow: none;
+	}
 }
 
 .content {

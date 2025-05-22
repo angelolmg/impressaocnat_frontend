@@ -246,10 +246,7 @@ export class ViewSolicitationComponent implements OnInit {
 			.subscribe({
 				next: (copies: CopyInterface[]) => (this.copies.data = copies),
 				error: (error) => {
-					console.error(
-							'Erro ao buscar solicitações:',
-							error
-						);
+					console.error('Erro ao buscar solicitações:', error);
 				},
 			});
 	}
@@ -301,6 +298,13 @@ export class ViewSolicitationComponent implements OnInit {
 			textarea.value = '';
 			this.characterCount = 0;
 		}
+	}
+
+	goToEditSolicitation() {
+		if (!this.solicitationId) return;
+		// Navega para a página de edição da solicitação com o ID da solicitação atual.
+		var editRoute = 'solicitacoes/editar/' + this.solicitationId;
+		this.router.navigate([editRoute]);
 	}
 
 	/**
