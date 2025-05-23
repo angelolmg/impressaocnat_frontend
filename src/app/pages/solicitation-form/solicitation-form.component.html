@@ -32,7 +32,7 @@
 		</button>
 	</div>
 
-	<div class="file-table table-wrapper" style="margin-bottom: 2rem">
+	<div class="file-table table-wrapper" style="margin-bottom: 0.8rem;">
 		<table mat-table [dataSource]="copies" matSort class="mat-elevation-z8">
 			<ng-container matColumnDef="id">
 				<th mat-header-cell *matHeaderCellDef>ID</th>
@@ -84,25 +84,6 @@
 				</td>
 			</ng-container>
 
-			<!-- <ng-container matColumnDef="pageConfig">
-				<th
-					mat-header-cell
-					*matHeaderCellDef
-					style="text-align: center"
-				>
-					Detalhes
-				</th>
-				<td
-					mat-cell
-					*matCellDef="let element"
-					style="text-align: center"
-				>
-					<mat-icon (click)="showConfigs(element)">{{
-						configs | icon
-					}}</mat-icon>
-				</td>
-			</ng-container> -->
-
 			<ng-container matColumnDef="actions">
 				<th mat-header-cell *matHeaderCellDef>Ações</th>
 				<td mat-cell *matCellDef="let element">
@@ -151,6 +132,7 @@
 		</div>
 		}
 	</div>
+	<p style="font-size: small; margin-bottom: 1rem;">Máximo de arquivos: {{maxNumArchives}}</p>
 
 	<!-- Contador de arquivo e número de páginas -->
 	<div class="copy-summary" style="margin-bottom: 2rem">

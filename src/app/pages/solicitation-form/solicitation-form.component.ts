@@ -117,6 +117,9 @@ export class SolicitationFormComponent
 	/** Array de tempos para seleção de prazo. */
 	times: number[] = [48, 24, 12, 4, 2];
 
+	/** Controle para o número máximo de arquivos. */
+	maxNumArchives = 10;
+
 	/** Controle para o prazo selecionado, inicializado com o valor padrão do ambiente. */
 	selectedTermControl = new FormControl(environment.DEFAULT_TERM_VALUE);
 
@@ -474,6 +477,15 @@ export class SolicitationFormComponent
 	addCopyDialog(data?: CopyInterface): void {
 		// Desabilitar adições caso a solicitação esteja concluída
 		if (!!this.currentSolicitation?.conclusionDate) return;
+
+		// Mostrar aviso caso já existam numMaxArchives anexados
+		if (this.copies.data.length >= this.maxNumArchives) {
+			this._snackBar.open(
+				`Número máximo de arquivos por solicitação (${this.maxNumArchives}) atingido.`,
+				'Ok'
+			);
+			return;
+		}
 
 		// Abre o diálogo para adicionar ou editar uma cópia.
 		this.dialogService

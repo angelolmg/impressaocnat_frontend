@@ -411,6 +411,8 @@ export class ListSolicitationsComponent implements OnInit, OnDestroy {
 				tap(() => this.loadingData.set(true)),
 				// Garante que o indicador de carregamento seja desativado após a conclusão da requisição.
 				finalize(() => {
+					this.pageIndex = event.pageIndex;
+					this.pageSize = event.pageSize;
 					this.loadingData.set(false);
 					return of([]);
 				})
@@ -474,14 +476,19 @@ export class ListSolicitationsComponent implements OnInit, OnDestroy {
 						.pipe(
 							// Busca lista atualizada de solicitações
 							switchMap(() =>
-								this.solicitationService.getAllSolicitations({
-									filtering: this.filterForOwnSolicitations,
-									...this.queryForm.value,
-								})
+								this.solicitationService.getPageSolicitations(
+									this.pageIndex,
+									this.pageSize,
+									{
+										filtering:
+											this.filterForOwnSolicitations,
+										...this.queryForm.value,
+									}
+								)
 							),
 							// Atualiza a tabela com as solicitações atualizadas.
 							tap((solicitations) => {
-								this.solicitations.data = solicitations;
+								this.solicitations.data = solicitations.content;
 							}),
 							catchError((error) => {
 								console.error(error);
@@ -552,14 +559,19 @@ export class ListSolicitationsComponent implements OnInit, OnDestroy {
 							}),
 							// Após a exclusão, busca lista atualizada de solicitações
 							switchMap(() =>
-								this.solicitationService.getAllSolicitations({
-									filtering: this.filterForOwnSolicitations,
-									...this.queryForm.value,
-								})
+								this.solicitationService.getPageSolicitations(
+									this.pageIndex,
+									this.pageSize,
+									{
+										filtering:
+											this.filterForOwnSolicitations,
+										...this.queryForm.value,
+									}
+								)
 							),
 							// Atualiza a tabela com as solicitações atualizadas.
 							tap((solicitations) => {
-								this.solicitations.data = solicitations;
+								this.solicitations.data = solicitations.content;
 							}),
 							catchError((error) => {
 								this._snackBar.open(error.error.message, 'Ok');
