@@ -113,15 +113,18 @@ export class NavbarComponent {
 		// Verifica se o upload de solicitação não foi clicado.
 		if (
 			!this.solicitationService.canRedirect &&
-			confirm('Você tem alterações não salvas. Deseja realmente sair?')
-		) {
-			console.log('Desconectando usuário...');
+			!confirm('Você tem alterações não salvas. Deseja realmente sair?')
+		)
+			return;
 
-			this.userService.logoutUser();
-			this.updateUser();
-			this.router.navigate(['']);
-			console.info('Usuário desconectado com sucesso');
-		}
+		console.log('Desconectando usuário...');
+		this.userService.logoutUser();
+		this.updateUser();
+
+		this.solicitationService.canRedirect = true;
+		this.router.navigate(['']);
+		
+		console.info('Usuário desconectado com sucesso');
 	}
 
 	/**
